@@ -1,0 +1,11 @@
+.claude/
+node_modules/
+server/node_modules/
+client/node_modules/
+client/dist/
+server/.env
+server/caltrack.db
+.DS_Store
+client/certs/
+*.bat
+*.vbs

@@ -1,0 +1,11 @@
+{
+  "name": "caltrack",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm install --prefix server && npm install --prefix client && node scripts/generate-icons.js && npm --prefix client run build",
+    "start": "node server/index.js"
+  }
+}
