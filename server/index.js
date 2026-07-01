@@ -11,6 +11,7 @@ const weightLogsRouter = require('./routes/weightLogs');
 const mealTemplatesRouter = require('./routes/mealTemplates');
 const recipesRouter = require('./routes/recipes');
 const ingredientMemoryRouter = require('./routes/ingredientMemory');
+const metricsRouter = require('./routes/metrics');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ app.use('/api/weight', weightLogsRouter);
 app.use('/api/meal-templates', mealTemplatesRouter);
 app.use('/api/recipes', recipesRouter);
 app.use('/api/ingredient-memory', ingredientMemoryRouter);
+app.use('/api/metrics', metricsRouter);
 
 // Serve the built React app (production mode)
 const distPath = path.join(__dirname, '..', 'client', 'dist');

@@ -205,6 +205,23 @@ export async function getIngredientMemory(name) {
   return res.json();
 }
 
+// ── Daily Metrics ─────────────────────────────────────────────────────────────
+export async function getMetrics(date) {
+  const res = await fetch(`${BASE}/metrics?date=${date}`);
+  return res.json();
+}
+
+export async function updateMetrics(data) {
+  const res = await fetch(`${BASE}/metrics`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Update failed');
+  return json;
+}
+
 // ── Photo Scan ────────────────────────────────────────────────────────────────
 export async function scanFood(imageBase64, mediaType) {
   const res = await fetch(`${BASE}/scan-food`, {

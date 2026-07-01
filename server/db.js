@@ -98,6 +98,15 @@ pool.query(`
     fat          REAL NOT NULL DEFAULT 0,
     sort_order   INTEGER NOT NULL DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS daily_metrics (
+    id          SERIAL PRIMARY KEY,
+    date        TEXT NOT NULL UNIQUE,
+    steps       INTEGER NOT NULL DEFAULT 0,
+    water_ml    INTEGER NOT NULL DEFAULT 0,
+    sleep_hours REAL NOT NULL DEFAULT 0,
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 
