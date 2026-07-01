@@ -7,6 +7,7 @@ const entriesRouter = require('./routes/entries');
 const goalsRouter = require('./routes/goals');
 const savedFoodsRouter = require('./routes/savedFoods');
 const scanFoodRouter = require('./routes/scanFood');
+const weightLogsRouter = require('./routes/weightLogs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ app.use('/api/entries', entriesRouter);
 app.use('/api/goals', goalsRouter);
 app.use('/api/saved-foods', savedFoodsRouter);
 app.use('/api/scan-food', scanFoodRouter);
+app.use('/api/weight', weightLogsRouter);
 
 // Serve the built React app (production mode)
 const distPath = path.join(__dirname, '..', 'client', 'dist');

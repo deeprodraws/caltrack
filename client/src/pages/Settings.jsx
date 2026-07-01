@@ -2,13 +2,19 @@ import { useState, useEffect } from 'react';
 import { getGoals, updateGoals } from '../api';
 
 export default function Settings() {
-  const [form, setForm] = useState({ calories: '', protein: '', carbs: '', fat: '' });
+  const [form, setForm] = useState({ calories: '', protein: '', carbs: '', fat: '', weight_unit: 'kg' });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getGoals().then(g => {
-      setForm({ calories: g.calories, protein: g.protein, carbs: g.carbs, fat: g.fat });
+      setForm({
+        calories: g.calories,
+        protein: g.protein,
+        carbs: g.carbs,
+        fat: g.fat,
+        weight_unit: g.weight_unit || 'kg',
+      });
       setLoading(false);
     });
   }, []);
@@ -20,6 +26,7 @@ export default function Settings() {
       protein: Number(form.protein),
       carbs: Number(form.carbs),
       fat: Number(form.fat),
+      weight_unit: form.weight_unit,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -32,11 +39,11 @@ export default function Settings() {
       <div className="page-title">Settings</div>
 
       <div className="card">
-        <div className="settings-section">
-          <h3>Daily Goals</h3>
-          <p>Set your daily nutrition targets. These are used to calculate your progress on the dashboard.</p>
+        <form onSubmit={handleSubmit}>
+          <div className="settings-section">
+            <h3>Daily Goals</h3>
+            <p>Set your daily nutrition targets. These are used to calculate your progress on the dashboard.</p>
 
-          <form onSubmit={handleSubmit}>
             <div className="settings-grid">
               {[
                 { key: 'calories', label: 'Calories (kcal)', color: '#6c63ff', min: 500, max: 10000 },
@@ -57,20 +64,50 @@ export default function Settings() {
                 </div>
               ))}
             </div>
+          </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-              <button className="btn-save" type="submit">Save Goals</button>
-              {saved && (
-                <span className="toast">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20,6 9,17 4,12"/>
-                  </svg>
-                  Saved
-                </span>
-              )}
+          <hr style={{ borderColor: 'var(--border)', margin: '24px 0' }} />
+
+          <div className="settings-section" style={{ marginBottom: 0 }}>
+            <h3>Weight Unit</h3>
+            <p>Choose the unit used when logging your weight.</p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {['kg', 'lbs'].map(u => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, weight_unit: u }))}
+                  style={{
+                    padding: '10px 28px',
+                    borderRadius: 8,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    border: '2px solid',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                    background: form.weight_unit === u ? 'var(--accent)' : 'var(--surface2)',
+                    borderColor: form.weight_unit === u ? 'var(--accent)' : 'var(--border)',
+                    color: form.weight_unit === u ? '#fff' : 'var(--text-muted)',
+                  }}
+                >
+                  {u}
+                </button>
+              ))}
             </div>
-          </form>
-        </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 24 }}>
+            <button className="btn-save" type="submit">Save Settings</button>
+            {saved && (
+              <span className="toast">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20,6 9,17 4,12"/>
+                </svg>
+                Saved
+              </span>
+            )}
+          </div>
+        </form>
 
         <hr style={{ borderColor: 'var(--border)', margin: '24px 0' }} />
 

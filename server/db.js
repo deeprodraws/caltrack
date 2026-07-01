@@ -41,6 +41,16 @@ pool.query(`
     tags         TEXT NOT NULL DEFAULT '',
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
+
+  CREATE TABLE IF NOT EXISTS weight_logs (
+    id         SERIAL PRIMARY KEY,
+    date       TEXT NOT NULL,
+    weight     REAL NOT NULL,
+    unit       TEXT NOT NULL DEFAULT 'kg',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  ALTER TABLE daily_goals ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'kg';
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

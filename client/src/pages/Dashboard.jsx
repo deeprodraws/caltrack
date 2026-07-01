@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getEntries, getGoals } from '../api';
+import { getEntries, getGoals, getWeightLogs, addWeightLog, updateWeightLog, deleteWeightLog } from '../api';
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -12,6 +12,14 @@ function sum(entries, key) {
 
 function clamp(v) {
   return Math.min(v, 100);
+}
+
+function shortDate(str) {
+  const today = todayStr();
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (str === today) return 'Today';
+  if (str === yesterday) return 'Yesterday';
+  return new Date(str + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function CalorieRing({ eaten, goal }) {
@@ -61,15 +69,101 @@ function MacroBar({ label, current, goal, color }) {
   );
 }
 
+function WeightModal({ log, unit, onSave, onClose }) {
+  const [value, setValue] = useState(log ? String(log.weight) : '');
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    const num = parseFloat(value);
+    if (!value || isNaN(num) || num <= 0) return;
+    setSaving(true);
+    await onSave(num);
+    setSaving(false);
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{log ? 'Edit Weight' : 'Log Weight'}</h3>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="settings-field" style={{ marginBottom: 24 }}>
+            <label>Weight</label>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <input
+                type="number"
+                min="0"
+                step="0.1"
+                value={value}
+                onChange={e => setValue(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSave()}
+                placeholder="e.g. 75.0"
+                autoFocus
+                style={{ flex: 1 }}
+              />
+              <span style={{ color: 'var(--text-muted)', fontSize: 15, fontWeight: 600, flexShrink: 0, minWidth: 28 }}>{unit}</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button onClick={onClose} style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+              padding: '10px 18px', borderRadius: 8, fontSize: 14,
+            }}>Cancel</button>
+            <button onClick={handleSave} className="btn-primary" disabled={saving || !value}>
+              {saving ? 'Saving…' : log ? 'Update' : 'Save Weight'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WeightDeleteConfirm({ log, unit, onConfirm, onCancel }) {
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Delete weight entry?</h3>
+          <button className="modal-close" onClick={onCancel}>✕</button>
+        </div>
+        <div className="modal-body" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🗑️</div>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+            Remove <strong style={{ color: 'var(--text)' }}>{log.weight} {unit}</strong> logged on <strong style={{ color: 'var(--text)' }}>{shortDate(log.date)}</strong>?
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <button onClick={onCancel} style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+              padding: '10px 20px', borderRadius: 8, fontSize: 14,
+            }}>Keep it</button>
+            <button onClick={onConfirm} style={{
+              background: '#f87171', color: '#fff', border: 'none',
+              padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+            }}>Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [entries, setEntries] = useState([]);
-  const [goals, setGoals] = useState({ calories: 2000, protein: 150, carbs: 250, fat: 65 });
+  const [goals, setGoals] = useState({ calories: 2000, protein: 150, carbs: 250, fat: 65, weight_unit: 'kg' });
+  const [weightLogs, setWeightLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editWeight, setEditWeight] = useState(null);
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [deleteWeight, setDeleteWeight] = useState(null);
 
   useEffect(() => {
-    Promise.all([getEntries(todayStr()), getGoals()]).then(([e, g]) => {
+    Promise.all([getEntries(todayStr()), getGoals(), getWeightLogs()]).then(([e, g, w]) => {
       setEntries(e);
       setGoals(g);
+      setWeightLogs(w);
       setLoading(false);
     });
   }, []);
@@ -79,10 +173,38 @@ export default function Dashboard() {
   const carbs = sum(entries, 'carbs');
   const fat = sum(entries, 'fat');
   const remaining = Math.max(goals.calories - cals, 0);
+  const unit = goals.weight_unit || 'kg';
+
+  const today = todayStr();
+  const todayWeight = weightLogs.find(w => w.date === today);
+  const pastLogs = weightLogs.filter(w => w.date !== today).slice(0, 4);
+
+  async function handleWeightSave(value) {
+    if (editWeight) {
+      const updated = await updateWeightLog(editWeight.id, { weight: value, unit });
+      setWeightLogs(prev => prev.map(w => w.id === updated.id ? updated : w));
+    } else {
+      const created = await addWeightLog({ date: today, weight: value, unit });
+      setWeightLogs(prev => [created, ...prev].sort((a, b) => b.date.localeCompare(a.date)));
+    }
+    setShowWeightModal(false);
+    setEditWeight(null);
+  }
+
+  async function handleWeightDelete() {
+    await deleteWeightLog(deleteWeight.id);
+    setWeightLogs(prev => prev.filter(w => w.id !== deleteWeight.id));
+    setDeleteWeight(null);
+  }
+
+  function openLog(log = null) {
+    setEditWeight(log);
+    setShowWeightModal(true);
+  }
 
   if (loading) return <div className="empty-state">Loading...</div>;
 
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
     <div>
@@ -92,7 +214,7 @@ export default function Dashboard() {
         <CalorieRing eaten={cals} goal={goals.calories} />
         <div className="calorie-info">
           <h2>Today's Progress</h2>
-          <p style={{ marginBottom: 0 }}>{today}</p>
+          <p style={{ marginBottom: 0 }}>{todayLabel}</p>
           <div className="calorie-stats">
             <div className="cal-stat">
               <div className="val" style={{ color: '#6c63ff' }}>{Math.round(cals)}</div>
@@ -115,6 +237,77 @@ export default function Dashboard() {
         <MacroBar label="Carbs" current={carbs} goal={goals.carbs} color="#fbbf24" />
         <MacroBar label="Fat" current={fat} goal={goals.fat} color="#fb923c" />
         <MacroBar label="Calories" current={cals} goal={goals.calories} color="#6c63ff" />
+      </div>
+
+      {/* Weight card */}
+      <div className="card" style={{ marginBottom: 24 }}>
+        <div className="section-header" style={{ marginBottom: 12 }}>
+          <span className="section-title">Weight</span>
+          <button
+            onClick={() => openLog(null)}
+            style={{
+              background: 'var(--accent)', color: '#fff', border: 'none',
+              padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            + Log Weight
+          </button>
+        </div>
+
+        {todayWeight ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)',
+            borderRadius: 10, padding: '12px 16px', marginBottom: pastLogs.length ? 10 : 0,
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>Today</div>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>
+                {todayWeight.weight} <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>{unit}</span>
+              </div>
+            </div>
+            <button className="btn-icon" onClick={() => openLog(todayWeight)} title="Edit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button className="btn-delete" onClick={() => setDeleteWeight(todayWeight)} title="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: pastLogs.length ? 10 : 0 }}>
+            No weight logged today.
+          </p>
+        )}
+
+        {pastLogs.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {pastLogs.map(w => (
+              <div key={w.id} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '9px 12px', borderRadius: 8, background: 'var(--surface2)',
+              }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', minWidth: 70 }}>{shortDate(w.date)}</span>
+                <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{w.weight} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span></span>
+                <button className="btn-icon" onClick={() => openLog(w)} title="Edit" style={{ width: 30, height: 30 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button className="btn-delete" onClick={() => setDeleteWeight(w)} title="Delete" style={{ width: 30, height: 30 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="section-header">
@@ -157,6 +350,23 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+      )}
+
+      {showWeightModal && (
+        <WeightModal
+          log={editWeight}
+          unit={unit}
+          onSave={handleWeightSave}
+          onClose={() => { setShowWeightModal(false); setEditWeight(null); }}
+        />
+      )}
+      {deleteWeight && (
+        <WeightDeleteConfirm
+          log={deleteWeight}
+          unit={unit}
+          onConfirm={handleWeightDelete}
+          onCancel={() => setDeleteWeight(null)}
+        />
       )}
     </div>
   );

@@ -75,6 +75,34 @@ export async function deleteSavedFood(id) {
   return res.json();
 }
 
+export async function getWeightLogs() {
+  const res = await fetch(`${BASE}/weight`);
+  return res.json();
+}
+
+export async function addWeightLog(data) {
+  const res = await fetch(`${BASE}/weight`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function updateWeightLog(id, data) {
+  const res = await fetch(`${BASE}/weight/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function deleteWeightLog(id) {
+  const res = await fetch(`${BASE}/weight/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
 export async function scanFood(imageBase64, mediaType) {
   const res = await fetch(`${BASE}/scan-food`, {
     method: 'POST',
