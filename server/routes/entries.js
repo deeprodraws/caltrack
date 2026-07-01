@@ -4,7 +4,14 @@ const pool = require('../db');
 
 router.get('/', async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, start, end } = req.query;
+    if (start && end) {
+      const { rows } = await pool.query(
+        'SELECT * FROM food_entries WHERE date >= $1 AND date <= $2 ORDER BY date ASC, created_at ASC',
+        [start, end]
+      );
+      return res.json(rows);
+    }
     if (!date) return res.status(400).json({ error: 'date query param required' });
     const { rows } = await pool.query(
       'SELECT * FROM food_entries WHERE date = $1 ORDER BY created_at ASC',

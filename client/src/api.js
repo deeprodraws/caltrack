@@ -75,6 +75,11 @@ export async function deleteSavedFood(id) {
   return res.json();
 }
 
+export async function getEntriesRange(start, end) {
+  const res = await fetch(`${BASE}/entries?start=${start}&end=${end}`);
+  return res.json();
+}
+
 export async function getWeightLogs() {
   const res = await fetch(`${BASE}/weight`);
   return res.json();
