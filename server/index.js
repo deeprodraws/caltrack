@@ -12,6 +12,10 @@ const mealTemplatesRouter = require('./routes/mealTemplates');
 const recipesRouter = require('./routes/recipes');
 const ingredientMemoryRouter = require('./routes/ingredientMemory');
 const metricsRouter = require('./routes/metrics');
+const exercisesRouter = require('./routes/exercises');
+const workoutTemplatesRouter = require('./routes/workoutTemplates');
+const workoutSessionsRouter = require('./routes/workoutSessions');
+const sessionSets = require('./routes/sessionSets');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +32,11 @@ app.use('/api/meal-templates', mealTemplatesRouter);
 app.use('/api/recipes', recipesRouter);
 app.use('/api/ingredient-memory', ingredientMemoryRouter);
 app.use('/api/metrics', metricsRouter);
+app.use('/api/exercises', exercisesRouter);
+app.use('/api/workout-templates', workoutTemplatesRouter);
+app.use('/api/workout-sessions', workoutSessionsRouter);
+app.use('/api/session-exercises', sessionSets);
+app.use('/api/sets', sessionSets.setsRouter);
 
 // Serve the built React app (production mode)
 const distPath = path.join(__dirname, '..', 'client', 'dist');

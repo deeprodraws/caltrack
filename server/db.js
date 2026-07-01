@@ -107,6 +107,87 @@ pool.query(`
     sleep_hours REAL NOT NULL DEFAULT 0,
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
+
+  CREATE TABLE IF NOT EXISTS exercises (
+    id           SERIAL PRIMARY KEY,
+    name         TEXT NOT NULL UNIQUE,
+    muscle_group TEXT NOT NULL DEFAULT '',
+    equipment    TEXT NOT NULL DEFAULT '',
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS workout_templates (
+    id         SERIAL PRIMARY KEY,
+    name       TEXT NOT NULL,
+    notes      TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS workout_template_exercises (
+    id            SERIAL PRIMARY KEY,
+    template_id   INTEGER NOT NULL REFERENCES workout_templates(id) ON DELETE CASCADE,
+    exercise_name TEXT NOT NULL,
+    target_sets   INTEGER NOT NULL DEFAULT 3,
+    target_reps   INTEGER NOT NULL DEFAULT 8,
+    sort_order    INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS workout_sessions (
+    id          SERIAL PRIMARY KEY,
+    date        TEXT NOT NULL,
+    name        TEXT NOT NULL DEFAULT 'Workout',
+    started_at  TIMESTAMPTZ,
+    finished_at TIMESTAMPTZ,
+    notes       TEXT NOT NULL DEFAULT '',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS session_exercises (
+    id            SERIAL PRIMARY KEY,
+    session_id    INTEGER NOT NULL REFERENCES workout_sessions(id) ON DELETE CASCADE,
+    exercise_name TEXT NOT NULL,
+    sort_order    INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS session_sets (
+    id                  SERIAL PRIMARY KEY,
+    session_exercise_id INTEGER NOT NULL REFERENCES session_exercises(id) ON DELETE CASCADE,
+    set_number          INTEGER NOT NULL DEFAULT 1,
+    weight              REAL NOT NULL DEFAULT 0,
+    reps                INTEGER NOT NULL DEFAULT 0,
+    rpe                 REAL,
+    completed_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  INSERT INTO exercises (name, muscle_group, equipment)
+  SELECT v.name, v.muscle_group, v.equipment
+  FROM (VALUES
+    ('Bench Press',       'chest',     'barbell'),
+    ('Incline Bench Press','chest',    'barbell'),
+    ('Push Ups',          'chest',     'bodyweight'),
+    ('Pull Ups',          'back',      'bodyweight'),
+    ('Lat Pulldown',      'back',      'cable'),
+    ('Cable Row',         'back',      'cable'),
+    ('Deadlift',          'back',      'barbell'),
+    ('Overhead Press',    'shoulders', 'barbell'),
+    ('Lateral Raise',     'shoulders', 'dumbbell'),
+    ('Shoulder Press',    'shoulders', 'dumbbell'),
+    ('Hammer Curl',       'biceps',    'dumbbell'),
+    ('Bicep Curl',        'biceps',    'dumbbell'),
+    ('Tricep Pushdown',   'triceps',   'cable'),
+    ('Skull Crusher',     'triceps',   'barbell'),
+    ('Squat',             'legs',      'barbell'),
+    ('Romanian Deadlift', 'legs',      'barbell'),
+    ('Leg Press',         'legs',      'machine'),
+    ('Leg Curl',          'legs',      'machine'),
+    ('Leg Extension',     'legs',      'machine'),
+    ('Calf Raise',        'legs',      'machine'),
+    ('Plank',             'core',      'bodyweight'),
+    ('Running',           'cardio',    'bodyweight'),
+    ('Cycling',           'cardio',    'machine')
+  ) AS v(name, muscle_group, equipment)
+  WHERE NOT EXISTS (SELECT 1 FROM exercises LIMIT 1)
+  ON CONFLICT (name) DO NOTHING;
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

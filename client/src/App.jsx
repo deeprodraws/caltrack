@@ -3,6 +3,7 @@ import { Routes, Route, NavLink } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import FoodLog from './pages/FoodLog';
 import Library from './pages/Library';
+import Workout from './pages/Workout';
 import Settings from './pages/Settings';
 import Stats from './pages/Stats';
 
@@ -18,6 +19,16 @@ const IconLog = () => (
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
     <polyline points="14,2 14,8 20,8"/>
     <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+  </svg>
+);
+
+const IconWorkout = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="10" width="2.5" height="4" rx="0.5"/>
+    <rect x="19.5" y="10" width="2.5" height="4" rx="0.5"/>
+    <rect x="4.5" y="7.5" width="3" height="9" rx="0.5"/>
+    <rect x="16.5" y="7.5" width="3" height="9" rx="0.5"/>
+    <line x1="7.5" y1="12" x2="16.5" y2="12"/>
   </svg>
 );
 
@@ -48,6 +59,7 @@ const IconSettings = () => (
 const navItems = [
   { to: '/',          end: true, icon: <IconDashboard />, label: 'Home' },
   { to: '/log',                  icon: <IconLog />,       label: 'Log' },
+  { to: '/workout',              icon: <IconWorkout />,   label: 'Workout' },
   { to: '/library',              icon: <IconLibrary />,   label: 'Library' },
   { to: '/stats',                icon: <IconStats />,     label: 'Stats' },
   { to: '/settings',             icon: <IconSettings />,  label: 'Settings', mobileHidden: true },
@@ -82,6 +94,7 @@ export default function App() {
         <Routes>
           <Route path="/"         element={<Dashboard />} />
           <Route path="/log"      element={<FoodLog />} />
+          <Route path="/workout"  element={<Workout />} />
           <Route path="/library"  element={<Library />} />
           <Route path="/stats"    element={<Stats />} />
           <Route path="/settings" element={<Settings />} />

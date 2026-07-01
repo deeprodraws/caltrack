@@ -222,6 +222,137 @@ export async function updateMetrics(data) {
   return json;
 }
 
+// ── Workout: Exercises ────────────────────────────────────────────────────────
+export async function searchExercises(q = '') {
+  const res = await fetch(`${BASE}/exercises${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+  return res.json();
+}
+
+export async function createExercise(data) {
+  const res = await fetch(`${BASE}/exercises`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Create failed');
+  return json;
+}
+
+export async function getExerciseHistory(name) {
+  const res = await fetch(`${BASE}/exercises/${encodeURIComponent(name)}/history`);
+  return res.json();
+}
+
+export async function getExerciseLastSession(name) {
+  const res = await fetch(`${BASE}/exercises/${encodeURIComponent(name)}/last-session`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// ── Workout: Templates ────────────────────────────────────────────────────────
+export async function getWorkoutTemplates() {
+  const res = await fetch(`${BASE}/workout-templates`);
+  return res.json();
+}
+
+export async function createWorkoutTemplate(data) {
+  const res = await fetch(`${BASE}/workout-templates`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function updateWorkoutTemplate(id, data) {
+  const res = await fetch(`${BASE}/workout-templates/${id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function deleteWorkoutTemplate(id) {
+  const res = await fetch(`${BASE}/workout-templates/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
+// ── Workout: Sessions ─────────────────────────────────────────────────────────
+export async function getWorkoutSessions(date) {
+  const res = await fetch(`${BASE}/workout-sessions?date=${date}`);
+  return res.json();
+}
+
+export async function getRecentWorkoutSessions(limit = 5) {
+  const res = await fetch(`${BASE}/workout-sessions/recent?limit=${limit}`);
+  return res.json();
+}
+
+export async function createWorkoutSession(data) {
+  const res = await fetch(`${BASE}/workout-sessions`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Create failed');
+  return json;
+}
+
+export async function updateWorkoutSession(id, data) {
+  const res = await fetch(`${BASE}/workout-sessions/${id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Update failed');
+  return json;
+}
+
+export async function deleteWorkoutSession(id) {
+  const res = await fetch(`${BASE}/workout-sessions/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
+export async function addExerciseToSession(sessionId, data) {
+  const res = await fetch(`${BASE}/workout-sessions/${sessionId}/exercises`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Add failed');
+  return json;
+}
+
+export async function removeExerciseFromSession(sessionId, exerciseId) {
+  const res = await fetch(`${BASE}/workout-sessions/${sessionId}/exercises/${exerciseId}`, {
+    method: 'DELETE',
+  });
+  return res.json();
+}
+
+// ── Workout: Sets ─────────────────────────────────────────────────────────────
+export async function addSet(exerciseId, data) {
+  const res = await fetch(`${BASE}/session-exercises/${exerciseId}/sets`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Add failed');
+  return json;
+}
+
+export async function updateSet(id, data) {
+  const res = await fetch(`${BASE}/sets/${id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function deleteSet(id) {
+  const res = await fetch(`${BASE}/sets/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
 // ── Photo Scan ────────────────────────────────────────────────────────────────
 export async function scanFood(imageBase64, mediaType) {
   const res = await fetch(`${BASE}/scan-food`, {
