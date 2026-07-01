@@ -35,48 +35,50 @@ function FoodModal({ food, onSave, onClose }) {
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16
-    }}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 500 }}>
-        <h3 style={{ fontWeight: 600, marginBottom: 20 }}>{food ? 'Edit Food' : 'Add Food Template'}</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="settings-field" style={{ marginBottom: 14 }}>
-            <label>Food Name</label>
-            <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. Chicken breast" />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            {[
-              { key: 'calories', label: 'Calories (kcal)' },
-              { key: 'protein', label: 'Protein (g)' },
-              { key: 'carbs', label: 'Carbs (g)' },
-              { key: 'fat', label: 'Fat (g)' },
-            ].map(({ key, label }) => (
-              <div key={key} className="settings-field">
-                <label>{label}</label>
-                <input type="number" min="0" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{food ? 'Edit Food' : 'Add Food Template'}</h3>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <form onSubmit={handleSubmit}>
+            <div className="settings-field" style={{ marginBottom: 14 }}>
+              <label>Food Name</label>
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. Chicken breast" />
+            </div>
+            <div className="modal-macros">
+              {[
+                { key: 'calories', label: 'Calories (kcal)' },
+                { key: 'protein', label: 'Protein (g)' },
+                { key: 'carbs', label: 'Carbs (g)' },
+                { key: 'fat', label: 'Fat (g)' },
+              ].map(({ key, label }) => (
+                <div key={key} className="settings-field">
+                  <label>{label}</label>
+                  <input type="number" min="0" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+              <div className="settings-field">
+                <label>Serving Size</label>
+                <input type="number" min="0.1" step="0.1" value={form.serving_size} onChange={e => setForm(f => ({ ...f, serving_size: e.target.value }))} />
               </div>
-            ))}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-            <div className="settings-field">
-              <label>Serving Size</label>
-              <input type="number" min="0.1" step="0.1" value={form.serving_size} onChange={e => setForm(f => ({ ...f, serving_size: e.target.value }))} />
+              <div className="settings-field">
+                <label>Serving Unit</label>
+                <input value={form.serving_unit} onChange={e => setForm(f => ({ ...f, serving_unit: e.target.value }))} placeholder="serving, g, ml…" />
+              </div>
             </div>
-            <div className="settings-field">
-              <label>Serving Unit</label>
-              <input value={form.serving_unit} onChange={e => setForm(f => ({ ...f, serving_unit: e.target.value }))} placeholder="serving, g, ml…" />
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button type="button" onClick={onClose} style={{
+                background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+                padding: '10px 18px', borderRadius: 8, fontSize: 14,
+              }}>Cancel</button>
+              <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : food ? 'Save Changes' : 'Add Food'}</button>
             </div>
-          </div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button type="button" onClick={onClose} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '9px 18px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, cursor: 'pointer'
-            }}>Cancel</button>
-            <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : food ? 'Save Changes' : 'Add Food'}</button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -84,26 +86,28 @@ function FoodModal({ food, onSave, onClose }) {
 
 function DeleteConfirm({ food, onConfirm, onCancel }) {
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16
-    }}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 28, maxWidth: 360, width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>🗑️</div>
-        <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Delete food template?</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-          Remove <strong style={{ color: 'var(--text)' }}>{food.name}</strong> from your saved foods?<br />
-          <span style={{ fontSize: 12 }}>This won't affect existing log entries.</span>
-        </p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <button onClick={onCancel} style={{
-            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-            padding: '9px 20px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, cursor: 'pointer'
-          }}>Cancel</button>
-          <button onClick={onConfirm} style={{
-            background: '#f87171', color: '#fff', border: 'none', padding: '9px 20px',
-            borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer'
-          }}>Delete</button>
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Delete food template?</h3>
+          <button className="modal-close" onClick={onCancel}>✕</button>
+        </div>
+        <div className="modal-body" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🗑️</div>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+            Remove <strong style={{ color: 'var(--text)' }}>{food.name}</strong> from your saved foods?<br />
+            <span style={{ fontSize: 12 }}>This won't affect existing log entries.</span>
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <button onClick={onCancel} style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+              padding: '10px 20px', borderRadius: 8, fontSize: 14,
+            }}>Cancel</button>
+            <button onClick={onConfirm} style={{
+              background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
+              borderRadius: 8, fontSize: 14, fontWeight: 600,
+            }}>Delete</button>
+          </div>
         </div>
       </div>
     </div>

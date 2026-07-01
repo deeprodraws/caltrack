@@ -202,54 +202,23 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 1000, padding: 16,
-      }}
-    >
-      <div
-        style={{
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 14, width: '100%', maxWidth: 560,
-          maxHeight: '90vh', overflowY: 'auto',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '20px 24px', borderBottom: '1px solid var(--border)',
-          }}
-        >
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
           <div>
-            <h3 style={{ fontWeight: 600, marginBottom: 2 }}>
+            <h3>
               {phase === 'scanning' && '📷 Scan Barcode'}
               {phase === 'found' && '✅ Product Found'}
-              {phase === 'notfound' && '⚠️ Product Not Found'}
+              {phase === 'notfound' && '⚠️ Not Found'}
               {phase === 'error' && '❌ Error'}
             </h3>
-            {phase === 'scanning' && (
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
-                Aim at barcode · the whole frame is scanned
-              </p>
-            )}
-            {phase === 'found' && (
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
-                Edit any values before saving
-              </p>
-            )}
+            {phase === 'scanning' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Aim at barcode · whole frame is scanned</p>}
+            {phase === 'found' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Edit values before saving</p>}
           </div>
-          <button
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 }}
-          >
-            ✕
-          </button>
+          <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div style={{ padding: 24 }}>
+        <div className="modal-body">
 
           {/* Scanning phase */}
           {phase === 'scanning' && (

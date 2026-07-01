@@ -121,33 +121,35 @@ function EditModal({ entry, onSave, onClose }) {
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16
-    }}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 480 }}>
-        <h3 style={{ fontWeight: 600, marginBottom: 20 }}>Edit Entry</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="settings-field" style={{ marginBottom: 14 }}>
-            <label>Food Name</label>
-            <input value={form.food_name} onChange={e => setForm(f => ({ ...f, food_name: e.target.value }))} required />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-            {['calories', 'protein', 'carbs', 'fat'].map(k => (
-              <div key={k} className="settings-field">
-                <label>{k.charAt(0).toUpperCase() + k.slice(1)}{k !== 'calories' ? ' (g)' : ' (kcal)'}</label>
-                <input type="number" min="0" value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} />
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button type="button" onClick={onClose} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '9px 18px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, cursor: 'pointer'
-            }}>Cancel</button>
-            <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</button>
-          </div>
-        </form>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Edit Entry</h3>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <form onSubmit={handleSubmit}>
+            <div className="settings-field" style={{ marginBottom: 14 }}>
+              <label>Food Name</label>
+              <input value={form.food_name} onChange={e => setForm(f => ({ ...f, food_name: e.target.value }))} required />
+            </div>
+            <div className="modal-macros">
+              {['calories', 'protein', 'carbs', 'fat'].map(k => (
+                <div key={k} className="settings-field">
+                  <label>{k.charAt(0).toUpperCase() + k.slice(1)}{k !== 'calories' ? ' (g)' : ' (kcal)'}</label>
+                  <input type="number" min="0" value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4 }}>
+              <button type="button" onClick={onClose} style={{
+                background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+                padding: '10px 18px', borderRadius: 8, fontSize: 14,
+              }}>Cancel</button>
+              <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -156,25 +158,27 @@ function EditModal({ entry, onSave, onClose }) {
 // ── Delete confirmation ────────────────────────────────────────────────────────
 function DeleteConfirm({ entry, onConfirm, onCancel }) {
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16
-    }}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 28, maxWidth: 360, width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>🗑️</div>
-        <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Delete entry?</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-          Remove <strong style={{ color: 'var(--text)' }}>{entry.food_name}</strong> from your log?
-        </p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <button onClick={onCancel} style={{
-            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-            padding: '9px 20px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, cursor: 'pointer'
-          }}>Keep it</button>
-          <button onClick={onConfirm} style={{
-            background: '#f87171', color: '#fff', border: 'none', padding: '9px 20px',
-            borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer'
-          }}>Delete</button>
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Delete entry?</h3>
+          <button className="modal-close" onClick={onCancel}>✕</button>
+        </div>
+        <div className="modal-body" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🗑️</div>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+            Remove <strong style={{ color: 'var(--text)' }}>{entry.food_name}</strong> from your log?
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <button onClick={onCancel} style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+              padding: '10px 20px', borderRadius: 8, fontSize: 14,
+            }}>Keep it</button>
+            <button onClick={onConfirm} style={{
+              background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
+              borderRadius: 8, fontSize: 14, fontWeight: 600,
+            }}>Delete</button>
+          </div>
         </div>
       </div>
     </div>

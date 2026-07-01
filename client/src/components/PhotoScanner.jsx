@@ -84,33 +84,23 @@ export default function PhotoScanner({ date, onSave, onClose }) {
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16,
-    }}>
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
-        width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
-      }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
           <div>
-            <h3 style={{ fontWeight: 600, marginBottom: 2 }}>
+            <h3>
               {phase === 'capture' && '📷 Scan Food Photo'}
               {phase === 'scanning' && '🔍 Analyzing…'}
               {phase === 'review' && '✅ Review AI Results'}
               {phase === 'error' && '⚠️ Scan Failed'}
             </h3>
-            {phase === 'capture' && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>Take a photo or upload an image</p>}
-            {phase === 'review' && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>Edit any values before saving — AI estimates are never saved automatically</p>}
+            {phase === 'capture' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Take a photo or upload an image</p>}
+            {phase === 'review' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Edit values before saving</p>}
           </div>
-          <button onClick={onClose} style={{
-            background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
-            fontSize: 20, lineHeight: 1, padding: 4,
-          }}>✕</button>
+          <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div style={{ padding: 24 }}>
+        <div className="modal-body">
 
           {/* ── Capture phase ─────────────────────────────────────────────── */}
           {phase === 'capture' && (
@@ -224,7 +214,7 @@ export default function PhotoScanner({ date, onSave, onClose }) {
                     </div>
 
                     {/* Macro inputs */}
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="modal-macros">
                       <MacroInput label="Calories" value={item.calories} onChange={v => updateItem(item.id, 'calories', v)} color="#6c63ff" />
                       <MacroInput label="Protein g" value={item.protein} onChange={v => updateItem(item.id, 'protein', v)} color="#60a5fa" />
                       <MacroInput label="Carbs g" value={item.carbs} onChange={v => updateItem(item.id, 'carbs', v)} color="#fbbf24" />

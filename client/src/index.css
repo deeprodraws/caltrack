@@ -467,6 +467,82 @@ input, select {
   gap: 24px;
 }
 
+/* ── Modals / Bottom Sheets ───────────────────────────────────────────────────  */
+/* Mobile-first: anchored to bottom as a sheet. Desktop: centered dialog.        */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.modal-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.modal-close:hover { background: var(--border); }
+
+.modal-body { padding: 20px; }
+
+/* 2×2 macro grid inside modals (4-across is too tight on mobile) */
+.modal-macros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Desktop: centered dialog */
+@media (min-width: 701px) {
+  .modal-overlay { align-items: center; padding: 16px; }
+  .modal-box { border-radius: 14px; border-top: 1px solid var(--border); max-width: 520px; }
+  .modal-macros { grid-template-columns: repeat(4, 1fr); }
+}
+
 /* ── Responsive — Mobile ──────────────────────────────────────────────────────  */
 @media (max-width: 700px) {
   /* Hide desktop sidebar */
