@@ -655,11 +655,11 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
 
       {exercise.sets.length > 0 && (
         <div style={{ marginBottom: 10 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2rem 1fr 1fr 2.5rem 1.5rem', gap: '3px 8px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: 4, paddingBottom: 4, borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2rem minmax(0,1fr) minmax(0,1fr) 2.5rem 1.5rem', gap: '3px 8px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: 4, paddingBottom: 4, borderBottom: '1px solid var(--border)' }}>
             <span>#</span><span>Weight</span><span>Reps</span><span>RPE</span><span></span>
           </div>
           {exercise.sets.map(s => (
-            <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '2rem 1fr 1fr 2.5rem 1.5rem', gap: '3px 8px', alignItems: 'center', padding: '5px 0' }}>
+            <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '2rem minmax(0,1fr) minmax(0,1fr) 2.5rem 1.5rem', gap: '3px 8px', alignItems: 'center', padding: '5px 0' }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.set_number}</span>
               <span style={{ fontSize: 15, fontWeight: 700 }}>{s.weight}</span>
               <span style={{ fontSize: 15, fontWeight: 700 }}>{s.reps}</span>
@@ -671,18 +671,18 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 3rem 3rem', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 3rem 3rem', gap: 8 }}>
         <input type="number" inputMode="decimal" value={pw} onChange={e => setPw(e.target.value)}
           placeholder="Weight" onKeyDown={e => e.key === 'Enter' && handleLog()}
-          style={{ padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
+          style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
         />
         <input type="number" inputMode="numeric" value={pr} onChange={e => setPr(e.target.value)}
           placeholder="Reps" onKeyDown={e => e.key === 'Enter' && handleLog()}
-          style={{ padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
+          style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
         />
         <input type="number" inputMode="decimal" value={prpe} onChange={e => setPrpe(e.target.value)}
           placeholder="RPE"
-          style={{ padding: '11px 4px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, textAlign: 'center', fontFamily: 'inherit' }}
+          style={{ width: '100%', minWidth: 0, padding: '11px 4px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, textAlign: 'center', fontFamily: 'inherit' }}
         />
         <button onClick={handleLog} disabled={!canLog}
           style={{ borderRadius: 8, border: 'none', fontSize: 20, fontWeight: 700, cursor: canLog ? 'pointer' : 'default',

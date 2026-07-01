@@ -159,6 +159,25 @@ pool.query(`
     completed_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 
+  CREATE TABLE IF NOT EXISTS physique_weeks (
+    id         SERIAL PRIMARY KEY,
+    week_start TEXT NOT NULL UNIQUE,
+    weight     REAL,
+    body_fat   REAL,
+    notes      TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS physique_photos (
+    id             SERIAL PRIMARY KEY,
+    week_id        INTEGER NOT NULL REFERENCES physique_weeks(id) ON DELETE CASCADE,
+    photo_type     TEXT NOT NULL CHECK (photo_type IN ('front','side','back')),
+    cloudinary_url TEXT NOT NULL,
+    cloudinary_id  TEXT NOT NULL,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (week_id, photo_type)
+  );
+
   INSERT INTO exercises (name, muscle_group, equipment)
   SELECT v.name, v.muscle_group, v.equipment
   FROM (VALUES

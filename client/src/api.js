@@ -353,6 +353,57 @@ export async function deleteSet(id) {
   return res.json();
 }
 
+// ── Physique Tracker ──────────────────────────────────────────────────────────
+export async function getPhysiqueWeeks() {
+  const res = await fetch(`${BASE}/physique`);
+  return res.json();
+}
+
+export async function getCurrentPhysiqueWeek() {
+  const res = await fetch(`${BASE}/physique/current-week`);
+  return res.json();
+}
+
+export async function createPhysiqueWeek(data) {
+  const res = await fetch(`${BASE}/physique/weeks`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Create failed');
+  return json;
+}
+
+export async function updatePhysiqueWeek(id, data) {
+  const res = await fetch(`${BASE}/physique/weeks/${id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Update failed');
+  return json;
+}
+
+export async function deletePhysiqueWeek(id) {
+  const res = await fetch(`${BASE}/physique/weeks/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
+export async function uploadPhysiquePhoto(data) {
+  const res = await fetch(`${BASE}/physique/photos`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Upload failed');
+  return json;
+}
+
+export async function deletePhysiquePhoto(id) {
+  const res = await fetch(`${BASE}/physique/photos/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
 // ── Photo Scan ────────────────────────────────────────────────────────────────
 export async function scanFood(imageBase64, mediaType) {
   const res = await fetch(`${BASE}/scan-food`, {
