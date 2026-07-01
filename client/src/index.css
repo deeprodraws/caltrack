@@ -700,8 +700,3 @@ input, select {
 
 /* ── Meals & Recipes page ─────────────────────────────────────────────────── */
 
-/* Mobile: 3 nav items → reduce label size to fit all 6 */
-@media (max-width: 700px) {
-  .bottom-nav-label { font-size: 9px; letter-spacing: 0.1px; }
-  .bottom-nav-icon svg { width: 20px; height: 20px; }
-}

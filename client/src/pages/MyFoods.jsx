@@ -114,7 +114,7 @@ function DeleteConfirm({ food, onConfirm, onCancel }) {
   );
 }
 
-export default function MyFoods() {
+export default function MyFoods({ embedded = false }) {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
@@ -159,8 +159,8 @@ export default function MyFoods() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <div className="page-title" style={{ margin: 0 }}>My Foods</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: embedded ? 'flex-end' : 'space-between', marginBottom: 20 }}>
+        {!embedded && <div className="page-title" style={{ margin: 0 }}>My Foods</div>}
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>+ Add Food</button>
           <button

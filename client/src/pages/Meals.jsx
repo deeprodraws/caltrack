@@ -782,8 +782,9 @@ function RecipeCard({ recipe, onLog, onEdit, onDelete }) {
 
 // ── Main Meals page ───────────────────────────────────────────────────────────
 
-export default function Meals() {
+export default function Meals({ embedded = false, activeTab: controlledTab = null }) {
   const [tab, setTab] = useState('templates');
+  const effectiveTab = embedded ? controlledTab : tab;
   const [templates, setTemplates] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -869,39 +870,41 @@ export default function Meals() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div className="page-title" style={{ margin: 0 }}>Meals & Recipes</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: embedded ? 'flex-end' : 'space-between', marginBottom: 20 }}>
+        {!embedded && <div className="page-title" style={{ margin: 0 }}>Meals & Recipes</div>}
         <button
           className="btn-primary"
-          onClick={() => setModal(tab === 'templates' ? { type: 'createTemplate' } : { type: 'createRecipe' })}
+          onClick={() => setModal(effectiveTab === 'templates' ? { type: 'createTemplate' } : { type: 'createRecipe' })}
         >
-          + {tab === 'templates' ? 'Template' : 'Recipe'}
+          + {effectiveTab === 'templates' ? 'Template' : 'Recipe'}
         </button>
       </div>
 
-      {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
-        {[
-          { key: 'templates', label: 'Meal Templates' },
-          { key: 'recipes',   label: 'Recipes' },
-        ].map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            style={{
-              padding: '10px 20px', background: 'transparent', border: 'none',
-              borderBottom: `2px solid ${tab === t.key ? 'var(--accent)' : 'transparent'}`,
-              color: tab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
-              fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              marginBottom: -1, transition: 'all 0.15s',
-            }}
-          >{t.label}</button>
-        ))}
-      </div>
+      {/* Tab bar — standalone mode only; Library provides its own tabs */}
+      {!embedded && (
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
+          {[
+            { key: 'templates', label: 'Meal Templates' },
+            { key: 'recipes',   label: 'Recipes' },
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                padding: '10px 20px', background: 'transparent', border: 'none',
+                borderBottom: `2px solid ${effectiveTab === t.key ? 'var(--accent)' : 'transparent'}`,
+                color: effectiveTab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
+                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                marginBottom: -1, transition: 'all 0.15s',
+              }}
+            >{t.label}</button>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="empty-state">Loading…</div>
-      ) : tab === 'templates' ? (
+      ) : effectiveTab === 'templates' ? (
         templates.length === 0 ? (
           <div className="empty-state">
             No templates yet.<br />

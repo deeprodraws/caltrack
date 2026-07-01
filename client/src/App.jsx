@@ -2,10 +2,9 @@ import { useEffect } from 'react';
 import { Routes, Route, NavLink } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import FoodLog from './pages/FoodLog';
-import MyFoods from './pages/MyFoods';
+import Library from './pages/Library';
 import Settings from './pages/Settings';
 import Stats from './pages/Stats';
-import Meals from './pages/Meals';
 
 const IconDashboard = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,12 +21,10 @@ const IconLog = () => (
   </svg>
 );
 
-const IconFoods = () => (
+const IconLibrary = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 2l1.5 6H20L21 2M3 8l1 13h16l1-13"/>
-    <line x1="12" y1="11" x2="12" y2="17"/>
-    <line x1="8" y1="11" x2="8" y2="17"/>
-    <line x1="16" y1="11" x2="16" y2="17"/>
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
   </svg>
 );
 
@@ -47,21 +44,13 @@ const IconSettings = () => (
   </svg>
 );
 
-const IconMeals = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
-    <path d="M7 2v20"/>
-    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
-  </svg>
-);
-
+// mobileHidden: shown in desktop sidebar but not in mobile bottom nav
 const navItems = [
   { to: '/',          end: true, icon: <IconDashboard />, label: 'Home' },
   { to: '/log',                  icon: <IconLog />,       label: 'Log' },
-  { to: '/my-foods',             icon: <IconFoods />,     label: 'Foods' },
-  { to: '/meals',                icon: <IconMeals />,     label: 'Meals' },
+  { to: '/library',              icon: <IconLibrary />,   label: 'Library' },
   { to: '/stats',                icon: <IconStats />,     label: 'Stats' },
-  { to: '/settings',             icon: <IconSettings />,  label: 'Settings' },
+  { to: '/settings',             icon: <IconSettings />,  label: 'Settings', mobileHidden: true },
 ];
 
 export default function App() {
@@ -75,7 +64,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — shows all items including Settings */}
       <nav className="sidebar">
         <div className="sidebar-logo">
           CalTrack
@@ -93,16 +82,15 @@ export default function App() {
         <Routes>
           <Route path="/"         element={<Dashboard />} />
           <Route path="/log"      element={<FoodLog />} />
-          <Route path="/my-foods" element={<MyFoods />} />
-          <Route path="/meals"    element={<Meals />} />
+          <Route path="/library"  element={<Library />} />
           <Route path="/stats"    element={<Stats />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — 4 items, Settings excluded */}
       <nav className="bottom-nav">
-        {navItems.map(({ to, end, icon, label }) => (
+        {navItems.filter(item => !item.mobileHidden).map(({ to, end, icon, label }) => (
           <NavLink key={to} to={to} end={end}
             className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
             <span className="bottom-nav-icon">{icon}</span>
