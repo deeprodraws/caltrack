@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+// Override via GEMINI_MODEL env var in Railway if this default 404s
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com';
 
 const PROMPT = `You are a nutrition expert. Analyze this food image and identify all food items visible.
 
@@ -30,8 +32,8 @@ Rules:
 - Round all numbers to 1 decimal place. Use 0 if a macro is negligible.
 - If the image contains no food, return { "items": [] }`;
 
-async function callGemini(apiKey, imageBase64, mimeType) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+async function callGemini(apiKey, imageBase64, mimeType, version = 'v1beta') {
+  const url = `${GEMINI_BASE}/${version}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -64,9 +66,20 @@ function parseJSON(text) {
   return JSON.parse(cleaned);
 }
 
-function isRateLimit(status) {
-  return status === 429;
-}
+// List available models — useful for debugging which models your API key can access
+router.get('/models', async (req, res) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'GEMINI_API_KEY not set' });
+
+  try {
+    const r = await fetch(`${GEMINI_BASE}/v1beta/models?key=${apiKey}`);
+    const data = await r.json();
+    const names = (data.models || []).map(m => m.name);
+    res.json({ current_model: GEMINI_MODEL, available: names });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.post('/', async (req, res) => {
   const { image, mediaType } = req.body;
@@ -78,20 +91,27 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    let parsed;
+    let text;
     try {
-      const text = await callGemini(apiKey, image, mediaType);
-      parsed = parseJSON(text);
+      text = await callGemini(apiKey, image, mediaType, 'v1beta');
     } catch (firstErr) {
-      if (isRateLimit(firstErr.status)) {
+      if (firstErr.status === 429) {
         return res.status(429).json({
           error: 'Scan limit reached — Gemini free tier is rate-limited. Wait a minute and try again.',
         });
       }
-      // Retry once on transient / JSON-parse error
-      const text2 = await callGemini(apiKey, image, mediaType);
-      parsed = parseJSON(text2);
+      if (firstErr.status === 404) {
+        // Model not found — don't retry, report clearly
+        console.error(`Model "${GEMINI_MODEL}" not found. Check /api/scan-food/models for available models, then set GEMINI_MODEL env var in Railway.`);
+        return res.status(503).json({
+          error: `AI model "${GEMINI_MODEL}" not found. The server admin needs to update the GEMINI_MODEL setting.`,
+        });
+      }
+      // Retry once on transient network / parse error only
+      text = await callGemini(apiKey, image, mediaType, 'v1beta');
     }
+
+    const parsed = parseJSON(text);
 
     if (!parsed.items || !Array.isArray(parsed.items)) {
       return res.status(422).json({ error: 'Unexpected response format from AI. Try a clearer photo.' });
@@ -99,7 +119,7 @@ router.post('/', async (req, res) => {
 
     res.json(parsed);
   } catch (err) {
-    if (isRateLimit(err.status)) {
+    if (err.status === 429) {
       return res.status(429).json({
         error: 'Scan limit reached — Gemini free tier is rate-limited. Wait a minute and try again.',
       });
