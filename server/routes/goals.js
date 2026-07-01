@@ -1,19 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const pool = require('../db');
 
-router.get('/', (req, res) => {
-  const goals = db.prepare('SELECT * FROM daily_goals WHERE id = 1').get();
-  res.json(goals);
+router.get('/', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM daily_goals WHERE id = 1');
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.put('/', (req, res) => {
-  const { calories, protein, carbs, fat } = req.body;
-  db.prepare(
-    `UPDATE daily_goals SET calories = ?, protein = ?, carbs = ?, fat = ? WHERE id = 1`
-  ).run(calories, protein, carbs, fat);
-  const goals = db.prepare('SELECT * FROM daily_goals WHERE id = 1').get();
-  res.json(goals);
+router.put('/', async (req, res) => {
+  try {
+    const { calories, protein, carbs, fat } = req.body;
+    const { rows } = await pool.query(
+      `UPDATE daily_goals SET calories=$1, protein=$2, carbs=$3, fat=$4
+       WHERE id=1 RETURNING *`,
+      [calories, protein, carbs, fat]
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
