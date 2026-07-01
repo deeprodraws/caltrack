@@ -5,6 +5,7 @@ import FoodLog from './pages/FoodLog';
 import MyFoods from './pages/MyFoods';
 import Settings from './pages/Settings';
 import Stats from './pages/Stats';
+import Meals from './pages/Meals';
 
 const IconDashboard = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -46,10 +47,19 @@ const IconSettings = () => (
   </svg>
 );
 
+const IconMeals = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+    <path d="M7 2v20"/>
+    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+  </svg>
+);
+
 const navItems = [
   { to: '/',          end: true, icon: <IconDashboard />, label: 'Home' },
   { to: '/log',                  icon: <IconLog />,       label: 'Log' },
   { to: '/my-foods',             icon: <IconFoods />,     label: 'Foods' },
+  { to: '/meals',                icon: <IconMeals />,     label: 'Meals' },
   { to: '/stats',                icon: <IconStats />,     label: 'Stats' },
   { to: '/settings',             icon: <IconSettings />,  label: 'Settings' },
 ];
@@ -84,6 +94,7 @@ export default function App() {
           <Route path="/"         element={<Dashboard />} />
           <Route path="/log"      element={<FoodLog />} />
           <Route path="/my-foods" element={<MyFoods />} />
+          <Route path="/meals"    element={<Meals />} />
           <Route path="/stats"    element={<Stats />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

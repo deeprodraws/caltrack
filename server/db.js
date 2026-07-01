@@ -51,6 +51,53 @@ pool.query(`
   );
 
   ALTER TABLE daily_goals ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'kg';
+
+  CREATE TABLE IF NOT EXISTS meal_templates (
+    id         SERIAL PRIMARY KEY,
+    name       TEXT NOT NULL,
+    meal_type  TEXT NOT NULL DEFAULT 'breakfast',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS meal_template_ingredients (
+    id           SERIAL PRIMARY KEY,
+    template_id  INTEGER NOT NULL REFERENCES meal_templates(id) ON DELETE CASCADE,
+    food_name    TEXT NOT NULL,
+    weight_grams REAL NOT NULL DEFAULT 0,
+    calories     REAL NOT NULL DEFAULT 0,
+    protein      REAL NOT NULL DEFAULT 0,
+    carbs        REAL NOT NULL DEFAULT 0,
+    fat          REAL NOT NULL DEFAULT 0,
+    sort_order   INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS ingredient_memory (
+    id                  SERIAL PRIMARY KEY,
+    food_name           TEXT NOT NULL UNIQUE,
+    typical_weight_grams REAL NOT NULL DEFAULT 0,
+    use_count           INTEGER NOT NULL DEFAULT 1,
+    last_used_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS recipes (
+    id             SERIAL PRIMARY KEY,
+    name           TEXT NOT NULL,
+    total_servings REAL NOT NULL DEFAULT 1,
+    notes          TEXT NOT NULL DEFAULT '',
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS recipe_ingredients (
+    id           SERIAL PRIMARY KEY,
+    recipe_id    INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    food_name    TEXT NOT NULL,
+    weight_grams REAL NOT NULL DEFAULT 0,
+    calories     REAL NOT NULL DEFAULT 0,
+    protein      REAL NOT NULL DEFAULT 0,
+    carbs        REAL NOT NULL DEFAULT 0,
+    fat          REAL NOT NULL DEFAULT 0,
+    sort_order   INTEGER NOT NULL DEFAULT 0
+  );
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

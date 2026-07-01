@@ -108,6 +108,104 @@ export async function deleteWeightLog(id) {
   return res.json();
 }
 
+// ── Meal Templates ────────────────────────────────────────────────────────────
+export async function getMealTemplates() {
+  const res = await fetch(`${BASE}/meal-templates`);
+  return res.json();
+}
+
+export async function getMealTemplate(id) {
+  const res = await fetch(`${BASE}/meal-templates/${id}`);
+  return res.json();
+}
+
+export async function createMealTemplate(data) {
+  const res = await fetch(`${BASE}/meal-templates`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function updateMealTemplate(id, data) {
+  const res = await fetch(`${BASE}/meal-templates/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function deleteMealTemplate(id) {
+  const res = await fetch(`${BASE}/meal-templates/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
+export async function logMealTemplate(id, data) {
+  const res = await fetch(`${BASE}/meal-templates/${id}/log`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Log failed');
+  return json;
+}
+
+// ── Recipes ───────────────────────────────────────────────────────────────────
+export async function getRecipes() {
+  const res = await fetch(`${BASE}/recipes`);
+  return res.json();
+}
+
+export async function getRecipe(id) {
+  const res = await fetch(`${BASE}/recipes/${id}`);
+  return res.json();
+}
+
+export async function createRecipe(data) {
+  const res = await fetch(`${BASE}/recipes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function updateRecipe(id, data) {
+  const res = await fetch(`${BASE}/recipes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function deleteRecipe(id) {
+  const res = await fetch(`${BASE}/recipes/${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
+export async function logRecipe(id, data) {
+  const res = await fetch(`${BASE}/recipes/${id}/log`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Log failed');
+  return json;
+}
+
+// ── Ingredient Memory ─────────────────────────────────────────────────────────
+export async function getIngredientMemory(name) {
+  const res = await fetch(`${BASE}/ingredient-memory/${encodeURIComponent(name)}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// ── Photo Scan ────────────────────────────────────────────────────────────────
 export async function scanFood(imageBase64, mediaType) {
   const res = await fetch(`${BASE}/scan-food`, {
     method: 'POST',
