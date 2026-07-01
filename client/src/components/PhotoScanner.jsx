@@ -111,8 +111,10 @@ export default function PhotoScanner({ date, onSave, onClose }) {
           {/* ── Capture phase ─────────────────────────────────────────────── */}
           {phase === 'capture' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {/* Hidden inputs — one forces camera, one allows gallery */}
-              <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
+              {/* Single input without capture= so it shows OS sheet (Take Photo / Library).
+                  capture="environment" causes mobile browsers to push/pop history,
+                  which makes React Router navigate back and close the scanner. */}
+              <input ref={cameraRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
               <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
 
               <button
@@ -129,7 +131,7 @@ export default function PhotoScanner({ date, onSave, onClose }) {
                 <span style={{ fontSize: 36 }}>📷</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>Take a Photo</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Opens camera directly</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Camera or gallery — your choice</div>
                 </div>
               </button>
 
