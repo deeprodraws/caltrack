@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+const GEMINI_MODEL = 'gemini-2.0-flash';
 
 const PROMPT = `You are a nutrition expert. Analyze this food image and identify all food items visible.
 
@@ -29,12 +30,42 @@ Rules:
 - Round all numbers to 1 decimal place. Use 0 if a macro is negligible.
 - If the image contains no food, return { "items": [] }`;
 
-function isRateLimit(err) {
-  return (
-    err?.status === 429 ||
-    err?.httpErrorCode === 429 ||
-    /429|quota|rate.?limit|resource.?exhausted/i.test(err?.message || '')
-  );
+async function callGemini(apiKey, imageBase64, mimeType) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { inlineData: { mimeType: mimeType || 'image/jpeg', data: imageBase64 } },
+          { text: PROMPT },
+        ],
+      }],
+      generationConfig: { temperature: 0.1 },
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    const err = new Error(errBody?.error?.message || `HTTP ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error('Empty response from Gemini');
+  return text;
+}
+
+function parseJSON(text) {
+  const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  return JSON.parse(cleaned);
+}
+
+function isRateLimit(status) {
+  return status === 429;
 }
 
 router.post('/', async (req, res) => {
@@ -46,37 +77,19 @@ router.post('/', async (req, res) => {
     return res.status(503).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  // gemini-1.5-flash: free tier, vision-capable, fast
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-  async function generate() {
-    const result = await model.generateContent([
-      { inlineData: { mimeType: mediaType || 'image/jpeg', data: image } },
-      PROMPT,
-    ]);
-    return result.response.text().trim();
-  }
-
-  function parseJSON(text) {
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-    return JSON.parse(cleaned);
-  }
-
   try {
-    // First attempt
     let parsed;
     try {
-      const text = await generate();
+      const text = await callGemini(apiKey, image, mediaType);
       parsed = parseJSON(text);
     } catch (firstErr) {
-      if (isRateLimit(firstErr)) {
+      if (isRateLimit(firstErr.status)) {
         return res.status(429).json({
           error: 'Scan limit reached — Gemini free tier is rate-limited. Wait a minute and try again.',
         });
       }
-      // Retry once on transient error or bad JSON
-      const text2 = await generate();
+      // Retry once on transient / JSON-parse error
+      const text2 = await callGemini(apiKey, image, mediaType);
       parsed = parseJSON(text2);
     }
 
@@ -86,7 +99,7 @@ router.post('/', async (req, res) => {
 
     res.json(parsed);
   } catch (err) {
-    if (isRateLimit(err)) {
+    if (isRateLimit(err.status)) {
       return res.status(429).json({
         error: 'Scan limit reached — Gemini free tier is rate-limited. Wait a minute and try again.',
       });
@@ -94,7 +107,7 @@ router.post('/', async (req, res) => {
     if (err instanceof SyntaxError) {
       return res.status(422).json({ error: 'AI returned invalid JSON. Try a clearer photo.' });
     }
-    console.error('Scan error:', err.message);
+    console.error('Scan error:', err.status, err.message);
     res.status(500).json({ error: err.message || 'Scan failed' });
   }
 });

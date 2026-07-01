@@ -28,7 +28,13 @@ export default function PhotoScanner({ date, onSave, onClose }) {
   const [imageData, setImageData] = useState(null); // { base64, mediaType }
   const [items, setItems] = useState([]);
   const [error, setError] = useState('');
-  const fileRef = useRef(null);
+  const cameraRef = useRef(null);
+  const galleryRef = useRef(null);
+
+  function resetInputs() {
+    if (cameraRef.current) cameraRef.current.value = '';
+    if (galleryRef.current) galleryRef.current.value = '';
+  }
 
   // ── File selected from camera or gallery ──────────────────────────────────
   function handleFile(e) {
@@ -105,23 +111,43 @@ export default function PhotoScanner({ date, onSave, onClose }) {
           {/* ── Capture phase ─────────────────────────────────────────────── */}
           {phase === 'capture' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
+              {/* Hidden inputs — one forces camera, one allows gallery */}
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
+              <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
 
               <button
-                onClick={() => fileRef.current?.click()}
+                onClick={() => cameraRef.current?.click()}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 10, padding: '32px 24px', background: 'var(--surface2)',
+                  gap: 10, padding: '28px 24px', background: 'var(--surface2)',
                   border: '2px dashed var(--border)', borderRadius: 12, cursor: 'pointer',
-                  color: 'var(--text)', transition: 'border-color 0.15s',
+                  color: 'var(--text)', transition: 'border-color 0.15s', width: '100%',
                 }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
-                <span style={{ fontSize: 40 }}>📷</span>
+                <span style={{ fontSize: 36 }}>📷</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>Take a Photo</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Opens camera on mobile · or choose a file on desktop</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Opens camera directly</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => galleryRef.current?.click()}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px',
+                  background: 'var(--surface2)', border: '1px solid var(--border)',
+                  borderRadius: 12, cursor: 'pointer', color: 'var(--text)',
+                  transition: 'border-color 0.15s', width: '100%',
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+              >
+                <span style={{ fontSize: 28 }}>🖼️</span>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>Upload from Gallery</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Choose an existing photo</div>
                 </div>
               </button>
 
@@ -140,7 +166,7 @@ export default function PhotoScanner({ date, onSave, onClose }) {
               <div style={{ marginBottom: 14 }}>
                 <ScanSpinner />
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Claude is identifying food items and estimating nutrition…</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Gemini is identifying food items and estimating nutrition…</p>
             </div>
           )}
 
@@ -158,7 +184,7 @@ export default function PhotoScanner({ date, onSave, onClose }) {
                 <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{error}</div>
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                <button onClick={() => { setPhase('capture'); setPreview(null); fileRef.current && (fileRef.current.value = ''); }} style={{
+                <button onClick={() => { setPhase('capture'); setPreview(null); resetInputs(); }} style={{
                   background: 'var(--accent)', color: '#fff', border: 'none',
                   padding: '9px 20px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 }}>Try Again</button>
@@ -265,7 +291,7 @@ export default function PhotoScanner({ date, onSave, onClose }) {
                   Add {items.filter(i => i.included).length} Item{items.filter(i => i.included).length !== 1 ? 's' : ''} to Log
                 </button>
                 <button
-                  onClick={() => { setPhase('capture'); setPreview(null); fileRef.current && (fileRef.current.value = ''); }}
+                  onClick={() => { setPhase('capture'); setPreview(null); resetInputs(); }}
                   style={{
                     background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
                     padding: '11px 16px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, cursor: 'pointer',
