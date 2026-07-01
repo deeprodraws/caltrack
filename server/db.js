@@ -42,6 +42,6 @@ pool.query(`
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 `).then(() => console.log('Database ready'))
-  .catch(err => { console.error('Database init failed:', err.message); process.exit(1); });
+  .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 
 module.exports = pool;
