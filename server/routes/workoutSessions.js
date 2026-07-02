@@ -115,7 +115,7 @@ router.put('/:id', async (req, res) => {
       UPDATE workout_sessions SET
         name        = COALESCE($2::TEXT, name),
         notes       = COALESCE($3::TEXT, notes),
-        finished_at = CASE WHEN $4 IS NOT NULL THEN $4::TIMESTAMPTZ ELSE finished_at END
+        finished_at = COALESCE($4::TIMESTAMPTZ, finished_at)
       WHERE id = $1 RETURNING *`,
       [req.params.id,
        name !== undefined ? name : null,
