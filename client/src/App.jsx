@@ -5,6 +5,7 @@ import FoodLog from './pages/FoodLog';
 import Library from './pages/Library';
 import Workout from './pages/Workout';
 import Physique from './pages/Physique';
+import Timeline from './pages/Timeline';
 import Settings from './pages/Settings';
 import Stats from './pages/Stats';
 
@@ -40,6 +41,17 @@ const IconPhysique = () => (
   </svg>
 );
 
+const IconTimeline = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6"  x2="21" y2="6"/>
+    <line x1="8" y1="12" x2="21" y2="12"/>
+    <line x1="8" y1="18" x2="21" y2="18"/>
+    <circle cx="3" cy="6"  r="1.2" fill="currentColor" stroke="none"/>
+    <circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+    <circle cx="3" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+  </svg>
+);
+
 const IconLibrary = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -69,6 +81,7 @@ const navItems = [
   { to: '/log',                  icon: <IconLog />,       label: 'Log' },
   { to: '/workout',              icon: <IconWorkout />,   label: 'Workout' },
   { to: '/physique',             icon: <IconPhysique />,  label: 'Physique' },
+  { to: '/timeline',             icon: <IconTimeline />,  label: 'Timeline' },
   { to: '/library',              icon: <IconLibrary />,   label: 'Library' },
   { to: '/stats',                icon: <IconStats />,     label: 'Stats' },
   { to: '/settings',             icon: <IconSettings />,  label: 'Settings', mobileHidden: true },
@@ -85,7 +98,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {/* Desktop sidebar — shows all items including Settings */}
+      {/* Desktop sidebar */}
       <nav className="sidebar">
         <div className="sidebar-logo">
           CalTrack
@@ -101,17 +114,18 @@ export default function App() {
 
       <main className="main-content">
         <Routes>
-          <Route path="/"         element={<Dashboard />} />
-          <Route path="/log"      element={<FoodLog />} />
-          <Route path="/workout"  element={<Workout />} />
-          <Route path="/physique" element={<Physique />} />
-          <Route path="/library"  element={<Library />} />
-          <Route path="/stats"    element={<Stats />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/"          element={<Dashboard />} />
+          <Route path="/log"       element={<FoodLog />} />
+          <Route path="/workout"   element={<Workout />} />
+          <Route path="/physique"  element={<Physique />} />
+          <Route path="/timeline"  element={<Timeline />} />
+          <Route path="/library"   element={<Library />} />
+          <Route path="/stats"     element={<Stats />} />
+          <Route path="/settings"  element={<Settings />} />
         </Routes>
       </main>
 
-      {/* Mobile bottom nav — 4 items, Settings excluded */}
+      {/* Mobile bottom nav — Settings excluded, labels hidden on very small screens */}
       <nav className="bottom-nav">
         {navItems.filter(item => !item.mobileHidden).map(({ to, end, icon, label }) => (
           <NavLink key={to} to={to} end={end}

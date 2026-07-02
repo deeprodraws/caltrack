@@ -404,6 +404,17 @@ export async function deletePhysiquePhoto(id) {
   return res.json();
 }
 
+// ── Timeline ──────────────────────────────────────────────────────────────
+export async function getTimeline(start, end) {
+  const params = new URLSearchParams();
+  if (start) params.set('start', start);
+  if (end)   params.set('end', end);
+  const res = await fetch(`${BASE}/timeline?${params}`);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Timeline fetch failed');
+  return json;
+}
+
 // ── Photo Scan ────────────────────────────────────────────────────────────────
 export async function scanFood(imageBase64, mediaType) {
   const res = await fetch(`${BASE}/scan-food`, {

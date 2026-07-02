@@ -698,5 +698,11 @@ input, select {
   .btn-icon, .btn-delete { width: 36px; height: 36px; }
 }
 
+/* ── Very small screens: hide nav labels so 7 icons fit ───────────────────── */
+@media (max-width: 380px) {
+  .bottom-nav-label { display: none; }
+  .bottom-nav-item  { padding: 10px 2px; }
+}
+
 /* ── Meals & Recipes page ─────────────────────────────────────────────────── */
 

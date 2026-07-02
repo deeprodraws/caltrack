@@ -17,6 +17,7 @@ const workoutTemplatesRouter = require('./routes/workoutTemplates');
 const workoutSessionsRouter = require('./routes/workoutSessions');
 const sessionSets = require('./routes/sessionSets');
 const physiqueRouter = require('./routes/physique');
+const timelineRouter = require('./routes/timeline');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +40,7 @@ app.use('/api/workout-sessions', workoutSessionsRouter);
 app.use('/api/session-exercises', sessionSets);
 app.use('/api/sets', sessionSets.setsRouter);
 app.use('/api/physique', physiqueRouter);
+app.use('/api/timeline', timelineRouter);
 
 // Serve the built React app (production mode)
 const distPath = path.join(__dirname, '..', 'client', 'dist');
