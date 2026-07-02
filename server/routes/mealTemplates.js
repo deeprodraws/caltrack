@@ -117,11 +117,14 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snacks'];
+
 router.post('/:id/log', async (req, res) => {
-  const { date, ingredients } = req.body;
+  const { date, ingredients, meal_type } = req.body;
   if (!date || !ingredients?.length) {
     return res.status(400).json({ error: 'date and ingredients required' });
   }
+  const mealType = VALID_MEAL_TYPES.includes(meal_type) ? meal_type : 'snacks';
 
   const client = await pool.connect();
   try {
@@ -142,10 +145,10 @@ router.post('/:id/log', async (req, res) => {
 
     const { rows: [entry] } = await client.query(
       `INSERT INTO food_entries
-         (user_id, date, food_name, calories, protein, carbs, fat, entry_type, source_name, source_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'template', $3, $8)
+         (user_id, date, food_name, calories, protein, carbs, fat, entry_type, source_name, source_id, meal_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'template', $3, $8, $9)
        RETURNING *`,
-      [req.userId, date, tmpl.name, totals.cal, totals.p, totals.c, totals.f, req.params.id]
+      [req.userId, date, tmpl.name, totals.cal, totals.p, totals.c, totals.f, req.params.id, mealType]
     );
 
     const savedIngredients = [];
@@ -153,10 +156,10 @@ router.post('/:id/log', async (req, res) => {
       const g = ingredients[i];
       const { rows: [ing] } = await client.query(
         `INSERT INTO food_entry_ingredients
-           (entry_id, food_name, weight_grams, calories, protein, carbs, fat, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+           (entry_id, food_name, weight_grams, weight_unit, calories, protein, carbs, fat, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
          RETURNING *`,
-        [entry.id, g.food_name, +g.weight_grams || 0, +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0, i]
+        [entry.id, g.food_name, +g.weight_grams || 0, g.weight_unit || 'g', +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0, i]
       );
       savedIngredients.push(ing);
     }

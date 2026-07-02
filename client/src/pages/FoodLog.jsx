@@ -36,7 +36,45 @@ function round1(value) {
   return Math.round((Number(value) || 0) * 10) / 10;
 }
 
-const emptyForm = { food_name: '', calories: '', protein: '', carbs: '', fat: '', servings: '1' };
+const emptyForm = { food_name: '', calories: '', protein: '', carbs: '', fat: '', servings: '1', meal_type: 'breakfast' };
+
+const MEAL_SECTIONS = [
+  { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
+  { value: 'lunch',     label: 'Lunch',     emoji: '☀️' },
+  { value: 'dinner',    label: 'Dinner',    emoji: '🌙' },
+  { value: 'snacks',    label: 'Snacks',    emoji: '🍎' },
+];
+
+const MEAL_TYPE_COLORS = {
+  breakfast: '#fbbf24',
+  lunch: '#34d399',
+  dinner: '#6c63ff',
+  snacks: '#fb923c',
+};
+
+function MealTypeSelector({ value, onChange }) {
+  return (
+    <div className="form-field">
+      <label>Meal Type</label>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {MEAL_SECTIONS.map(mt => (
+          <button
+            key={mt.value}
+            type="button"
+            onClick={() => onChange(mt.value)}
+            style={{
+              padding: '7px 14px', borderRadius: 99, fontFamily: 'inherit',
+              border: `1px solid ${value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'var(--border)'}`,
+              background: value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'transparent',
+              color: value === mt.value ? (mt.value === 'breakfast' || mt.value === 'snacks' ? '#000' : '#fff') : 'var(--text-muted)',
+              fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >{mt.emoji} {mt.label}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // ── Autocomplete search component ──────────────────────────────────────────────
 function FoodSearch({ value, onChange, onSelect, onClear }) {
@@ -225,7 +263,7 @@ function TemplateEntryRow({ entry, expanded, onToggle, onDelete }) {
                   color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap', marginRight: 10, minWidth: 0,
                 }}>
-                  {ing.food_name} ({round1(ing.weight_grams)}g)
+                  {ing.food_name} ({round1(ing.weight_grams)}{ing.weight_unit || 'g'})
                 </span>
                 <span style={{ flexShrink: 0 }}>{round1(ing.calories)} cal</span>
               </div>
@@ -375,6 +413,7 @@ export default function FoodLog() {
       protein: Number(form.protein) || 0,
       carbs: Number(form.carbs) || 0,
       fat: Number(form.fat) || 0,
+      meal_type: form.meal_type,
     };
 
     const entry = await addEntry(payload);
@@ -430,6 +469,13 @@ export default function FoodLog() {
   const totalProtein = sum(entries, 'protein');
   const totalCarbs = sum(entries, 'carbs');
   const totalFat = sum(entries, 'fat');
+
+  const mealGroups = MEAL_SECTIONS
+    .map(section => ({
+      ...section,
+      items: entries.filter(e => (e.meal_type || 'snacks') === section.value),
+    }))
+    .filter(g => g.items.length > 0);
 
   return (
     <div>
@@ -530,6 +576,10 @@ export default function FoodLog() {
           </div>
         </div>
 
+        <div style={{ marginTop: 14 }}>
+          <MealTypeSelector value={form.meal_type} onChange={mt => setForm(f => ({ ...f, meal_type: mt }))} />
+        </div>
+
         <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <button className="btn-primary" type="submit" disabled={adding || !form.food_name.trim()}>
             {adding ? 'Adding…' : 'Add Entry'}
@@ -570,52 +620,62 @@ export default function FoodLog() {
             </span>
           </div>
 
-          <div className="entry-list">
-            {entries.map(e => (
-              e.entry_type && e.entry_type !== 'single' ? (
-                <TemplateEntryRow
-                  key={e.id}
-                  entry={e}
-                  expanded={expandedEntryId === e.id}
-                  onToggle={() => setExpandedEntryId(prev => prev === e.id ? null : e.id)}
-                  onDelete={() => setDeleteTarget(e)}
-                />
-              ) : (
-                <div key={e.id} className="entry-row">
-                  <span className="entry-name">{e.food_name}</span>
-                  <div className="entry-macros">
-                    <div className="entry-macro">
-                      <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
-                      <div className="lbl">kcal</div>
+          {mealGroups.map(group => (
+            <div key={group.value} style={{ marginBottom: 18 }}>
+              <div className="section-header" style={{ marginBottom: 8 }}>
+                <span className="section-title">{group.emoji} {group.label}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  {round1(sum(group.items, 'calories'))} cal
+                </span>
+              </div>
+              <div className="entry-list">
+                {group.items.map(e => (
+                  e.entry_type && e.entry_type !== 'single' ? (
+                    <TemplateEntryRow
+                      key={e.id}
+                      entry={e}
+                      expanded={expandedEntryId === e.id}
+                      onToggle={() => setExpandedEntryId(prev => prev === e.id ? null : e.id)}
+                      onDelete={() => setDeleteTarget(e)}
+                    />
+                  ) : (
+                    <div key={e.id} className="entry-row">
+                      <span className="entry-name">{e.food_name}</span>
+                      <div className="entry-macros">
+                        <div className="entry-macro">
+                          <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
+                          <div className="lbl">kcal</div>
+                        </div>
+                        <div className="entry-macro">
+                          <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
+                          <div className="lbl">protein</div>
+                        </div>
+                        <div className="entry-macro">
+                          <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
+                          <div className="lbl">carbs</div>
+                        </div>
+                        <div className="entry-macro">
+                          <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
+                          <div className="lbl">fat</div>
+                        </div>
+                      </div>
+                      <button className="btn-icon" title="Edit" onClick={() => setEditEntry(e)}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button className="btn-delete" title="Delete" onClick={() => setDeleteTarget(e)}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
                     </div>
-                    <div className="entry-macro">
-                      <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
-                      <div className="lbl">protein</div>
-                    </div>
-                    <div className="entry-macro">
-                      <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
-                      <div className="lbl">carbs</div>
-                    </div>
-                    <div className="entry-macro">
-                      <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
-                      <div className="lbl">fat</div>
-                    </div>
-                  </div>
-                  <button className="btn-icon" title="Edit" onClick={() => setEditEntry(e)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                  </button>
-                  <button className="btn-delete" title="Delete" onClick={() => setDeleteTarget(e)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </div>
-              )
-            ))}
-          </div>
+                  )
+                ))}
+              </div>
+            </div>
+          ))}
 
           <div className="card" style={{ marginTop: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

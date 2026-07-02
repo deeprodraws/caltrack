@@ -486,6 +486,14 @@ pool.query(`
   );
 
   CREATE INDEX IF NOT EXISTS food_entry_ingredients_entry_id_idx ON food_entry_ingredients(entry_id);
+
+  -- ── meal_type on food_entries ────────────────────────────────────────────────
+
+  ALTER TABLE food_entries ADD COLUMN IF NOT EXISTS meal_type TEXT NOT NULL DEFAULT 'snacks';
+
+  -- ── weight_unit on food_entry_ingredients ────────────────────────────────────
+
+  ALTER TABLE food_entry_ingredients ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'g';
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

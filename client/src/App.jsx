@@ -1,17 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, NavLink } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import SkeletonLoader from './components/SkeletonLoader';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import FoodLog from './pages/FoodLog';
 import Library from './pages/Library';
-import Workout from './pages/Workout';
-import Physique from './pages/Physique';
-import Timeline from './pages/Timeline';
 import Settings from './pages/Settings';
-import Stats from './pages/Stats';
+
+const Workout = lazy(() => import('./pages/Workout'));
+const Physique = lazy(() => import('./pages/Physique'));
+const Timeline = lazy(() => import('./pages/Timeline'));
+const Stats = lazy(() => import('./pages/Stats'));
 
 const IconDashboard = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -107,16 +109,18 @@ function AppShell() {
       </nav>
 
       <main className="main-content">
-        <Routes>
-          <Route path="/"          element={<Dashboard />} />
-          <Route path="/log"       element={<FoodLog />} />
-          <Route path="/workout"   element={<Workout />} />
-          <Route path="/physique"  element={<Physique />} />
-          <Route path="/timeline"  element={<Timeline />} />
-          <Route path="/library"   element={<Library />} />
-          <Route path="/stats"     element={<Stats />} />
-          <Route path="/settings"  element={<Settings />} />
-        </Routes>
+        <Suspense fallback={<SkeletonLoader count={4} height={64} />}>
+          <Routes>
+            <Route path="/"          element={<Dashboard />} />
+            <Route path="/log"       element={<FoodLog />} />
+            <Route path="/workout"   element={<Workout />} />
+            <Route path="/physique"  element={<Physique />} />
+            <Route path="/timeline"  element={<Timeline />} />
+            <Route path="/library"   element={<Library />} />
+            <Route path="/stats"     element={<Stats />} />
+            <Route path="/settings"  element={<Settings />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <nav className="bottom-nav">

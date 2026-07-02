@@ -25,6 +25,7 @@ router.get('/', async (req, res) => {
                'id', fei.id,
                'food_name', fei.food_name,
                'weight_grams', fei.weight_grams,
+               'weight_unit', fei.weight_unit,
                'calories', fei.calories,
                'protein', fei.protein,
                'carbs', fei.carbs,
@@ -47,16 +48,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snacks'];
+
 router.post('/', async (req, res) => {
   try {
-    const { date, food_name, calories, protein, carbs, fat } = req.body;
+    const { date, food_name, calories, protein, carbs, fat, meal_type } = req.body;
     if (!date || !food_name) {
       return res.status(400).json({ error: 'date and food_name are required' });
     }
+    const mealType = VALID_MEAL_TYPES.includes(meal_type) ? meal_type : 'snacks';
     const { rows } = await pool.query(
-      `INSERT INTO food_entries (user_id, date, food_name, calories, protein, carbs, fat)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [req.userId, date, food_name, calories ?? 0, protein ?? 0, carbs ?? 0, fat ?? 0]
+      `INSERT INTO food_entries (user_id, date, food_name, calories, protein, carbs, fat, meal_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [req.userId, date, food_name, calories ?? 0, protein ?? 0, carbs ?? 0, fat ?? 0, mealType]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -66,11 +70,13 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { food_name, calories, protein, carbs, fat } = req.body;
+    const { food_name, calories, protein, carbs, fat, meal_type } = req.body;
+    const mealType = VALID_MEAL_TYPES.includes(meal_type) ? meal_type : null;
     const { rows, rowCount } = await pool.query(
-      `UPDATE food_entries SET food_name=$1, calories=$2, protein=$3, carbs=$4, fat=$5
-       WHERE id=$6 AND user_id=$7 RETURNING *`,
-      [food_name, calories ?? 0, protein ?? 0, carbs ?? 0, fat ?? 0, req.params.id, req.userId]
+      `UPDATE food_entries SET food_name=$1, calories=$2, protein=$3, carbs=$4, fat=$5,
+         meal_type=COALESCE($6, meal_type)
+       WHERE id=$7 AND user_id=$8 RETURNING *`,
+      [food_name, calories ?? 0, protein ?? 0, carbs ?? 0, fat ?? 0, mealType, req.params.id, req.userId]
     );
     if (rowCount === 0) return res.status(404).json({ error: 'Entry not found' });
     res.json(rows[0]);

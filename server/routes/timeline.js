@@ -53,6 +53,7 @@ router.get('/', async (req, res) => {
           json_agg(json_build_object(
             'id', id,
             'food_name', food_name,
+            'meal_type', meal_type,
             'calories', calories,
             'protein', protein,
             'carbs', carbs,

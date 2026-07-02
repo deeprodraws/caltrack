@@ -14,6 +14,17 @@ const useHttps = process.env.VITE_HTTPS === 'true' && hasCerts;
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-scanner': ['html5-qrcode'],
+        },
+      },
+    },
+  },
   server: {
     host: useHttps ? true : undefined,
     port: Number(process.env.PORT) || 5173,
