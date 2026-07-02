@@ -72,6 +72,32 @@ router.get('/:name/history', async (req, res) => {
   }
 });
 
+router.get('/:name/volume-history', async (req, res) => {
+  const name = decodeURIComponent(req.params.name);
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        ws.date,
+        SUM(ss.weight * ss.reps) as volume,
+        MAX(ss.weight) as max_weight,
+        SUM(ss.reps) as total_reps,
+        COUNT(ss.id) as total_sets
+      FROM session_sets ss
+      JOIN session_exercises se ON se.id = ss.session_exercise_id
+      JOIN workout_sessions ws ON ws.id = se.session_id
+      WHERE ws.user_id = $1
+        AND ws.finished_at IS NOT NULL
+        AND se.exercise_name ILIKE $2
+        AND ws.date >= TO_CHAR(NOW() - INTERVAL '16 weeks', 'YYYY-MM-DD')
+      GROUP BY ws.date, ws.id
+      ORDER BY ws.date ASC
+    `, [req.userId, name]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/:name/last-session', async (req, res) => {
   const name = decodeURIComponent(req.params.name);
   try {

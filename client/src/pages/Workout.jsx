@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip,
+  ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, ReferenceLine,
 } from 'recharts';
 import {
   getWorkoutSessions, getRecentWorkoutSessions, getWorkoutTemplates,
@@ -11,9 +11,20 @@ import {
   searchExercises, createExercise,
   getExerciseHistory, getExerciseLastSession,
   createWorkoutTemplate, updateWorkoutTemplate, deleteWorkoutTemplate,
+  getGoals,
 } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
+import { getToken } from '../utils/auth';
+
+// GET /api/prs and /api/exercises/:name/volume-history have no wrapper in api.js yet,
+// so fetch them directly using the same bearer-token pattern apiFetch uses internally.
+async function fetchJson(path) {
+  const token = getToken();
+  const res = await fetch(path, { headers: token ? { Authorization: 'Bearer ' + token } : {} });
+  if (!res.ok) throw new Error('Request failed');
+  return res.json();
+}
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -737,6 +748,202 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
   );
 }
 
+// ── PR Tracker Tab ────────────────────────────────────────────────────────────
+
+function PRCard({ pr, weightUnit, onViewProgress }) {
+  return (
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>{pr.exercise_name}</div>
+        {pr.muscle_group && (
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--surface2)', padding: '2px 8px', borderRadius: 99, textTransform: 'capitalize' }}>
+            {pr.muscle_group}
+          </span>
+        )}
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+        <span>🏆</span>
+        <span>{round1(pr.weight)} × {pr.reps} {weightUnit}</span>
+        <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>· est. 1RM: {round1(pr.estimated_1rm)} {weightUnit}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          {shortDate(pr.date)} · {pr.session_name}
+        </div>
+        <button onClick={() => onViewProgress(pr.exercise_name)}
+          style={{ background: 'none', border: 'none', color: 'var(--accent-light)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+          View Progress
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function VolumeCharts({ exerciseName, weightUnit, prWeight }) {
+  const [history, setHistory] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const cacheKey = 'volume-' + exerciseName;
+    const cached = getCached(cacheKey, 300000);
+    if (cached) { setHistory(cached); setLoading(false); return; }
+    fetchJson(`/api/exercises/${encodeURIComponent(exerciseName)}/volume-history`)
+      .then(data => { setHistory(data); setCached(cacheKey, data); setLoading(false); })
+      .catch(() => { setHistory([]); setLoading(false); });
+  }, [exerciseName]);
+
+  if (loading) return <SkeletonLoader count={3} height={80} />;
+  if (!history || history.length === 0) {
+    return <div className="empty-state" style={{ marginTop: 12 }}>No sessions logged for {exerciseName} yet.</div>;
+  }
+
+  const chartData = history.map(h => ({
+    date: shortDate(h.date),
+    volume: +h.volume,
+    max_weight: +h.max_weight,
+    total_reps: +h.total_reps,
+    total_sets: +h.total_sets,
+  }));
+
+  const bestVolume = Math.max(...chartData.map(d => d.volume));
+  const bestSet = chartData.reduce((b, d) => !b || d.max_weight > b.max_weight ? d : b, null);
+  const ttStyle = { background: '#1a1d2e', border: '1px solid #2e3250', borderRadius: 8, fontSize: 12 };
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
+        Volume Per Session
+      </div>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
+          <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
+          <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
+          <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }}
+            formatter={(v) => [`${v} ${weightUnit}`, 'Volume']}/>
+          <Bar dataKey="volume" fill="#6c63ff" radius={[4, 4, 0, 0]}/>
+        </BarChart>
+      </ResponsiveContainer>
+
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, marginTop: 20 }}>
+        Max Weight Per Session
+      </div>
+      <ResponsiveContainer width="100%" height={180}>
+        <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
+          <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
+          <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
+          <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }}
+            formatter={(v) => [`${v} ${weightUnit}`, 'Max weight']}/>
+          {prWeight > 0 && (
+            <ReferenceLine y={prWeight} stroke="#fbbf24" strokeDasharray="4 4"
+              label={{ value: 'PR', fill: '#fbbf24', fontSize: 10, position: 'right' }}/>
+          )}
+          <Line type="monotone" dataKey="max_weight" stroke="#60a5fa" strokeWidth={2} dot={{ fill: '#60a5fa', r: 3 }}/>
+        </LineChart>
+      </ResponsiveContainer>
+
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, marginTop: 20 }}>
+        Total Reps Per Session
+      </div>
+      <ResponsiveContainer width="100%" height={160}>
+        <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
+          <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
+          <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
+          <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }}
+            formatter={(v, n, p) => [`${v} reps across ${p.payload.total_sets} sets`, 'Reps']}/>
+          <Bar dataKey="total_reps" fill="#34d399" radius={[4, 4, 0, 0]}/>
+        </BarChart>
+      </ResponsiveContainer>
+
+      <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+        {[
+          { label: 'Sessions', val: chartData.length },
+          { label: 'Best Volume', val: `${Math.round(bestVolume).toLocaleString()} ${weightUnit}` },
+          { label: 'Best Set', val: bestSet ? `${round1(bestSet.max_weight)} ${weightUnit}` : '—' },
+        ].map(({ label, val }) => (
+          <div key={label} style={{ flex: 1, textAlign: 'center', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 6px' }}>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>{val}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PRsTab({ weightUnit, onViewProgress }) {
+  const [prs, setPrs] = useState(null);
+  const [search, setSearch] = useState('');
+  const [selectedExercise, setSelectedExercise] = useState(null);
+
+  useEffect(() => {
+    const cached = getCached('prs-all', 300000);
+    if (cached) { setPrs(cached); return; }
+    fetchJson('/api/prs').then(data => { setPrs(data); setCached('prs-all', data); }).catch(() => setPrs([]));
+  }, []);
+
+  if (prs === null) return <SkeletonLoader count={4} height={90} />;
+
+  if (prs.length === 0) {
+    return (
+      <div className="empty-state" style={{ marginTop: 20 }}>
+        No PRs yet. Log your first workout to start tracking your records.
+      </div>
+    );
+  }
+
+  const filtered = search.trim()
+    ? prs.filter(p => p.exercise_name.toLowerCase().includes(search.toLowerCase()))
+    : prs;
+
+  const pillExercises = prs.slice(0, 8);
+  const selectedPr = prs.find(p => p.exercise_name === selectedExercise);
+
+  return (
+    <div>
+      <input
+        placeholder="🔍 Search exercises…"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        style={{
+          width: '100%', padding: '10px 14px', borderRadius: 8, marginBottom: 14,
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          color: 'var(--text)', fontSize: 14, fontFamily: 'inherit',
+        }}
+      />
+
+      {filtered.map(pr => (
+        <PRCard key={pr.exercise_name} pr={pr} weightUnit={weightUnit} onViewProgress={onViewProgress} />
+      ))}
+
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.8px', color: 'var(--text-muted)', textTransform: 'uppercase', margin: '24px 0 10px' }}>
+        Select an exercise to view progression
+      </div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 4 }}>
+        {pillExercises.map(p => (
+          <button key={p.exercise_name} onClick={() => setSelectedExercise(p.exercise_name)}
+            style={{
+              flexShrink: 0, padding: '8px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600,
+              border: '1px solid', cursor: 'pointer', whiteSpace: 'nowrap',
+              background: selectedExercise === p.exercise_name ? 'var(--accent)' : 'var(--surface2)',
+              borderColor: selectedExercise === p.exercise_name ? 'var(--accent)' : 'var(--border)',
+              color: selectedExercise === p.exercise_name ? '#fff' : 'var(--text-muted)',
+            }}>
+            {p.exercise_name}
+          </button>
+        ))}
+      </div>
+
+      {selectedExercise && (
+        <VolumeCharts exerciseName={selectedExercise} weightUnit={weightUnit} prWeight={selectedPr?.weight || 0} />
+      )}
+    </div>
+  );
+}
+
 // ── Main Workout Page ─────────────────────────────────────────────────────────
 
 export default function Workout() {
@@ -757,6 +964,13 @@ export default function Workout() {
   const [restTimer, setRestTimer] = useState(null);
   const [restDuration, setRestDurationState] = useState(getRestDuration);
   const [, setTick] = useState(0);
+
+  const [activeTab, setActiveTab] = useState('workouts');
+  const [weightUnit, setWeightUnit] = useState('lbs');
+
+  useEffect(() => {
+    getGoals().then(g => { if (g?.weight_unit) setWeightUnit(g.weight_unit); }).catch(() => {});
+  }, []);
 
   // Elapsed ticker
   useEffect(() => {
@@ -989,6 +1203,25 @@ export default function Workout() {
         </button>
       </div>
 
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        {[{ key: 'workouts', label: 'Workouts' }, { key: 'prs', label: 'PRs' }].map(t => (
+          <button key={t.key} onClick={() => setActiveTab(t.key)}
+            style={{
+              flex: 1, padding: '10px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              border: '1px solid', cursor: 'pointer',
+              background: activeTab === t.key ? 'var(--accent)' : 'var(--surface2)',
+              borderColor: activeTab === t.key ? 'var(--accent)' : 'var(--border)',
+              color: activeTab === t.key ? '#fff' : 'var(--text-muted)',
+            }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'prs' ? (
+        <PRsTab weightUnit={weightUnit} onViewProgress={setProgressExercise} />
+      ) : (
+      <>
       {todaySessions.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.8px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 10 }}>Done Today</div>
@@ -1079,6 +1312,8 @@ export default function Workout() {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
 
       {summaryTarget && (

@@ -86,7 +86,7 @@ function MacroPill({ label, hit }) {
 
 function MonthDivider({ label }) {
   return (
-    <div style={{
+    <div className="month-divider" style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '16px 0 8px', color: 'var(--text-muted)',
     }}>
@@ -195,7 +195,7 @@ function DayCard({ day, todayStr, onPhotoClick }) {
     (day.metrics.steps > 0 || day.metrics.water_ml > 0 || day.metrics.sleep_hours > 0);
 
   return (
-    <div style={{
+    <div className="day-card" style={{
       background: 'var(--surface)',
       border: `1px solid ${isToday ? 'rgba(108,99,255,0.45)' : 'var(--border)'}`,
       borderLeft: isPerfect ? '4px solid var(--yellow)' : undefined,
@@ -258,7 +258,9 @@ function DayCard({ day, todayStr, onPhotoClick }) {
                     src={photo.cloudinary_url}
                     alt={photo.photo_type}
                     loading="lazy"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    width="80"
+                    height="107"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
                 </div>
               ))}
@@ -595,7 +597,7 @@ export default function Timeline() {
       )}
 
       {/* ── Day cards + month dividers ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="timeline-list" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {renderList.map(item =>
           item.type === 'divider'
             ? <MonthDivider key={item.key} label={item.label} />

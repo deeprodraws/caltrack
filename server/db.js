@@ -494,6 +494,20 @@ pool.query(`
   -- ── weight_unit on food_entry_ingredients ────────────────────────────────────
 
   ALTER TABLE food_entry_ingredients ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'g';
+
+  -- ── Portion types for saved foods ────────────────────────────────────────────
+
+  ALTER TABLE saved_foods ADD COLUMN IF NOT EXISTS macros_per_100g BOOLEAN NOT NULL DEFAULT false;
+
+  CREATE TABLE IF NOT EXISTS food_portions (
+    id            SERIAL PRIMARY KEY,
+    saved_food_id INTEGER NOT NULL REFERENCES saved_foods(id) ON DELETE CASCADE,
+    label         TEXT NOT NULL,
+    weight_grams  REAL NOT NULL,
+    sort_order    INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE INDEX IF NOT EXISTS food_portions_saved_food_idx ON food_portions(saved_food_id);
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

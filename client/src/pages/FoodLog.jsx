@@ -4,6 +4,7 @@ import PhotoScanner from '../components/PhotoScanner';
 import BarcodeScanner from '../components/BarcodeScanner';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
+import { scaleMacros, buildPortionOptions } from '../utils/portions';
 
 function invalidateFoodlogAndDashboard(date) {
   invalidateCache('foodlog-' + date);
@@ -329,6 +330,8 @@ export default function FoodLog() {
   const [form, setForm] = useState(emptyForm);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [selectedFood, setSelectedFood] = useState(null); // saved food template being used
+  const [portionGrams, setPortionGrams] = useState(100);
+  const [customGrams, setCustomGrams] = useState('');
   const [adding, setAdding] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editEntry, setEditEntry] = useState(null);
@@ -362,16 +365,29 @@ export default function FoodLog() {
 
   // When a saved food is selected from autocomplete, pre-fill form
   function handleSelectSavedFood(food) {
-    const servings = 1;
     setSelectedFood(food);
-    setForm({
-      food_name: food.name,
-      calories: String(food.calories * servings),
-      protein: String(food.protein * servings),
-      carbs: String(food.carbs * servings),
-      fat: String(food.fat * servings),
-      servings: '1',
-    });
+    setCustomGrams('');
+    if (food.macros_per_100g) {
+      const macros = scaleMacros(food, 100);
+      setPortionGrams(100);
+      setForm({
+        food_name: food.name,
+        calories: String(macros.calories),
+        protein: String(macros.protein),
+        carbs: String(macros.carbs),
+        fat: String(macros.fat),
+        servings: '1',
+      });
+    } else {
+      setForm({
+        food_name: food.name,
+        calories: String(food.calories),
+        protein: String(food.protein),
+        carbs: String(food.carbs),
+        fat: String(food.fat),
+        servings: '1',
+      });
+    }
     setSaveAsTemplate(false);
   }
 
@@ -391,6 +407,37 @@ export default function FoodLog() {
     }
   }
 
+  function handlePortionChange(val) {
+    if (val === 'custom') {
+      setPortionGrams('custom');
+      return;
+    }
+    const weightGrams = Number(val);
+    setPortionGrams(weightGrams);
+    const macros = scaleMacros(selectedFood, weightGrams);
+    setForm(f => ({
+      ...f,
+      calories: String(macros.calories),
+      protein: String(macros.protein),
+      carbs: String(macros.carbs),
+      fat: String(macros.fat),
+    }));
+  }
+
+  function handleCustomGramsChange(val) {
+    setCustomGrams(val);
+    const weightGrams = parseFloat(val) || 0;
+    if (weightGrams <= 0) return;
+    const macros = scaleMacros(selectedFood, weightGrams);
+    setForm(f => ({
+      ...f,
+      calories: String(macros.calories),
+      protein: String(macros.protein),
+      carbs: String(macros.carbs),
+      fat: String(macros.fat),
+    }));
+  }
+
   function handleNameChange(val) {
     setForm(f => ({ ...f, food_name: val }));
     if (selectedFood && val !== selectedFood.name) setSelectedFood(null);
@@ -398,6 +445,8 @@ export default function FoodLog() {
 
   function handleClearSelection() {
     setSelectedFood(null);
+    setPortionGrams(100);
+    setCustomGrams('');
     setForm(emptyForm);
   }
 
@@ -531,7 +580,7 @@ export default function FoodLog() {
             />
           </div>
 
-          {selectedFood && (
+          {selectedFood && !selectedFood.macros_per_100g && (
             <div className="form-field">
               <label>Servings</label>
               <input
@@ -539,6 +588,26 @@ export default function FoodLog() {
                 value={form.servings}
                 onChange={e => handleServingsChange(e.target.value)}
               />
+            </div>
+          )}
+
+          {selectedFood && selectedFood.macros_per_100g && (
+            <div className="form-field">
+              <label>Portion</label>
+              <select value={portionGrams} onChange={e => handlePortionChange(e.target.value)}>
+                {buildPortionOptions(selectedFood).map(opt => (
+                  <option key={opt.label} value={opt.weight_grams}>{opt.label}</option>
+                ))}
+                <option value="custom">Custom (g)</option>
+              </select>
+              {portionGrams === 'custom' && (
+                <input
+                  type="number" min="0" step="0.1" inputMode="decimal" placeholder="grams"
+                  value={customGrams}
+                  onChange={e => handleCustomGramsChange(e.target.value)}
+                  style={{ marginTop: 6 }}
+                />
+              )}
             </div>
           )}
 

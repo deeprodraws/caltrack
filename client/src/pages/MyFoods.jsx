@@ -12,11 +12,57 @@ function round1(value) {
   return Math.round((Number(value) || 0) * 10) / 10;
 }
 
+function newPortion() {
+  return { _id: Date.now() + Math.random(), label: '', weight_grams: '' };
+}
+
+function PortionsEditor({ portions, onChange }) {
+  function updateRow(i, patch) {
+    onChange(portions.map((p, j) => j === i ? { ...p, ...patch } : p));
+  }
+  function removeRow(i) {
+    onChange(portions.filter((_, j) => j !== i));
+  }
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <label style={{ display: 'block', marginBottom: 8 }}>Portions</label>
+      {portions.map((p, i) => (
+        <div key={p._id} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+          <input
+            value={p.label}
+            onChange={e => updateRow(i, { label: e.target.value })}
+            placeholder="e.g. 1 cup"
+            style={{ flex: 1, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14 }}
+          />
+          <input
+            type="number" min="0" step="0.1" inputMode="decimal"
+            value={p.weight_grams}
+            onChange={e => updateRow(i, { weight_grams: e.target.value })}
+            placeholder="90"
+            style={{ width: 70, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 8px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, textAlign: 'center' }}
+          />
+          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>g</span>
+          <button type="button" onClick={() => removeRow(i)}
+            style={{ width: 30, height: 30, background: 'rgba(248,113,113,0.1)', border: 'none', borderRadius: 8, color: '#f87171', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>×</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...portions, newPortion()])}
+        style={{ width: '100%', padding: '9px', borderRadius: 8, background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+        + Add Portion
+      </button>
+    </div>
+  );
+}
+
 function FoodModal({ food, onSave, onClose }) {
   const [form, setForm] = useState(
     food
       ? { name: food.name, calories: food.calories, protein: food.protein, carbs: food.carbs, fat: food.fat, serving_size: food.serving_size, serving_unit: food.serving_unit }
       : emptyForm
+  );
+  const [macrosPer100g, setMacrosPer100g] = useState(food ? !!food.macros_per_100g : true);
+  const [portions, setPortions] = useState(
+    (food?.portions || []).map(p => ({ ...p, _id: p.id }))
   );
   const [saving, setSaving] = useState(false);
 
@@ -31,6 +77,11 @@ function FoodModal({ food, onSave, onClose }) {
       fat: Number(form.fat) || 0,
       serving_size: Number(form.serving_size) || 1,
       serving_unit: form.serving_unit || 'serving',
+      macros_per_100g: macrosPer100g,
+      portions: macrosPer100g
+        ? portions.filter(p => p.label.trim() && +p.weight_grams > 0)
+            .map((p, i) => ({ label: p.label.trim(), weight_grams: +p.weight_grams, sort_order: i }))
+        : [],
     };
     if (food) {
       const updated = await updateSavedFood(food.id, payload);
@@ -55,12 +106,33 @@ function FoodModal({ food, onSave, onClose }) {
               <label>Food Name</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. Chicken breast" />
             </div>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8,
+              padding: '10px 14px', marginBottom: 16,
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 500 }}>Store macros per 100g (enables portion scaling)</span>
+              <label style={{ position: 'relative', display: 'inline-block', width: 40, height: 22, flexShrink: 0, marginLeft: 10 }}>
+                <input type="checkbox" checked={macrosPer100g} onChange={e => setMacrosPer100g(e.target.checked)}
+                  style={{ opacity: 0, width: 0, height: 0 }} />
+                <span style={{
+                  position: 'absolute', inset: 0, borderRadius: 99, cursor: 'pointer', transition: 'background 0.15s',
+                  background: macrosPer100g ? 'var(--accent)' : 'var(--border)',
+                }} onClick={() => setMacrosPer100g(v => !v)} />
+                <span style={{
+                  position: 'absolute', top: 3, left: macrosPer100g ? 21 : 3, width: 16, height: 16,
+                  borderRadius: '50%', background: '#fff', transition: 'left 0.15s', pointerEvents: 'none',
+                }} />
+              </label>
+            </div>
+
             <div className="modal-macros">
               {[
-                { key: 'calories', label: 'Calories (kcal)' },
-                { key: 'protein', label: 'Protein (g)' },
-                { key: 'carbs', label: 'Carbs (g)' },
-                { key: 'fat', label: 'Fat (g)' },
+                { key: 'calories', label: macrosPer100g ? 'Calories /100g' : 'Calories (kcal)' },
+                { key: 'protein', label: macrosPer100g ? 'Protein /100g' : 'Protein (g)' },
+                { key: 'carbs', label: macrosPer100g ? 'Carbs /100g' : 'Carbs (g)' },
+                { key: 'fat', label: macrosPer100g ? 'Fat /100g' : 'Fat (g)' },
               ].map(({ key, label }) => (
                 <div key={key} className="settings-field">
                   <label>{label}</label>
@@ -78,6 +150,9 @@ function FoodModal({ food, onSave, onClose }) {
                 <input value={form.serving_unit} onChange={e => setForm(f => ({ ...f, serving_unit: e.target.value }))} placeholder="serving, g, ml…" />
               </div>
             </div>
+
+            {macrosPer100g && <PortionsEditor portions={portions} onChange={setPortions} />}
+
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button type="button" onClick={onClose} style={{
                 background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',

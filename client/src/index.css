@@ -118,6 +118,24 @@ input, select {
   padding: 16px 20px;
 }
 
+/* ── Timeline scroll performance ─────────────────────────────────────────────  */
+.timeline-list {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  will-change: scroll-position;
+  transform: translateZ(0);
+}
+
+.day-card {
+  contain: layout style;
+}
+
+.month-divider {
+  position: relative;
+  z-index: 0;
+}
+
 /* ── Page headings ────────────────────────────────────────────────────────────  */
 .page-title {
   font-size: 22px;
