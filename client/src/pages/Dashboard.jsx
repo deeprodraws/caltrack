@@ -466,12 +466,6 @@ export default function Dashboard() {
   const todayWeight = weightLogs.find(w => w.date === today);
   const pastLogs    = weightLogs.filter(w => w.date !== today).slice(0, 4);
 
-  // Yesterday's wins
-  const yest        = metrics.yesterday;
-  const hasYesterday = yest && (yest.calories_total > 0 || yest.protein_total > 0);
-  const calsHit     = hasYesterday && yest.calories_total >= goals.calories * 0.9 && yest.calories_total <= goals.calories * 1.1;
-  const proteinHit  = hasYesterday && yest.protein_total >= goals.protein;
-
   // Quick-log card values
   const waterGlasses  = Math.floor((metrics.water_ml || 0) / 250);
   const waterFillPct  = Math.min((metrics.water_ml || 0) / 2000, 1);
@@ -548,28 +542,6 @@ export default function Dashboard() {
           </svg>
         </Link>
       </div>
-
-      {/* ── Section 2: Yesterday's Wins ──────────────────────────────────── */}
-      {hasYesterday && (
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.8px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 10 }}>
-            Yesterday
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <WinPill hit={calsHit} label="Calories" />
-            <WinPill hit={proteinHit} label="Protein" />
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '5px 12px', borderRadius: 99,
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', opacity: 0.55,
-            }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span>Workout (coming soon)</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Section 3: Calorie Ring + Macros ─────────────────────────────── */}
       <div className="calorie-hero">
@@ -813,23 +785,6 @@ export default function Dashboard() {
       {metricModal === 'sleep' && (
         <SleepSheet metrics={metrics} onSave={handleMetricSave} onClose={() => setMetricModal(null)} />
       )}
-    </div>
-  );
-}
-
-// ── Small helper rendered inline (avoids repeating pill JSX) ─────────────────
-function WinPill({ hit, label }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 6,
-      padding: '5px 12px', borderRadius: 99,
-      background: hit ? 'rgba(52,211,153,0.12)' : 'var(--surface2)',
-      border: `1px solid ${hit ? 'rgba(52,211,153,0.35)' : 'var(--border)'}`,
-      fontSize: 12, fontWeight: 600,
-      color: hit ? '#34d399' : 'var(--text-muted)',
-    }}>
-      <span>{hit ? '✓' : '✗'}</span>
-      <span>{label}</span>
     </div>
   );
 }
