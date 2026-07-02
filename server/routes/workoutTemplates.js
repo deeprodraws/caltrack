@@ -1,12 +1,13 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// GET /api/workout-templates
 router.get('/', async (req, res) => {
   try {
     const { rows: templates } = await pool.query(
-      `SELECT * FROM workout_templates ORDER BY created_at DESC`
+      `SELECT * FROM workout_templates WHERE user_id = $1 ORDER BY created_at DESC`,
+      [req.userId]
     );
     const result = [];
     for (const t of templates) {
@@ -23,7 +24,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/workout-templates
 router.post('/', async (req, res) => {
   const { name, notes = '', exercises = [] } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
@@ -31,8 +31,8 @@ router.post('/', async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows: [t] } = await client.query(
-      `INSERT INTO workout_templates (name, notes) VALUES ($1, $2) RETURNING *`,
-      [name, notes]
+      `INSERT INTO workout_templates (user_id, name, notes) VALUES ($1, $2, $3) RETURNING *`,
+      [req.userId, name, notes]
     );
     for (let i = 0; i < exercises.length; i++) {
       const { exercise_name, target_sets = 3, target_reps = 8 } = exercises[i];
@@ -53,15 +53,14 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/workout-templates/:id
 router.put('/:id', async (req, res) => {
   const { name, notes = '', exercises = [] } = req.body;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const { rows: [t] } = await client.query(
-      `UPDATE workout_templates SET name = $1, notes = $2 WHERE id = $3 RETURNING *`,
-      [name, notes, req.params.id]
+      `UPDATE workout_templates SET name = $1, notes = $2 WHERE id = $3 AND user_id = $4 RETURNING *`,
+      [name, notes, req.params.id, req.userId]
     );
     if (!t) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Not found' }); }
     await client.query(`DELETE FROM workout_template_exercises WHERE template_id = $1`, [t.id]);
@@ -84,10 +83,12 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/workout-templates/:id
 router.delete('/:id', async (req, res) => {
   try {
-    await pool.query(`DELETE FROM workout_templates WHERE id = $1`, [req.params.id]);
+    await pool.query(
+      `DELETE FROM workout_templates WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.userId]
+    );
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

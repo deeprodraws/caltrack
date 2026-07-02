@@ -1,8 +1,9 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// GET /api/exercises?q=
+// Exercises are global (shared library), no user_id filtering on the list/create
 router.get('/', async (req, res) => {
   const { q } = req.query;
   try {
@@ -18,7 +19,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/exercises
 router.post('/', async (req, res) => {
   const { name, muscle_group = '', equipment = '' } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/exercises/:name/history
+// History is scoped to the current user's sessions
 router.get('/:name/history', async (req, res) => {
   const name = decodeURIComponent(req.params.name);
   try {
@@ -41,10 +41,12 @@ router.get('/:name/history', async (req, res) => {
       SELECT ws.id AS session_id, ws.date, ws.name AS session_name, se.id AS se_id
       FROM session_exercises se
       JOIN workout_sessions ws ON ws.id = se.session_id
-      WHERE LOWER(se.exercise_name) = LOWER($1) AND ws.finished_at IS NOT NULL
+      WHERE LOWER(se.exercise_name) = LOWER($1)
+        AND ws.finished_at IS NOT NULL
+        AND ws.user_id = $2
       ORDER BY ws.date DESC, ws.id DESC
       LIMIT 10
-    `, [name]);
+    `, [name, req.userId]);
 
     const history = [];
     for (const row of sessions) {
@@ -70,7 +72,6 @@ router.get('/:name/history', async (req, res) => {
   }
 });
 
-// GET /api/exercises/:name/last-session
 router.get('/:name/last-session', async (req, res) => {
   const name = decodeURIComponent(req.params.name);
   try {
@@ -78,10 +79,12 @@ router.get('/:name/last-session', async (req, res) => {
       SELECT ws.date, se.id AS se_id
       FROM session_exercises se
       JOIN workout_sessions ws ON ws.id = se.session_id
-      WHERE LOWER(se.exercise_name) = LOWER($1) AND ws.finished_at IS NOT NULL
+      WHERE LOWER(se.exercise_name) = LOWER($1)
+        AND ws.finished_at IS NOT NULL
+        AND ws.user_id = $2
       ORDER BY ws.date DESC, ws.id DESC
       LIMIT 1
-    `, [name]);
+    `, [name, req.userId]);
 
     if (!rows.length) return res.json(null);
 

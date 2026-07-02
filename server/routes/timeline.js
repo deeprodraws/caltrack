@@ -1,3 +1,4 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -19,7 +20,6 @@ function generateDates(start, end) {
   return dates;
 }
 
-// GET /api/timeline?start=YYYY-MM-DD&end=YYYY-MM-DD
 router.get('/', async (req, res) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
@@ -28,11 +28,12 @@ router.get('/', async (req, res) => {
     let start = req.query.start;
     if (!start) start = offsetDate(end, -29);
 
-    // Cap at 90 days
     const diffDays = Math.round(
       (new Date(end + 'T12:00:00') - new Date(start + 'T12:00:00')) / 86400000
     );
     if (diffDays > 90) start = offsetDate(end, -89);
+
+    const uid = req.userId;
 
     const [
       foodRes,
@@ -42,7 +43,6 @@ router.get('/', async (req, res) => {
       physiqueRes,
       goalsRes,
     ] = await Promise.all([
-      // 1. Food entries grouped by date
       pool.query(`
         SELECT date,
           SUM(calories)::real            AS total_calories,
@@ -59,27 +59,24 @@ router.get('/', async (req, res) => {
             'fat', fat
           ) ORDER BY created_at)         AS entries
         FROM food_entries
-        WHERE date BETWEEN $1 AND $2
+        WHERE user_id = $1 AND date BETWEEN $2 AND $3
         GROUP BY date
-      `, [start, end]),
+      `, [uid, start, end]),
 
-      // 2. Weight logs (last entry per date wins)
       pool.query(`
         SELECT DISTINCT ON (date)
           date, weight, unit
         FROM weight_logs
-        WHERE date BETWEEN $1 AND $2
+        WHERE user_id = $1 AND date BETWEEN $2 AND $3
         ORDER BY date, id DESC
-      `, [start, end]),
+      `, [uid, start, end]),
 
-      // 3. Daily metrics
       pool.query(`
         SELECT date, steps, water_ml, sleep_hours
         FROM daily_metrics
-        WHERE date BETWEEN $1 AND $2
-      `, [start, end]),
+        WHERE user_id = $1 AND date BETWEEN $2 AND $3
+      `, [uid, start, end]),
 
-      // 4. Finished workout sessions with aggregate stats
       pool.query(`
         SELECT
           ws.date,
@@ -94,13 +91,12 @@ router.get('/', async (req, res) => {
         FROM workout_sessions ws
         LEFT JOIN session_exercises se ON se.session_id = ws.id
         LEFT JOIN session_sets ss ON ss.session_exercise_id = se.id
-        WHERE ws.date BETWEEN $1 AND $2
+        WHERE ws.user_id = $1 AND ws.date BETWEEN $2 AND $3
           AND ws.finished_at IS NOT NULL
         GROUP BY ws.date, ws.id, ws.name, ws.started_at, ws.finished_at, ws.notes
         ORDER BY ws.date, ws.started_at
-      `, [start, end]),
+      `, [uid, start, end]),
 
-      // 5. Physique weeks with photos
       pool.query(`
         SELECT
           pw.week_start,
@@ -113,17 +109,18 @@ router.get('/', async (req, res) => {
           )) FILTER (WHERE pp.id IS NOT NULL) AS photos
         FROM physique_weeks pw
         LEFT JOIN physique_photos pp ON pp.week_id = pw.id
-        WHERE pw.week_start BETWEEN $1 AND $2
+        WHERE pw.user_id = $1 AND pw.week_start BETWEEN $2 AND $3
         GROUP BY pw.id, pw.week_start, pw.weight, pw.body_fat, pw.notes
-      `, [start, end]),
+      `, [uid, start, end]),
 
-      // 6. Goals (single row)
-      pool.query(`SELECT calories, protein, carbs, fat, weight_unit FROM daily_goals WHERE id = 1`),
+      pool.query(
+        `SELECT calories, protein, carbs, fat, weight_unit FROM daily_goals WHERE user_id = $1`,
+        [uid]
+      ),
     ]);
 
     const goals = goalsRes.rows[0] || { calories: 2000, protein: 150, carbs: 250, fat: 65, weight_unit: 'lbs' };
 
-    // Build lookup maps
     const foodByDate = {};
     for (const r of foodRes.rows) foodByDate[r.date] = r;
 
@@ -152,7 +149,6 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Physique attaches to the Sunday (week_start) date only
     const physiqueByDate = {};
     for (const r of physiqueRes.rows) {
       physiqueByDate[r.week_start] = {
@@ -164,7 +160,6 @@ router.get('/', async (req, res) => {
       };
     }
 
-    // Generate all dates newest-first
     const dates = generateDates(start, end).reverse();
 
     const days = dates.map(date => {
@@ -192,7 +187,6 @@ router.get('/', async (req, res) => {
 
       const has_any_data = !!(food || weight || workouts.length > 0 || metrics);
 
-      // Format day label
       const d = new Date(date + 'T12:00:00');
       const day_label = d.toLocaleDateString('en-US', {
         weekday: 'long', month: 'long', day: 'numeric',

@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
 import { Routes, Route, NavLink } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import FoodLog from './pages/FoodLog';
 import Library from './pages/Library';
@@ -75,7 +79,6 @@ const IconSettings = () => (
   </svg>
 );
 
-// mobileHidden: shown in desktop sidebar but not in mobile bottom nav
 const navItems = [
   { to: '/',          end: true, icon: <IconDashboard />, label: 'Home' },
   { to: '/log',                  icon: <IconLog />,       label: 'Log' },
@@ -87,18 +90,9 @@ const navItems = [
   { to: '/settings',             icon: <IconSettings />,  label: 'Settings', mobileHidden: true },
 ];
 
-export default function App() {
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-      });
-    }
-  }, []);
-
+function AppShell() {
   return (
     <div className="app-shell">
-      {/* Desktop sidebar */}
       <nav className="sidebar">
         <div className="sidebar-logo">
           CalTrack
@@ -125,7 +119,6 @@ export default function App() {
         </Routes>
       </main>
 
-      {/* Mobile bottom nav — Settings excluded, labels hidden on very small screens */}
       <nav className="bottom-nav">
         {navItems.filter(item => !item.mobileHidden).map(({ to, end, icon, label }) => (
           <NavLink key={to} to={to} end={end}
@@ -136,5 +129,31 @@ export default function App() {
         ))}
       </nav>
     </div>
+  );
+}
+
+export default function App() {
+  const { loading } = useAuth();
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  }, []);
+
+  if (loading) return <div className="empty-state" style={{ minHeight: '100vh' }}>Loading…</div>;
+
+  return (
+    <Routes>
+      <Route path="/login"  element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/*" element={
+        <ProtectedRoute>
+          <AppShell />
+        </ProtectedRoute>
+      } />
+    </Routes>
   );
 }

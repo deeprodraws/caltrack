@@ -1,3 +1,4 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -9,7 +10,8 @@ function getWeekStart(dateStr) {
   return d.toISOString().slice(0, 10);
 }
 
-async function fetchWeeksWithStats(whereClause = '', params = []) {
+async function fetchWeeksWithStats(userId, extraWhere = '', extraParams = []) {
+  const params = [userId, ...extraParams];
   const { rows: weeks } = await pool.query(`
     WITH food_agg AS (
       SELECT
@@ -23,9 +25,12 @@ async function fetchWeeksWithStats(whereClause = '', params = []) {
         SELECT date,
           SUM(calories) AS cal, SUM(protein) AS prot,
           SUM(carbs)    AS carb, SUM(fat)    AS fat
-        FROM food_entries GROUP BY date
+        FROM food_entries
+        WHERE user_id = $1
+        GROUP BY date
       ) day ON day.date >= w.week_start
            AND day.date <= (w.week_start::date + '6 days'::interval)::text
+      WHERE w.user_id = $1
       GROUP BY w.id
     ),
     workout_agg AS (
@@ -35,6 +40,8 @@ async function fetchWeeksWithStats(whereClause = '', params = []) {
         ON ws.date >= w.week_start
        AND ws.date <= (w.week_start::date + '6 days'::interval)::text
        AND ws.finished_at IS NOT NULL
+       AND ws.user_id = $1
+      WHERE w.user_id = $1
       GROUP BY w.id
     )
     SELECT
@@ -45,9 +52,10 @@ async function fetchWeeksWithStats(whereClause = '', params = []) {
       COALESCE(fa.avg_fat,      0)    AS avg_fat,
       COALESCE(wa.total_workouts, 0)  AS total_workouts
     FROM physique_weeks pw
-    LEFT JOIN food_agg    fa ON fa.week_id    = pw.id
+    LEFT JOIN food_agg    fa ON fa.week_id = pw.id
     LEFT JOIN workout_agg wa ON wa.week_id = pw.id
-    ${whereClause}
+    WHERE pw.user_id = $1
+    ${extraWhere}
     ORDER BY pw.week_start DESC
   `, params);
 
@@ -69,40 +77,37 @@ async function fetchWeeksWithStats(whereClause = '', params = []) {
   return weeks.map(w => ({ ...w, photos: photosByWeek[w.id] || [] }));
 }
 
-// GET /api/physique
 router.get('/', async (req, res) => {
   try {
-    res.json(await fetchWeeksWithStats());
+    res.json(await fetchWeeksWithStats(req.userId));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/physique/current-week
 router.get('/current-week', async (req, res) => {
   const weekStart = getWeekStart(new Date().toISOString().slice(0, 10));
   try {
-    const rows = await fetchWeeksWithStats('WHERE pw.week_start = $1', [weekStart]);
+    const rows = await fetchWeeksWithStats(req.userId, 'AND pw.week_start = $2', [weekStart]);
     res.json(rows[0] || null);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/physique/weeks
 router.post('/weeks', async (req, res) => {
   const { week_start, weight, body_fat, notes = '' } = req.body;
   if (!week_start) return res.status(400).json({ error: 'week_start required' });
   try {
     const { rows: [row] } = await pool.query(
-      `INSERT INTO physique_weeks (week_start, weight, body_fat, notes)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (week_start) DO UPDATE
-         SET weight   = COALESCE($2, physique_weeks.weight),
-             body_fat = COALESCE($3, physique_weeks.body_fat),
-             notes    = COALESCE(NULLIF($4,''), physique_weeks.notes)
+      `INSERT INTO physique_weeks (user_id, week_start, weight, body_fat, notes)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (user_id, week_start) DO UPDATE
+         SET weight   = COALESCE($3, physique_weeks.weight),
+             body_fat = COALESCE($4, physique_weeks.body_fat),
+             notes    = COALESCE(NULLIF($5,''), physique_weeks.notes)
        RETURNING *`,
-      [week_start, weight ?? null, body_fat ?? null, notes]
+      [req.userId, week_start, weight ?? null, body_fat ?? null, notes]
     );
     res.json(row);
   } catch (err) {
@@ -110,7 +115,6 @@ router.post('/weeks', async (req, res) => {
   }
 });
 
-// PUT /api/physique/weeks/:id
 router.put('/weeks/:id', async (req, res) => {
   const { weight, body_fat, notes } = req.body;
   try {
@@ -119,11 +123,12 @@ router.put('/weeks/:id', async (req, res) => {
         weight   = CASE WHEN $2::text IS NOT NULL THEN $2::real ELSE weight   END,
         body_fat = CASE WHEN $3::text IS NOT NULL THEN $3::real ELSE body_fat END,
         notes    = CASE WHEN $4 IS NOT NULL        THEN $4       ELSE notes    END
-      WHERE id = $1 RETURNING *`,
+      WHERE id = $1 AND user_id = $5 RETURNING *`,
       [req.params.id,
        weight   !== undefined ? weight   : null,
        body_fat !== undefined ? body_fat : null,
-       notes    !== undefined ? notes    : null]
+       notes    !== undefined ? notes    : null,
+       req.userId]
     );
     if (!row) return res.status(404).json({ error: 'Not found' });
     res.json(row);
@@ -132,29 +137,38 @@ router.put('/weeks/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/physique/weeks/:id
 router.delete('/weeks/:id', async (req, res) => {
   try {
     const { rows: photos } = await pool.query(
-      'SELECT cloudinary_id FROM physique_photos WHERE week_id = $1',
-      [req.params.id]
+      `SELECT pp.cloudinary_id FROM physique_photos pp
+       JOIN physique_weeks pw ON pw.id = pp.week_id
+       WHERE pp.week_id = $1 AND pw.user_id = $2`,
+      [req.params.id, req.userId]
     );
     await Promise.all(photos.map(p => cloudinary.uploader.destroy(p.cloudinary_id)));
-    await pool.query('DELETE FROM physique_weeks WHERE id = $1', [req.params.id]);
+    await pool.query(
+      'DELETE FROM physique_weeks WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.userId]
+    );
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/physique/photos
 router.post('/photos', async (req, res) => {
   const { week_id, photo_type, image_base64, media_type } = req.body;
   if (!week_id || !photo_type || !image_base64)
     return res.status(400).json({ error: 'week_id, photo_type, image_base64 required' });
 
   try {
-    // Delete old Cloudinary asset if replacing
+    // Verify week belongs to user
+    const { rows: own } = await pool.query(
+      'SELECT id FROM physique_weeks WHERE id = $1 AND user_id = $2',
+      [week_id, req.userId]
+    );
+    if (!own.length) return res.status(403).json({ error: 'Not authorized' });
+
     const { rows: existing } = await pool.query(
       'SELECT id, cloudinary_id FROM physique_photos WHERE week_id = $1 AND photo_type = $2',
       [week_id, photo_type]
@@ -185,12 +199,13 @@ router.post('/photos', async (req, res) => {
   }
 });
 
-// DELETE /api/physique/photos/:id
 router.delete('/photos/:id', async (req, res) => {
   try {
     const { rows: [photo] } = await pool.query(
-      'SELECT cloudinary_id FROM physique_photos WHERE id = $1',
-      [req.params.id]
+      `SELECT pp.cloudinary_id FROM physique_photos pp
+       JOIN physique_weeks pw ON pw.id = pp.week_id
+       WHERE pp.id = $1 AND pw.user_id = $2`,
+      [req.params.id, req.userId]
     );
     if (!photo) return res.status(404).json({ error: 'Not found' });
     await cloudinary.uploader.destroy(photo.cloudinary_id).catch(() => {});

@@ -1,3 +1,4 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -24,7 +25,6 @@ async function buildSessionWithExercises(sessionId) {
 }
 
 // GET /api/workout-sessions/recent?limit=5
-// MUST be before /:id to avoid 'recent' being treated as an id
 router.get('/recent', async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 5, 20);
   try {
@@ -36,11 +36,11 @@ router.get('/recent', async (req, res) => {
       FROM workout_sessions ws
       LEFT JOIN session_exercises se ON se.session_id = ws.id
       LEFT JOIN session_sets ss ON ss.session_exercise_id = se.id
-      WHERE ws.finished_at IS NOT NULL
+      WHERE ws.user_id = $1 AND ws.finished_at IS NOT NULL
       GROUP BY ws.id
       ORDER BY ws.finished_at DESC
-      LIMIT $1
-    `, [limit]);
+      LIMIT $2
+    `, [req.userId, limit]);
     res.json(sessions.map(s => ({
       ...s,
       total_sets: parseInt(s.total_sets),
@@ -57,8 +57,8 @@ router.get('/', async (req, res) => {
   if (!date) return res.status(400).json({ error: 'date required' });
   try {
     const { rows: sessions } = await pool.query(
-      `SELECT id FROM workout_sessions WHERE date = $1 ORDER BY created_at`,
-      [date]
+      `SELECT id FROM workout_sessions WHERE user_id = $1 AND date = $2 ORDER BY created_at`,
+      [req.userId, date]
     );
     const result = [];
     for (const { id } of sessions) {
@@ -78,15 +78,19 @@ router.post('/', async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows: [session] } = await client.query(
-      `INSERT INTO workout_sessions (date, name, started_at)
-       VALUES ($1, $2, NOW()) RETURNING *`,
-      [date, name]
+      `INSERT INTO workout_sessions (user_id, date, name, started_at)
+       VALUES ($1, $2, $3, NOW()) RETURNING *`,
+      [req.userId, date, name]
     );
     if (template_id) {
+      // Verify template belongs to user
       const { rows: templateExercises } = await client.query(
-        `SELECT exercise_name, sort_order FROM workout_template_exercises
-         WHERE template_id = $1 ORDER BY sort_order`,
-        [template_id]
+        `SELECT wte.exercise_name, wte.sort_order
+         FROM workout_template_exercises wte
+         JOIN workout_templates wt ON wt.id = wte.template_id
+         WHERE wte.template_id = $1 AND wt.user_id = $2
+         ORDER BY wte.sort_order`,
+        [template_id, req.userId]
       );
       for (const te of templateExercises) {
         await client.query(
@@ -107,7 +111,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/workout-sessions/:id  (partial update)
+// PUT /api/workout-sessions/:id
 router.put('/:id', async (req, res) => {
   const { name, notes, finished_at } = req.body;
   try {
@@ -116,11 +120,12 @@ router.put('/:id', async (req, res) => {
         name        = COALESCE($2::TEXT, name),
         notes       = COALESCE($3::TEXT, notes),
         finished_at = COALESCE($4::TIMESTAMPTZ, finished_at)
-      WHERE id = $1 RETURNING *`,
+      WHERE id = $1 AND user_id = $5 RETURNING *`,
       [req.params.id,
        name !== undefined ? name : null,
        notes !== undefined ? notes : null,
-       finished_at !== undefined ? finished_at : null]
+       finished_at !== undefined ? finished_at : null,
+       req.userId]
     );
     if (!row) return res.status(404).json({ error: 'Not found' });
     res.json(row);
@@ -133,7 +138,10 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/workout-sessions/:id
 router.delete('/:id', async (req, res) => {
   try {
-    await pool.query(`DELETE FROM workout_sessions WHERE id = $1`, [req.params.id]);
+    await pool.query(
+      `DELETE FROM workout_sessions WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.userId]
+    );
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -145,6 +153,13 @@ router.post('/:id/exercises', async (req, res) => {
   const { exercise_name } = req.body;
   if (!exercise_name) return res.status(400).json({ error: 'exercise_name required' });
   try {
+    // Verify session belongs to user
+    const { rows: own } = await pool.query(
+      `SELECT id FROM workout_sessions WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.userId]
+    );
+    if (!own.length) return res.status(403).json({ error: 'Not authorized' });
+
     const { rows: [{ max_order }] } = await pool.query(
       `SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM session_exercises WHERE session_id = $1`,
       [req.params.id]
@@ -164,8 +179,11 @@ router.post('/:id/exercises', async (req, res) => {
 router.delete('/:session_id/exercises/:exercise_id', async (req, res) => {
   try {
     await pool.query(
-      `DELETE FROM session_exercises WHERE id = $1 AND session_id = $2`,
-      [req.params.exercise_id, req.params.session_id]
+      `DELETE FROM session_exercises se
+       USING workout_sessions ws
+       WHERE se.id = $1 AND se.session_id = $2
+         AND ws.id = se.session_id AND ws.user_id = $3`,
+      [req.params.exercise_id, req.params.session_id, req.userId]
     );
     res.json({ ok: true });
   } catch (err) {

@@ -379,6 +379,83 @@ pool.query(`
     ('Medicine Ball Slam',               'compound', 'other'),
     ('Tire Flip',                        'compound', 'other')
   ON CONFLICT (name) DO NOTHING;
+
+  -- ── USERS TABLE ──────────────────────────────────────────────────────────────
+
+  CREATE TABLE IF NOT EXISTS users (
+    id            SERIAL PRIMARY KEY,
+    email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    display_name  TEXT NOT NULL DEFAULT '',
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  INSERT INTO users (email, password_hash, display_name)
+  SELECT 'default@caltrack.app', 'MIGRATED_NO_LOGIN', 'Me'
+  WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'default@caltrack.app');
+
+  -- ── ADD user_id TO ALL PER-USER TABLES (nullable first for safe backfill) ──
+
+  ALTER TABLE food_entries         ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE daily_goals          ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE saved_foods          ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE weight_logs          ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE meal_templates       ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE recipes              ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE daily_metrics        ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE workout_templates    ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE workout_sessions     ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE physique_weeks       ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+  ALTER TABLE ingredient_memory    ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+
+  -- ── BACKFILL existing rows to the default migration user ─────────────────────
+
+  UPDATE food_entries         SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE daily_goals          SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE saved_foods          SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE weight_logs          SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE meal_templates       SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE recipes              SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE daily_metrics        SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE workout_templates    SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE workout_sessions     SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE physique_weeks       SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+  UPDATE ingredient_memory    SET user_id = (SELECT id FROM users WHERE email = 'default@caltrack.app') WHERE user_id IS NULL;
+
+  -- ── ENFORCE NOT NULL ─────────────────────────────────────────────────────────
+
+  ALTER TABLE food_entries         ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE daily_goals          ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE saved_foods          ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE weight_logs          ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE meal_templates       ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE recipes              ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE daily_metrics        ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE workout_templates    ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE workout_sessions     ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE physique_weeks       ALTER COLUMN user_id SET NOT NULL;
+  ALTER TABLE ingredient_memory    ALTER COLUMN user_id SET NOT NULL;
+
+  -- ── daily_goals: give id an auto-increment sequence so new users get rows ────
+
+  CREATE SEQUENCE IF NOT EXISTS daily_goals_id_seq START WITH 100;
+  ALTER TABLE daily_goals ALTER COLUMN id SET DEFAULT nextval('daily_goals_id_seq');
+  CREATE UNIQUE INDEX IF NOT EXISTS daily_goals_user_id_idx ON daily_goals(user_id);
+
+  -- ── daily_metrics: change UNIQUE(date) → UNIQUE(user_id, date) ──────────────
+
+  ALTER TABLE daily_metrics DROP CONSTRAINT IF EXISTS daily_metrics_date_key;
+  CREATE UNIQUE INDEX IF NOT EXISTS daily_metrics_user_date_idx ON daily_metrics(user_id, date);
+
+  -- ── ingredient_memory: change UNIQUE(food_name) → UNIQUE(user_id, food_name) ─
+
+  ALTER TABLE ingredient_memory DROP CONSTRAINT IF EXISTS ingredient_memory_food_name_key;
+  CREATE UNIQUE INDEX IF NOT EXISTS ingredient_memory_user_food_idx ON ingredient_memory(user_id, food_name);
+
+  -- ── physique_weeks: change UNIQUE(week_start) → UNIQUE(user_id, week_start) ──
+
+  ALTER TABLE physique_weeks DROP CONSTRAINT IF EXISTS physique_weeks_week_start_key;
+  CREATE UNIQUE INDEX IF NOT EXISTS physique_weeks_user_week_idx ON physique_weeks(user_id, week_start);
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

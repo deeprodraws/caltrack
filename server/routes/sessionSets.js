@@ -1,3 +1,4 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -6,6 +7,15 @@ const pool = require('../db');
 router.post('/:exercise_id/sets', async (req, res) => {
   const { weight, reps, rpe } = req.body;
   try {
+    // Verify exercise belongs to user's session
+    const { rows: own } = await pool.query(
+      `SELECT se.id FROM session_exercises se
+       JOIN workout_sessions ws ON ws.id = se.session_id
+       WHERE se.id = $1 AND ws.user_id = $2`,
+      [req.params.exercise_id, req.userId]
+    );
+    if (!own.length) return res.status(403).json({ error: 'Not authorized' });
+
     const { rows: [{ max_num }] } = await pool.query(
       `SELECT COALESCE(MAX(set_number), 0) AS max_num FROM session_sets WHERE session_exercise_id = $1`,
       [req.params.exercise_id]
@@ -29,6 +39,16 @@ const setsRouter = express.Router();
 setsRouter.put('/:id', async (req, res) => {
   const { weight, reps, rpe } = req.body;
   try {
+    // Verify set belongs to user's session
+    const { rows: own } = await pool.query(
+      `SELECT ss.id FROM session_sets ss
+       JOIN session_exercises se ON se.id = ss.session_exercise_id
+       JOIN workout_sessions ws ON ws.id = se.session_id
+       WHERE ss.id = $1 AND ws.user_id = $2`,
+      [req.params.id, req.userId]
+    );
+    if (!own.length) return res.status(403).json({ error: 'Not authorized' });
+
     const { rows: [row] } = await pool.query(`
       UPDATE session_sets SET
         weight = CASE WHEN $2 IS NOT NULL THEN $2 ELSE weight END,
@@ -49,7 +69,13 @@ setsRouter.put('/:id', async (req, res) => {
 
 setsRouter.delete('/:id', async (req, res) => {
   try {
-    await pool.query(`DELETE FROM session_sets WHERE id = $1`, [req.params.id]);
+    await pool.query(
+      `DELETE FROM session_sets ss
+       USING session_exercises se
+       JOIN workout_sessions ws ON ws.id = se.session_id
+       WHERE ss.id = $1 AND ss.session_exercise_id = se.id AND ws.user_id = $2`,
+      [req.params.id, req.userId]
+    );
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

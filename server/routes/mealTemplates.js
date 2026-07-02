@@ -1,12 +1,13 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// GET /api/meal-templates
 router.get('/', async (req, res) => {
   try {
     const { rows } = await pool.query(
-      'SELECT * FROM meal_templates ORDER BY created_at DESC'
+      'SELECT * FROM meal_templates WHERE user_id = $1 ORDER BY created_at DESC',
+      [req.userId]
     );
     res.json(rows);
   } catch (err) {
@@ -14,11 +15,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/meal-templates/:id  (with ingredients)
 router.get('/:id', async (req, res) => {
   try {
     const [tmpl, ings] = await Promise.all([
-      pool.query('SELECT * FROM meal_templates WHERE id = $1', [req.params.id]),
+      pool.query('SELECT * FROM meal_templates WHERE id = $1 AND user_id = $2', [req.params.id, req.userId]),
       pool.query(
         'SELECT * FROM meal_template_ingredients WHERE template_id = $1 ORDER BY sort_order, id',
         [req.params.id]
@@ -31,7 +31,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/meal-templates
 router.post('/', async (req, res) => {
   const { name, meal_type = 'breakfast', ingredients = [] } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'name required' });
@@ -40,8 +39,8 @@ router.post('/', async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows: [tmpl] } = await client.query(
-      'INSERT INTO meal_templates (name, meal_type) VALUES ($1, $2) RETURNING *',
-      [name.trim(), meal_type]
+      'INSERT INTO meal_templates (user_id, name, meal_type) VALUES ($1, $2, $3) RETURNING *',
+      [req.userId, name.trim(), meal_type]
     );
     for (let i = 0; i < ingredients.length; i++) {
       const g = ingredients[i];
@@ -67,7 +66,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/meal-templates/:id
 router.put('/:id', async (req, res) => {
   const { name, meal_type, ingredients = [] } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'name required' });
@@ -76,8 +74,8 @@ router.put('/:id', async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows: [tmpl] } = await client.query(
-      'UPDATE meal_templates SET name=$1, meal_type=$2 WHERE id=$3 RETURNING *',
-      [name.trim(), meal_type, req.params.id]
+      'UPDATE meal_templates SET name=$1, meal_type=$2 WHERE id=$3 AND user_id=$4 RETURNING *',
+      [name.trim(), meal_type, req.params.id, req.userId]
     );
     if (!tmpl) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Not found' }); }
 
@@ -106,11 +104,11 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/meal-templates/:id
 router.delete('/:id', async (req, res) => {
   try {
     const { rows } = await pool.query(
-      'DELETE FROM meal_templates WHERE id=$1 RETURNING id', [req.params.id]
+      'DELETE FROM meal_templates WHERE id=$1 AND user_id=$2 RETURNING id',
+      [req.params.id, req.userId]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
@@ -119,7 +117,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST /api/meal-templates/:id/log  — log edited ingredients to food_entries
 router.post('/:id/log', async (req, res) => {
   const { date, ingredients } = req.body;
   if (!date || !ingredients?.length) {
@@ -132,27 +129,26 @@ router.post('/:id/log', async (req, res) => {
     const entries = [];
     for (const g of ingredients) {
       const { rows: [entry] } = await client.query(
-        `INSERT INTO food_entries (date, food_name, calories, protein, carbs, fat)
-         VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-        [date, g.food_name, +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0]
+        `INSERT INTO food_entries (user_id, date, food_name, calories, protein, carbs, fat)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+        [req.userId, date, g.food_name, +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0]
       );
       entries.push(entry);
     }
     await client.query('COMMIT');
 
-    // Upsert ingredient memory passively — don't block response
     Promise.all(
       ingredients
         .filter(g => g.food_name?.trim() && (+g.weight_grams || 0) > 0)
         .map(g =>
           pool.query(
-            `INSERT INTO ingredient_memory (food_name, typical_weight_grams, use_count, last_used_at)
-             VALUES ($1,$2,1,NOW())
-             ON CONFLICT (food_name) DO UPDATE SET
-               typical_weight_grams = $2,
+            `INSERT INTO ingredient_memory (user_id, food_name, typical_weight_grams, use_count, last_used_at)
+             VALUES ($1,$2,$3,1,NOW())
+             ON CONFLICT (user_id, food_name) DO UPDATE SET
+               typical_weight_grams = $3,
                use_count = ingredient_memory.use_count + 1,
                last_used_at = NOW()`,
-            [g.food_name.trim(), +g.weight_grams]
+            [req.userId, g.food_name.trim(), +g.weight_grams]
           )
         )
     ).catch(err => console.error('ingredient_memory upsert:', err.message));

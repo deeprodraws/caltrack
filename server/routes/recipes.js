@@ -1,3 +1,4 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -7,7 +8,6 @@ function perServing(total, servings) {
   return +(total / servings).toFixed(1);
 }
 
-// GET /api/recipes  — list with per-serving macro summary
 router.get('/', async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -18,9 +18,10 @@ router.get('/', async (req, res) => {
         COALESCE(SUM(ri.fat),      0) AS total_fat
       FROM recipes r
       LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+      WHERE r.user_id = $1
       GROUP BY r.id
       ORDER BY r.created_at DESC
-    `);
+    `, [req.userId]);
     res.json(rows.map(r => ({
       ...r,
       cal_per_serving:     perServing(r.total_calories, r.total_servings),
@@ -33,11 +34,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/recipes/:id  — with ingredients + per-serving macros
 router.get('/:id', async (req, res) => {
   try {
     const [rRes, iRes] = await Promise.all([
-      pool.query('SELECT * FROM recipes WHERE id=$1', [req.params.id]),
+      pool.query('SELECT * FROM recipes WHERE id=$1 AND user_id=$2', [req.params.id, req.userId]),
       pool.query(
         'SELECT * FROM recipe_ingredients WHERE recipe_id=$1 ORDER BY sort_order, id',
         [req.params.id]
@@ -67,7 +67,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/recipes
 router.post('/', async (req, res) => {
   const { name, total_servings = 1, notes = '', ingredients = [] } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'name required' });
@@ -76,8 +75,8 @@ router.post('/', async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows: [recipe] } = await client.query(
-      'INSERT INTO recipes (name, total_servings, notes) VALUES ($1,$2,$3) RETURNING *',
-      [name.trim(), +total_servings || 1, notes]
+      'INSERT INTO recipes (user_id, name, total_servings, notes) VALUES ($1,$2,$3,$4) RETURNING *',
+      [req.userId, name.trim(), +total_servings || 1, notes]
     );
     for (let i = 0; i < ingredients.length; i++) {
       const g = ingredients[i];
@@ -103,7 +102,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/recipes/:id
 router.put('/:id', async (req, res) => {
   const { name, total_servings, notes = '', ingredients = [] } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'name required' });
@@ -112,8 +110,8 @@ router.put('/:id', async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows: [recipe] } = await client.query(
-      'UPDATE recipes SET name=$1, total_servings=$2, notes=$3 WHERE id=$4 RETURNING *',
-      [name.trim(), +total_servings || 1, notes, req.params.id]
+      'UPDATE recipes SET name=$1, total_servings=$2, notes=$3 WHERE id=$4 AND user_id=$5 RETURNING *',
+      [name.trim(), +total_servings || 1, notes, req.params.id, req.userId]
     );
     if (!recipe) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Not found' }); }
 
@@ -142,11 +140,11 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/recipes/:id
 router.delete('/:id', async (req, res) => {
   try {
     const { rows } = await pool.query(
-      'DELETE FROM recipes WHERE id=$1 RETURNING id', [req.params.id]
+      'DELETE FROM recipes WHERE id=$1 AND user_id=$2 RETURNING id',
+      [req.params.id, req.userId]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
@@ -155,14 +153,13 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST /api/recipes/:id/log  — log X servings as one food_entry
 router.post('/:id/log', async (req, res) => {
-  const { date, servings, meal_type } = req.body;
+  const { date, servings } = req.body;
   if (!date || !servings) return res.status(400).json({ error: 'date and servings required' });
 
   try {
     const [rRes, iRes] = await Promise.all([
-      pool.query('SELECT * FROM recipes WHERE id=$1', [req.params.id]),
+      pool.query('SELECT * FROM recipes WHERE id=$1 AND user_id=$2', [req.params.id, req.userId]),
       pool.query('SELECT * FROM recipe_ingredients WHERE recipe_id=$1', [req.params.id]),
     ]);
     if (!rRes.rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -181,12 +178,11 @@ router.post('/:id/log', async (req, res) => {
       fat:      +(totals.f   * ratio).toFixed(1),
     };
     const srvLabel = +servings === 1 ? '' : ` ×${+servings}`;
-    const foodName = `${recipe.name}${srvLabel}`;
 
     const { rows: [entry] } = await pool.query(
-      `INSERT INTO food_entries (date, food_name, calories, protein, carbs, fat)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [date, foodName, logged.calories, logged.protein, logged.carbs, logged.fat]
+      `INSERT INTO food_entries (user_id, date, food_name, calories, protein, carbs, fat)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [req.userId, date, `${recipe.name}${srvLabel}`, logged.calories, logged.protein, logged.carbs, logged.fat]
     );
     res.json({ entry });
   } catch (err) {

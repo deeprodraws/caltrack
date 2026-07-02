@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+
+const authRouter = require('./routes/auth');
+const requireAuth = require('./middleware/auth');
 const entriesRouter = require('./routes/entries');
 const goalsRouter = require('./routes/goals');
 const savedFoodsRouter = require('./routes/savedFoods');
@@ -25,6 +28,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// Public: auth endpoints (signup / login / me)
+app.use('/api/auth', authRouter);
+
+// All subsequent /api routes require a valid JWT
+app.use('/api', requireAuth);
+
 app.use('/api/entries', entriesRouter);
 app.use('/api/goals', goalsRouter);
 app.use('/api/saved-foods', savedFoodsRouter);
@@ -46,7 +55,6 @@ app.use('/api/timeline', timelineRouter);
 const distPath = path.join(__dirname, '..', 'client', 'dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
-  // All non-API routes hand off to React Router
   app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
 }
 
