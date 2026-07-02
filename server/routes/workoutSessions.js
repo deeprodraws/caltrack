@@ -113,8 +113,8 @@ router.put('/:id', async (req, res) => {
   try {
     const { rows: [row] } = await pool.query(`
       UPDATE workout_sessions SET
-        name        = CASE WHEN $2 IS NOT NULL THEN $2 ELSE name        END,
-        notes       = CASE WHEN $3 IS NOT NULL THEN $3 ELSE notes       END,
+        name        = COALESCE($2::TEXT, name),
+        notes       = COALESCE($3::TEXT, notes),
         finished_at = CASE WHEN $4 IS NOT NULL THEN $4::TIMESTAMPTZ ELSE finished_at END
       WHERE id = $1 RETURNING *`,
       [req.params.id,
