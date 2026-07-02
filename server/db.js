@@ -508,6 +508,21 @@ pool.query(`
   );
 
   CREATE INDEX IF NOT EXISTS food_portions_saved_food_idx ON food_portions(saved_food_id);
+
+  -- ── Daily reflections (Life Timeline journal notes) ─────────────────────────
+
+  CREATE TABLE IF NOT EXISTS daily_reflections (
+    id          SERIAL PRIMARY KEY,
+    date        TEXT NOT NULL,
+    user_id     INTEGER NOT NULL REFERENCES users(id),
+    note        TEXT NOT NULL DEFAULT '',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(user_id, date)
+  );
+
+  CREATE INDEX IF NOT EXISTS daily_reflections_user_date
+    ON daily_reflections(user_id, date);
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

@@ -439,6 +439,26 @@ export async function getTimeline(start, end) {
   return json;
 }
 
+export async function saveReflection(date, note) {
+  const res = await apiFetch(`${BASE}/timeline/reflection`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, note }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Save failed');
+  return json;
+}
+
+export async function searchTimeline(q) {
+  const res = await apiFetch(`${BASE}/timeline/search?q=${encodeURIComponent(q)}`);
+  return res.json();
+}
+
+export async function getOnThisDay() {
+  const res = await apiFetch(`${BASE}/timeline/on-this-day`);
+  return res.json();
+}
+
 // ── Photo Scan ────────────────────────────────────────────────────────────────
 export async function scanFood(imageBase64, mediaType) {
   const res = await apiFetch(`${BASE}/scan-food`, {
