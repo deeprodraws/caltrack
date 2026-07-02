@@ -731,7 +731,10 @@ export default function Dashboard() {
         <div className="entry-list">
           {entries.slice(0, 5).map(e => (
             <div key={e.id} className="entry-row">
-              <span className="entry-name">{e.food_name}</span>
+              <span className="entry-name">
+                {e.entry_type && e.entry_type !== 'single' && <span aria-hidden="true">🍽️ </span>}
+                {e.entry_type && e.entry_type !== 'single' ? (e.source_name || e.food_name) : e.food_name}
+              </span>
               <div className="entry-macros">
                 <div className="entry-macro">
                   <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>

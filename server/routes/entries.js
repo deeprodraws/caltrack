@@ -17,8 +17,29 @@ router.get('/', async (req, res) => {
     }
     if (!date) return res.status(400).json({ error: 'date query param required' });
     const { rows } = await pool.query(
-      'SELECT * FROM food_entries WHERE user_id = $1 AND date = $2 ORDER BY created_at ASC',
-      [req.userId, date]
+      `SELECT
+         fe.*,
+         COALESCE(
+           json_agg(
+             json_build_object(
+               'id', fei.id,
+               'food_name', fei.food_name,
+               'weight_grams', fei.weight_grams,
+               'calories', fei.calories,
+               'protein', fei.protein,
+               'carbs', fei.carbs,
+               'fat', fei.fat,
+               'sort_order', fei.sort_order
+             ) ORDER BY fei.sort_order
+           ) FILTER (WHERE fei.id IS NOT NULL),
+           '[]'
+         ) AS ingredients
+       FROM food_entries fe
+       LEFT JOIN food_entry_ingredients fei ON fei.entry_id = fe.id
+       WHERE fe.date = $1 AND fe.user_id = $2
+       GROUP BY fe.id
+       ORDER BY fe.created_at ASC`,
+      [date, req.userId]
     );
     res.json(rows);
   } catch (err) {

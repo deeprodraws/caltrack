@@ -464,6 +464,28 @@ pool.query(`
   CREATE INDEX IF NOT EXISTS recipes_user_id_idx             ON recipes(user_id);
   CREATE INDEX IF NOT EXISTS workout_templates_user_id_idx   ON workout_templates(user_id);
   CREATE INDEX IF NOT EXISTS workout_sessions_user_date_idx  ON workout_sessions(user_id, date);
+
+  -- ── Single-entry logging for meal templates & recipes ───────────────────────
+
+  ALTER TABLE food_entries
+    ADD COLUMN IF NOT EXISTS entry_type TEXT NOT NULL DEFAULT 'single',
+    ADD COLUMN IF NOT EXISTS source_name TEXT,
+    ADD COLUMN IF NOT EXISTS source_id INTEGER,
+    ADD COLUMN IF NOT EXISTS is_expanded BOOLEAN NOT NULL DEFAULT false;
+
+  CREATE TABLE IF NOT EXISTS food_entry_ingredients (
+    id           SERIAL PRIMARY KEY,
+    entry_id     INTEGER NOT NULL REFERENCES food_entries(id) ON DELETE CASCADE,
+    food_name    TEXT NOT NULL,
+    weight_grams REAL NOT NULL DEFAULT 0,
+    calories     REAL NOT NULL DEFAULT 0,
+    protein      REAL NOT NULL DEFAULT 0,
+    carbs        REAL NOT NULL DEFAULT 0,
+    fat          REAL NOT NULL DEFAULT 0,
+    sort_order   INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE INDEX IF NOT EXISTS food_entry_ingredients_entry_id_idx ON food_entry_ingredients(entry_id);
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 

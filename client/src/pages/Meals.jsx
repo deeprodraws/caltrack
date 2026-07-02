@@ -506,6 +506,10 @@ function LogMealSheet({ template, onClose, onLogged }) {
 
           {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+            This will log as a single entry in your food log
+          </p>
+
           <button
             onClick={handleLog}
             disabled={logging || !ingredients.length}
@@ -720,6 +724,10 @@ function LogRecipeSheet({ recipe, onClose, onLogged }) {
           )}
 
           {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+            This will log as a single entry in your food log
+          </p>
 
           <button
             onClick={handleLog}

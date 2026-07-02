@@ -172,6 +172,83 @@ function EditModal({ entry, onSave, onClose }) {
   );
 }
 
+// ── Template/recipe entry (collapsible) ──────────────────────────────────────
+function TemplateEntryRow({ entry, expanded, onToggle, onDelete }) {
+  const ingredients = entry.ingredients || [];
+  return (
+    <div style={{
+      background: 'var(--surface)', border: '1px solid var(--border)',
+      borderLeft: '3px solid var(--accent)', borderRadius: 'var(--radius-sm)', overflow: 'hidden',
+    }}>
+      <div onClick={onToggle} style={{ padding: '12px 16px', cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <span style={{
+            fontWeight: 500, fontSize: 14, display: 'flex', alignItems: 'center', gap: 6,
+            minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            <span aria-hidden="true">🍽️</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {entry.source_name || entry.food_name}
+            </span>
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>{round1(entry.calories)} cal</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{expanded ? '▲' : '▼'}</span>
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+          {round1(entry.protein)}p · {round1(entry.carbs)}c · {round1(entry.fat)}f
+        </div>
+        {!expanded && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}
+            </span>
+            <button className="btn-delete" title="Delete" onClick={e => { e.stopPropagation(); onDelete(); }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {expanded && (
+        <>
+          <div style={{ borderTop: '1px solid var(--border)', padding: '4px 16px' }}>
+            {ingredients.map(ing => (
+              <div key={ing.id} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                fontSize: 13, padding: '7px 0', borderBottom: '1px solid var(--border)',
+              }}>
+                <span style={{
+                  color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap', marginRight: 10, minWidth: 0,
+                }}>
+                  {ing.food_name} ({round1(ing.weight_grams)}g)
+                </span>
+                <span style={{ flexShrink: 0 }}>{round1(ing.calories)} cal</span>
+              </div>
+            ))}
+          </div>
+          <div style={{
+            padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              Logged from {entry.entry_type === 'recipe' ? 'recipe' : 'template'}
+            </span>
+            <button className="btn-delete" title="Delete" onClick={e => { e.stopPropagation(); onDelete(); }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Delete confirmation ────────────────────────────────────────────────────────
 function DeleteConfirm({ entry, onConfirm, onCancel }) {
   return (
@@ -220,10 +297,12 @@ export default function FoodLog() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showBarcode, setShowBarcode] = useState(false);
+  const [expandedEntryId, setExpandedEntryId] = useState(null);
 
   useEffect(() => {
     const cacheKey = 'foodlog-' + date;
     const cached = getCached(cacheKey);
+    setExpandedEntryId(null);
     if (cached) {
       setEntries(cached);
       setLoading(false);
@@ -493,38 +572,48 @@ export default function FoodLog() {
 
           <div className="entry-list">
             {entries.map(e => (
-              <div key={e.id} className="entry-row">
-                <span className="entry-name">{e.food_name}</span>
-                <div className="entry-macros">
-                  <div className="entry-macro">
-                    <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
-                    <div className="lbl">kcal</div>
+              e.entry_type && e.entry_type !== 'single' ? (
+                <TemplateEntryRow
+                  key={e.id}
+                  entry={e}
+                  expanded={expandedEntryId === e.id}
+                  onToggle={() => setExpandedEntryId(prev => prev === e.id ? null : e.id)}
+                  onDelete={() => setDeleteTarget(e)}
+                />
+              ) : (
+                <div key={e.id} className="entry-row">
+                  <span className="entry-name">{e.food_name}</span>
+                  <div className="entry-macros">
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
+                      <div className="lbl">kcal</div>
+                    </div>
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
+                      <div className="lbl">protein</div>
+                    </div>
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
+                      <div className="lbl">carbs</div>
+                    </div>
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
+                      <div className="lbl">fat</div>
+                    </div>
                   </div>
-                  <div className="entry-macro">
-                    <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
-                    <div className="lbl">protein</div>
-                  </div>
-                  <div className="entry-macro">
-                    <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
-                    <div className="lbl">carbs</div>
-                  </div>
-                  <div className="entry-macro">
-                    <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
-                    <div className="lbl">fat</div>
-                  </div>
+                  <button className="btn-icon" title="Edit" onClick={() => setEditEntry(e)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button className="btn-delete" title="Delete" onClick={() => setDeleteTarget(e)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
                 </div>
-                <button className="btn-icon" title="Edit" onClick={() => setEditEntry(e)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-                <button className="btn-delete" title="Delete" onClick={() => setDeleteTarget(e)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
-              </div>
+              )
             ))}
           </div>
 

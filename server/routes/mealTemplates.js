@@ -126,15 +126,41 @@ router.post('/:id/log', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const entries = [];
-    for (const g of ingredients) {
-      const { rows: [entry] } = await client.query(
-        `INSERT INTO food_entries (user_id, date, food_name, calories, protein, carbs, fat)
-         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-        [req.userId, date, g.food_name, +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0]
+
+    const { rows: [tmpl] } = await client.query(
+      'SELECT name FROM meal_templates WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.userId]
+    );
+    if (!tmpl) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Not found' }); }
+
+    const totals = ingredients.reduce((acc, g) => ({
+      cal: acc.cal + (+g.calories || 0),
+      p:   acc.p   + (+g.protein  || 0),
+      c:   acc.c   + (+g.carbs    || 0),
+      f:   acc.f   + (+g.fat      || 0),
+    }), { cal: 0, p: 0, c: 0, f: 0 });
+
+    const { rows: [entry] } = await client.query(
+      `INSERT INTO food_entries
+         (user_id, date, food_name, calories, protein, carbs, fat, entry_type, source_name, source_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'template', $3, $8)
+       RETURNING *`,
+      [req.userId, date, tmpl.name, totals.cal, totals.p, totals.c, totals.f, req.params.id]
+    );
+
+    const savedIngredients = [];
+    for (let i = 0; i < ingredients.length; i++) {
+      const g = ingredients[i];
+      const { rows: [ing] } = await client.query(
+        `INSERT INTO food_entry_ingredients
+           (entry_id, food_name, weight_grams, calories, protein, carbs, fat, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         RETURNING *`,
+        [entry.id, g.food_name, +g.weight_grams || 0, +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0, i]
       );
-      entries.push(entry);
+      savedIngredients.push(ing);
     }
+
     await client.query('COMMIT');
 
     Promise.all(
@@ -153,7 +179,7 @@ router.post('/:id/log', async (req, res) => {
         )
     ).catch(err => console.error('ingredient_memory upsert:', err.message));
 
-    res.json({ entries });
+    res.json({ entry: { ...entry, ingredients: savedIngredients } });
   } catch (err) {
     await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });

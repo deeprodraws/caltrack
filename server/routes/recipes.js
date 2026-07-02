@@ -157,12 +157,15 @@ router.post('/:id/log', async (req, res) => {
   const { date, servings } = req.body;
   if (!date || !servings) return res.status(400).json({ error: 'date and servings required' });
 
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+
     const [rRes, iRes] = await Promise.all([
-      pool.query('SELECT * FROM recipes WHERE id=$1 AND user_id=$2', [req.params.id, req.userId]),
-      pool.query('SELECT * FROM recipe_ingredients WHERE recipe_id=$1', [req.params.id]),
+      client.query('SELECT * FROM recipes WHERE id=$1 AND user_id=$2', [req.params.id, req.userId]),
+      client.query('SELECT * FROM recipe_ingredients WHERE recipe_id=$1 ORDER BY sort_order, id', [req.params.id]),
     ]);
-    if (!rRes.rows[0]) return res.status(404).json({ error: 'Not found' });
+    if (!rRes.rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Not found' }); }
 
     const recipe = rRes.rows[0];
     const ings = iRes.rows;
@@ -178,15 +181,36 @@ router.post('/:id/log', async (req, res) => {
       fat:      +(totals.f   * ratio).toFixed(1),
     };
     const srvLabel = +servings === 1 ? '' : ` ×${+servings}`;
+    const sourceName = `${recipe.name}${srvLabel}`;
 
-    const { rows: [entry] } = await pool.query(
-      `INSERT INTO food_entries (user_id, date, food_name, calories, protein, carbs, fat)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [req.userId, date, `${recipe.name}${srvLabel}`, logged.calories, logged.protein, logged.carbs, logged.fat]
+    const { rows: [entry] } = await client.query(
+      `INSERT INTO food_entries
+         (user_id, date, food_name, calories, protein, carbs, fat, entry_type, source_name, source_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'recipe', $3, $8)
+       RETURNING *`,
+      [req.userId, date, sourceName, logged.calories, logged.protein, logged.carbs, logged.fat, req.params.id]
     );
-    res.json({ entry });
+
+    const savedIngredients = [];
+    for (let i = 0; i < ings.length; i++) {
+      const g = ings[i];
+      const { rows: [ing] } = await client.query(
+        `INSERT INTO food_entry_ingredients
+           (entry_id, food_name, weight_grams, calories, protein, carbs, fat, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         RETURNING *`,
+        [entry.id, g.food_name, (g.weight_grams || 0) * ratio, g.calories * ratio, g.protein * ratio, g.carbs * ratio, g.fat * ratio, i]
+      );
+      savedIngredients.push(ing);
+    }
+
+    await client.query('COMMIT');
+    res.json({ entry: { ...entry, ingredients: savedIngredients } });
   } catch (err) {
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 
