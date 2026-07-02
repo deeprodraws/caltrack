@@ -5,6 +5,14 @@ import {
   addWeightLog, updateWeightLog, deleteWeightLog,
   getMetrics, updateMetrics,
 } from '../api';
+import { getCached, setCached, invalidateCache } from '../utils/cache';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { useAuth } from '../context/AuthContext';
+
+function invalidateDashboardAndFoodlog(date) {
+  invalidateCache('dashboard-' + date);
+  invalidateCache('foodlog-' + date);
+}
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -34,12 +42,13 @@ function shortDate(str) {
   return new Date(str + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function getGreeting() {
+function getGreeting(name) {
   const h = new Date().getHours();
-  if (h >= 5 && h < 12) return 'Good Morning.';
-  if (h >= 12 && h < 17) return 'Good Afternoon.';
-  if (h >= 17 && h < 21) return 'Good Evening.';
-  return 'Good Night.';
+  const base = h >= 5 && h < 12 ? 'Good Morning'
+    : h >= 12 && h < 17 ? 'Good Afternoon'
+    : h >= 17 && h < 21 ? 'Good Evening'
+    : 'Good Night';
+  return name?.trim() ? `${base}, ${name.trim()}.` : `${base}.`;
 }
 
 function todayLongDate() {
@@ -409,6 +418,7 @@ function SleepSheet({ metrics, onSave, onClose }) {
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [entries, setEntries]       = useState([]);
   const [goals, setGoals]           = useState({ calories: 2000, protein: 150, carbs: 250, fat: 65, weight_unit: 'kg' });
   const [weightLogs, setWeightLogs] = useState([]);
@@ -420,6 +430,16 @@ export default function Dashboard() {
   const [metricModal, setMetricModal]     = useState(null); // 'water' | 'steps' | 'sleep'
 
   useEffect(() => {
+    const cacheKey = 'dashboard-' + todayStr();
+    const cached = getCached(cacheKey);
+    if (cached) {
+      setEntries(cached.entries);
+      setGoals(cached.goals);
+      setWeightLogs(cached.weightLogs);
+      setMetrics(cached.metrics);
+      setLoading(false);
+      return;
+    }
     Promise.all([
       getEntries(todayStr()),
       getGoals(),
@@ -431,6 +451,7 @@ export default function Dashboard() {
       setWeightLogs(w);
       setMetrics(m);
       setLoading(false);
+      setCached(cacheKey, { entries: e, goals: g, weightLogs: w, metrics: m });
     });
   }, []);
 
@@ -465,6 +486,7 @@ export default function Dashboard() {
       const created = await addWeightLog({ date: today, weight: value, unit });
       setWeightLogs(prev => [created, ...prev].sort((a, b) => b.date.localeCompare(a.date)));
     }
+    invalidateDashboardAndFoodlog(today);
     setShowWeightModal(false);
     setEditWeight(null);
   }
@@ -472,6 +494,7 @@ export default function Dashboard() {
   async function handleWeightDelete() {
     await deleteWeightLog(deleteWeight.id);
     setWeightLogs(prev => prev.filter(w => w.id !== deleteWeight.id));
+    invalidateDashboardAndFoodlog(today);
     setDeleteWeight(null);
   }
 
@@ -485,10 +508,11 @@ export default function Dashboard() {
     const updated = await updateMetrics({ date: today, ...data });
     // `updated` is the DB row (no `yesterday`), so spreading preserves prev.yesterday
     setMetrics(prev => ({ ...prev, ...updated }));
+    invalidateDashboardAndFoodlog(today);
     setMetricModal(null);
   }
 
-  if (loading) return <div className="empty-state">Loading...</div>;
+  if (loading) return <SkeletonLoader count={5} height={70} />;
 
   // ── Shared card style ─────────────────────────────────────────────────────
   const metricCardBase = {
@@ -506,7 +530,7 @@ export default function Dashboard() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', lineHeight: 1.15, marginBottom: 5 }}>
-            {getGreeting()}
+            {getGreeting(user?.display_name)}
           </div>
           <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>
             {todayLongDate()}

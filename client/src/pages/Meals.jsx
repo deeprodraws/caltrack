@@ -5,6 +5,15 @@ import {
   getRecipes, getRecipe, createRecipe, updateRecipe, deleteRecipe, logRecipe,
   getIngredientMemory,
 } from '../api';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { getCached, setCached, invalidateCache } from '../utils/cache';
+
+const MEALS_CACHE_TTL = 300000; // 5 minutes
+
+function invalidateMealsCache() {
+  invalidateCache('meals-templates');
+  invalidateCache('meals-recipes');
+}
 
 function todayStr() {
   const d = new Date();
@@ -823,10 +832,23 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
   const [toast, setToast] = useState('');
 
   useEffect(() => {
-    Promise.all([getMealTemplates(), getRecipes()]).then(([t, r]) => {
+    const cachedT = getCached('meals-templates', MEALS_CACHE_TTL);
+    const cachedR = getCached('meals-recipes', MEALS_CACHE_TTL);
+    if (cachedT && cachedR) {
+      setTemplates(cachedT);
+      setRecipes(cachedR);
+      setLoading(false);
+      return;
+    }
+    Promise.all([
+      cachedT ? Promise.resolve(cachedT) : getMealTemplates(),
+      cachedR ? Promise.resolve(cachedR) : getRecipes(),
+    ]).then(([t, r]) => {
       setTemplates(t);
       setRecipes(r);
       setLoading(false);
+      if (!cachedT) setCached('meals-templates', t);
+      if (!cachedR) setCached('meals-recipes', r);
     });
   }, []);
 
@@ -849,12 +871,14 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
         ? prev.map(t => t.id === saved.id ? saved : t)
         : [saved, ...prev];
     });
+    invalidateMealsCache();
     setModal(null);
   }
 
   async function handleDeleteTemplate(id) {
     await deleteMealTemplate(id);
     setTemplates(prev => prev.filter(t => t.id !== id));
+    invalidateMealsCache();
     setModal(null);
   }
 
@@ -890,12 +914,14 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
         };
       });
     });
+    invalidateMealsCache();
     setModal(null);
   }
 
   async function handleDeleteRecipe(id) {
     await deleteRecipe(id);
     setRecipes(prev => prev.filter(r => r.id !== id));
+    invalidateMealsCache();
     setModal(null);
   }
 
@@ -934,7 +960,7 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
       )}
 
       {loading ? (
-        <div className="empty-state">Loading…</div>
+        <SkeletonLoader count={4} height={70} />
       ) : effectiveTab === 'templates' ? (
         templates.length === 0 ? (
           <div className="empty-state">

@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getTimeline } from '../api';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { getCached, setCached } from '../utils/cache';
+
+const TIMELINE_CACHE_TTL = 120000; // 2 minutes
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -465,6 +469,16 @@ export default function Timeline() {
   useEffect(() => {
     const end   = todayStr;
     const start = offsetDate(end, -29);
+    const cacheKey = `timeline-${start}-${end}`;
+    const cached = getCached(cacheKey, TIMELINE_CACHE_TTL);
+    if (cached) {
+      setAllDays(cached.days);
+      setGoals(cached.goals);
+      setOldestStart(start);
+      setHasMore(true);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     getTimeline(start, end)
       .then(data => {
@@ -472,6 +486,7 @@ export default function Timeline() {
         setGoals(data.goals);
         setOldestStart(start);
         setHasMore(true);
+        setCached(cacheKey, data);
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
@@ -482,8 +497,11 @@ export default function Timeline() {
     setLoadingMore(true);
     const newEnd   = offsetDate(oldestStart, -1);
     const newStart = offsetDate(newEnd, -29);
+    const cacheKey = `timeline-${newStart}-${newEnd}`;
     try {
-      const data = await getTimeline(newStart, newEnd);
+      const cached = getCached(cacheKey, TIMELINE_CACHE_TTL);
+      const data = cached || await getTimeline(newStart, newEnd);
+      if (!cached) setCached(cacheKey, data);
       setAllDays(prev => [...prev, ...data.days]);
       setOldestStart(newStart);
       // If no data at all in the older range, stop offering Load More
@@ -509,12 +527,7 @@ export default function Timeline() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   if (loading) {
-    return (
-      <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
-        <div style={{ fontSize: 24, marginBottom: 10 }}>⏳</div>
-        Loading your timeline…
-      </div>
-    );
+    return <SkeletonLoader count={4} height={140} />;
   }
 
   if (error) {

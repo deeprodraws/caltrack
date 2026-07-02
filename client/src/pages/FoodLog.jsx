@@ -2,6 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { getEntries, addEntry, updateEntry, deleteEntry, searchSavedFoods, createSavedFood } from '../api';
 import PhotoScanner from '../components/PhotoScanner';
 import BarcodeScanner from '../components/BarcodeScanner';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { getCached, setCached, invalidateCache } from '../utils/cache';
+
+function invalidateFoodlogAndDashboard(date) {
+  invalidateCache('foodlog-' + date);
+  invalidateCache('dashboard-' + date);
+}
 
 function todayStr() {
   const d = new Date();
@@ -215,8 +222,19 @@ export default function FoodLog() {
   const [showBarcode, setShowBarcode] = useState(false);
 
   useEffect(() => {
+    const cacheKey = 'foodlog-' + date;
+    const cached = getCached(cacheKey);
+    if (cached) {
+      setEntries(cached);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    getEntries(date).then(e => { setEntries(e); setLoading(false); });
+    getEntries(date).then(e => {
+      setEntries(e);
+      setLoading(false);
+      setCached(cacheKey, e);
+    });
   }, [date]);
 
   function shiftDate(days) {
@@ -282,6 +300,7 @@ export default function FoodLog() {
 
     const entry = await addEntry(payload);
     setEntries(prev => [...prev, entry]);
+    invalidateFoodlogAndDashboard(date);
 
     if (saveAsTemplate && !selectedFood) {
       await createSavedFood({
@@ -304,23 +323,27 @@ export default function FoodLog() {
   async function handleScanSave(scannedItems) {
     const saved = await Promise.all(scannedItems.map(item => addEntry(item)));
     setEntries(prev => [...prev, ...saved]);
+    invalidateFoodlogAndDashboard(date);
     setShowScanner(false);
   }
 
   async function handleBarcodeSave(entry) {
     const saved = await addEntry(entry);
     setEntries(prev => [...prev, saved]);
+    invalidateFoodlogAndDashboard(date);
     setShowBarcode(false);
   }
 
   async function handleDeleteConfirmed() {
     await deleteEntry(deleteTarget.id);
     setEntries(prev => prev.filter(e => e.id !== deleteTarget.id));
+    invalidateFoodlogAndDashboard(date);
     setDeleteTarget(null);
   }
 
   function handleEditSaved(updated) {
     setEntries(prev => prev.map(e => e.id === updated.id ? updated : e));
+    invalidateFoodlogAndDashboard(date);
     setEditEntry(null);
   }
 
@@ -456,7 +479,7 @@ export default function FoodLog() {
 
       {/* ── Entry list ── */}
       {loading ? (
-        <div className="empty-state">Loading…</div>
+        <SkeletonLoader count={4} height={64} />
       ) : entries.length === 0 ? (
         <div className="empty-state">No entries for {formatDate(date)}. Add one above.</div>
       ) : (

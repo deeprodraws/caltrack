@@ -6,6 +6,10 @@ import {
   getPhysiqueWeeks, createPhysiqueWeek, updatePhysiqueWeek, deletePhysiqueWeek,
   uploadPhysiquePhoto, deletePhysiquePhoto,
 } from '../api';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { getCached, setCached, invalidateCache } from '../utils/cache';
+
+const PHYSIQUE_CACHE_TTL = 300000; // 5 minutes
 
 function localDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -52,7 +56,14 @@ export default function Physique() {
   async function load() {
     setLoading(true);
     try {
-      const data = await getPhysiqueWeeks();
+      const cached = getCached('physique-weeks', PHYSIQUE_CACHE_TTL);
+      let data;
+      if (cached) {
+        data = cached;
+      } else {
+        data = await getPhysiqueWeeks();
+        setCached('physique-weeks', data);
+      }
       setWeeks(data.sort((a, b) => a.week_start.localeCompare(b.week_start)));
     } catch {}
     setLoading(false);
@@ -91,6 +102,7 @@ export default function Physique() {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+      invalidateCache('physique-weeks');
       await load();
       setCaptureSheet(null);
     } catch {}
@@ -99,6 +111,7 @@ export default function Physique() {
 
   async function handleDeletePhoto(photo) {
     await deletePhysiquePhoto(photo.id);
+    invalidateCache('physique-weeks');
     await load();
     setLightbox(null);
   }
@@ -109,6 +122,7 @@ export default function Physique() {
     } else {
       await createPhysiqueWeek({ week_start: week.week_start, ...data });
     }
+    invalidateCache('physique-weeks');
     await load();
     setEditSheet(null);
   }
@@ -117,6 +131,7 @@ export default function Physique() {
     if (!confirm('Delete this week and all its photos?')) return;
     setDeletingId(weekId);
     await deletePhysiqueWeek(weekId);
+    invalidateCache('physique-weeks');
     await load();
     setDeletingId(null);
   }
@@ -164,7 +179,7 @@ export default function Physique() {
       )}
 
       {loading
-        ? <div style={{ textAlign: 'center', color: 'var(--text-muted)', paddingTop: 40 }}>Loading...</div>
+        ? <SkeletonLoader count={3} height={220} />
         : view === 'timeline'
           ? (
             <div>

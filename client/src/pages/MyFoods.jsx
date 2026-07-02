@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { getSavedFoods, createSavedFood, updateSavedFood, deleteSavedFood } from '../api';
 import BarcodeScanner from '../components/BarcodeScanner';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { getCached, setCached, invalidateCache } from '../utils/cache';
+
+const SAVED_FOODS_CACHE_TTL = 300000; // 5 minutes
 
 const emptyForm = { name: '', calories: '', protein: '', carbs: '', fat: '', serving_size: '1', serving_unit: 'serving' };
 
@@ -132,7 +136,17 @@ export default function MyFoods({ embedded = false }) {
   const [showBarcode, setShowBarcode] = useState(false);
 
   useEffect(() => {
-    getSavedFoods().then(f => { setFoods(f); setLoading(false); });
+    const cached = getCached('saved-foods', SAVED_FOODS_CACHE_TTL);
+    if (cached) {
+      setFoods(cached);
+      setLoading(false);
+      return;
+    }
+    getSavedFoods().then(f => {
+      setFoods(f);
+      setLoading(false);
+      setCached('saved-foods', f);
+    });
   }, []);
 
   const filtered = query.trim()
@@ -142,6 +156,7 @@ export default function MyFoods({ embedded = false }) {
   function handleSave(food, mode) {
     if (mode === 'create') setFoods(prev => [...prev, food].sort((a, b) => a.name.localeCompare(b.name)));
     else setFoods(prev => prev.map(f => f.id === food.id ? food : f));
+    invalidateCache('saved-foods');
     setModal(null);
   }
 
@@ -157,12 +172,14 @@ export default function MyFoods({ embedded = false }) {
       serving_unit: 'serving',
     });
     setFoods(prev => [...prev, food].sort((a, b) => a.name.localeCompare(b.name)));
+    invalidateCache('saved-foods');
     setShowBarcode(false);
   }
 
   async function handleDeleteConfirmed() {
     await deleteSavedFood(deleteTarget.id);
     setFoods(prev => prev.filter(f => f.id !== deleteTarget.id));
+    invalidateCache('saved-foods');
     setDeleteTarget(null);
   }
 
@@ -203,7 +220,7 @@ export default function MyFoods({ embedded = false }) {
       </div>
 
       {loading ? (
-        <div className="empty-state">Loading…</div>
+        <SkeletonLoader count={4} height={64} />
       ) : filtered.length === 0 ? (
         <div className="empty-state">
           {query ? `No foods matching "${query}"` : 'No saved foods yet. Add one above or check "Save as template" when logging food.'}

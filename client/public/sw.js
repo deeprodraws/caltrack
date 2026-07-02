@@ -1,6 +1,6 @@
 // Minimal service worker — enables PWA installability.
 // Uses network-first so dev changes always show immediately.
-const CACHE = 'caltrack-v1';
+const CACHE = 'caltrack-v2';
 
 self.addEventListener('install', () => self.skipWaiting());
 

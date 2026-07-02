@@ -811,3 +811,14 @@ input, select {
   .auth-card { padding: 28px 20px; }
 }
 
+/* ── Skeleton loading placeholder ─────────────────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.skeleton {
+  background: var(--skeleton-color, var(--surface2));
+  border-radius: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+

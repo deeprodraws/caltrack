@@ -12,6 +12,8 @@ import {
   getExerciseHistory, getExerciseLastSession,
   createWorkoutTemplate, updateWorkoutTemplate, deleteWorkoutTemplate,
 } from '../api';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { getCached, setCached, invalidateCache } from '../utils/cache';
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -779,11 +781,23 @@ export default function Workout() {
   useEffect(() => {
     (async () => {
       const today = todayStr();
-      const [sessions, tmpl, recent] = await Promise.all([
-        getWorkoutSessions(today),
-        getWorkoutTemplates(),
-        getRecentWorkoutSessions(5),
-      ]);
+      const cacheKey = 'workout-' + today;
+      const cached = getCached(cacheKey);
+
+      let sessions, tmpl, recent;
+      if (cached) {
+        ({ sessions, tmpl, recent } = cached);
+      } else {
+        [sessions, tmpl, recent] = await Promise.all([
+          getWorkoutSessions(today),
+          getWorkoutTemplates(),
+          getRecentWorkoutSessions(5),
+        ]);
+        // Never persist an in-progress session into the cache — that state must always be live
+        const hasInProgress = sessions.some(s => !s.finished_at);
+        if (!hasInProgress) setCached(cacheKey, { sessions, tmpl, recent });
+      }
+
       setTemplates(tmpl);
       setRecentSessions(recent);
       const inProgress = sessions.find(s => !s.finished_at);
@@ -812,6 +826,7 @@ export default function Workout() {
 
   async function startFromTemplate(tmpl) {
     const s = await createWorkoutSession({ date: todayStr(), name: tmpl.name, template_id: tmpl.id });
+    invalidateCache('workout-' + todayStr());
     setSession(s);
     setPageState('active');
     fetchLastFor(s.exercises.map(e => e.exercise_name));
@@ -819,6 +834,7 @@ export default function Workout() {
 
   async function startEmpty() {
     const s = await createWorkoutSession({ date: todayStr(), name: startName.trim() || 'Workout' });
+    invalidateCache('workout-' + todayStr());
     setSession(s);
     setPageState('active');
     setShowStartEmpty(false);
@@ -859,6 +875,7 @@ export default function Workout() {
     const totalSets = session.exercises.reduce((n, e) => n + e.sets.length, 0);
     const totalVol  = session.exercises.reduce((n, e) => n + e.sets.reduce((s, set) => s + set.weight * set.reps, 0), 0);
     setRecentSessions(prev => [{ id: session.id, date: session.date, name: session.name, started_at: session.started_at, finished_at, total_sets: totalSets, total_volume: totalVol }, ...prev].slice(0, 5));
+    invalidateCache('workout-' + session.date);
     setSummaryTarget(null);
     setSession(null);
     setPageState('idle');
@@ -868,6 +885,7 @@ export default function Workout() {
     await deleteWorkoutSession(sessionId);
     setTodaySessions(prev => prev.filter(s => s.id !== sessionId));
     setRecentSessions(prev => prev.filter(s => s.id !== sessionId));
+    invalidateCache('workout-' + todayStr());
     setSummaryTarget(null);
   }
 
@@ -895,7 +913,7 @@ export default function Workout() {
   }
 
   // ── Loading ────────────────────────────────────────────────────────────────
-  if (pageState === 'loading') return <div className="empty-state">Loading…</div>;
+  if (pageState === 'loading') return <SkeletonLoader count={4} height={70} />;
 
   // ── STATE B: Active session ────────────────────────────────────────────────
   if (pageState === 'active' && session) {

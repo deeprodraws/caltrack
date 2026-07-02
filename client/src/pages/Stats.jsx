@@ -4,6 +4,10 @@ import {
   CartesianGrid, Tooltip, ReferenceLine,
 } from 'recharts';
 import { getEntriesRange, getGoals, getWeightLogs } from '../api';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { getCached, setCached } from '../utils/cache';
+
+const STATS_CACHE_TTL = 120000; // 2 minutes
 
 const KG_TO_LBS = 2.20462;
 const LBS_TO_KG = 0.453592;
@@ -70,9 +74,21 @@ export default function Stats() {
   const unit = goals.weight_unit || 'lbs';
 
   useEffect(() => {
+    const cacheKey = 'stats-30';
+    const cached = getCached(cacheKey, STATS_CACHE_TTL);
+    if (cached) {
+      setAllEntries(cached.entries);
+      setGoals(cached.goals);
+      setWeightLogs(cached.weightLogs);
+      setLoading(false);
+      return;
+    }
     const { start, end } = getRange(30);
     Promise.all([getEntriesRange(start, end), getGoals(), getWeightLogs()])
-      .then(([e, g, w]) => { setAllEntries(e); setGoals(g); setWeightLogs(w); setLoading(false); });
+      .then(([e, g, w]) => {
+        setAllEntries(e); setGoals(g); setWeightLogs(w); setLoading(false);
+        setCached(cacheKey, { entries: e, goals: g, weightLogs: w });
+      });
   }, []);
 
   // ── Calorie + macro data ────────────────────────────────────────────────────
@@ -120,7 +136,7 @@ export default function Stats() {
     return { weightData, weightSummary: { current: last, change } };
   }, [weightLogs, weightPeriod, unit]);
 
-  if (loading) return <div className="empty-state">Loading…</div>;
+  if (loading) return <SkeletonLoader count={3} height={180} />;
 
   const calTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length || payload[0].value == null) return null;
