@@ -83,10 +83,10 @@ router.post('/', async (req, res) => {
       const g = ingredients[i];
       await client.query(
         `INSERT INTO recipe_ingredients
-         (recipe_id, food_name, weight_grams, calories, protein, carbs, fat, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [recipe.id, g.food_name, +g.weight_grams || 0, +g.calories || 0,
-         +g.protein || 0, +g.carbs || 0, +g.fat || 0, i]
+         (recipe_id, food_name, weight_grams, weight_unit, calories, protein, carbs, fat, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [recipe.id, g.food_name, +g.weight_grams || 0, g.weight_unit || 'g',
+         +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0, i]
       );
     }
     await client.query('COMMIT');
@@ -122,10 +122,10 @@ router.put('/:id', async (req, res) => {
       const g = ingredients[i];
       await client.query(
         `INSERT INTO recipe_ingredients
-         (recipe_id, food_name, weight_grams, calories, protein, carbs, fat, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [req.params.id, g.food_name, +g.weight_grams || 0, +g.calories || 0,
-         +g.protein || 0, +g.carbs || 0, +g.fat || 0, i]
+         (recipe_id, food_name, weight_grams, weight_unit, calories, protein, carbs, fat, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [req.params.id, g.food_name, +g.weight_grams || 0, g.weight_unit || 'g',
+         +g.calories || 0, +g.protein || 0, +g.carbs || 0, +g.fat || 0, i]
       );
     }
     await client.query('COMMIT');

@@ -7,14 +7,18 @@ import {
   uploadPhysiquePhoto, deletePhysiquePhoto,
 } from '../api';
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function getWeekStart(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
   d.setDate(d.getDate() - d.getDay());
-  return d.toISOString().slice(0, 10);
+  return localDateStr(d);
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return localDateStr(new Date());
 }
 
 function formatDateRange(weekStart) {

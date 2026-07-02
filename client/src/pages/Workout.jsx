@@ -15,7 +15,10 @@ import {
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
-function todayStr() { return new Date().toISOString().slice(0, 10); }
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 function shortDate(str) {
   return new Date(str + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -385,7 +388,10 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
     <div className="modal-overlay" onClick={mode === 'view' ? onClose : undefined}>
       <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
         <div className="modal-header">
-          <h3>{mode === 'finish' ? '🎉 Workout Complete' : session.name}</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            {mode === 'finish' && <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>}
+            {mode === 'finish' ? 'Workout Complete' : session.name}
+          </h3>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
@@ -400,7 +406,10 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
 
           {mode === 'finish' && !loadingPrs && Object.keys(prs).length > 0 && (
             <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>🏆 Personal Records</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+                Personal Records
+              </div>
               {Object.entries(prs).map(([name, set]) => (
                 <div key={name} style={{ fontSize: 13, color: '#fbbf24', fontWeight: 600, marginBottom: 2 }}>
                   {name} — {set.weight} × {set.reps}
@@ -654,7 +663,10 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
       </div>
 
       {lastSession === undefined ? null : lastSession === null ? (
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>First time! 🎯</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+          First time!
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
       ) : (
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
           Last: {shortDate(lastSession.date)}

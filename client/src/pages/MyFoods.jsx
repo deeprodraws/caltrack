@@ -93,7 +93,12 @@ function DeleteConfirm({ food, onConfirm, onCancel }) {
           <button className="modal-close" onClick={onCancel}>✕</button>
         </div>
         <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🗑️</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </div>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
             Remove <strong style={{ color: 'var(--text)' }}>{food.name}</strong> from your saved foods?<br />
             <span style={{ fontSize: 12 }}>This won't affect existing log entries.</span>
@@ -174,7 +179,7 @@ export default function MyFoods({ embedded = false }) {
             onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
-            <span>📦</span> Scan
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v3M21 16v3"/></svg> Scan
           </button>
         </div>
       </div>

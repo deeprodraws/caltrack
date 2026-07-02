@@ -9,7 +9,12 @@ import {
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function sum(entries, key) {
@@ -18,7 +23,8 @@ function sum(entries, key) {
 
 function shortDate(str) {
   const today = todayStr();
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const yd = new Date(); yd.setDate(yd.getDate() - 1);
+  const yesterday = localDateStr(yd);
   if (str === today) return 'Today';
   if (str === yesterday) return 'Yesterday';
   return new Date(str + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -143,7 +149,12 @@ function WeightDeleteConfirm({ log, unit, onConfirm, onCancel }) {
           <button className="modal-close" onClick={onCancel}>✕</button>
         </div>
         <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🗑️</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </div>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
             Remove <strong style={{ color: 'var(--text)' }}>{log.weight} {unit}</strong> logged on{' '}
             <strong style={{ color: 'var(--text)' }}>{shortDate(log.date)}</strong>?
@@ -181,7 +192,10 @@ function WaterSheet({ metrics, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>💧 Water Intake</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg>
+            Water Intake
+          </h3>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
@@ -268,7 +282,10 @@ function StepsSheet({ metrics, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>👟 Steps</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg>
+            Steps
+          </h3>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
@@ -295,8 +312,9 @@ function StepsSheet({ metrics, onSave, onClose }) {
                 <div className="progress-bar" style={{ width: `${Math.min(parsed / 10000 * 100, 100)}%`, background: '#34d399' }} />
               </div>
               {parsed >= 10000 && (
-                <div style={{ fontSize: 12, color: '#34d399', fontWeight: 600, marginTop: 6, textAlign: 'center' }}>
-                  🎉 Goal reached!
+                <div style={{ fontSize: 12, color: '#34d399', fontWeight: 600, marginTop: 6, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#34d399" stroke="#34d399" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                  Goal reached!
                 </div>
               )}
             </div>
@@ -332,7 +350,10 @@ function SleepSheet({ metrics, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>🌙 Sleep</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            Sleep
+          </h3>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
@@ -515,7 +536,7 @@ export default function Dashboard() {
               background: 'var(--surface2)', border: '1px solid var(--border)',
               fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', opacity: 0.55,
             }}>
-              <span>🔒</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <span>Workout (coming soon)</span>
             </div>
           </div>
@@ -568,7 +589,9 @@ export default function Dashboard() {
             transition: 'height 0.5s ease',
             pointerEvents: 'none',
           }} />
-          <div style={{ position: 'relative', fontSize: 22 }}>💧</div>
+          <div style={{ position: 'relative' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg>
+          </div>
           <div style={{ position: 'relative', fontSize: 22, fontWeight: 800, color: '#60a5fa', lineHeight: 1 }}>
             {waterGlasses}
           </div>
@@ -591,7 +614,9 @@ export default function Dashboard() {
             transition: 'height 0.5s ease',
             pointerEvents: 'none',
           }} />
-          <div style={{ position: 'relative', fontSize: 22 }}>👟</div>
+          <div style={{ position: 'relative' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg>
+          </div>
           <div style={{ position: 'relative', fontSize: 14, fontWeight: 800, color: '#34d399', lineHeight: 1 }}>
             {(metrics.steps || 0).toLocaleString()}
           </div>
@@ -607,7 +632,9 @@ export default function Dashboard() {
           onMouseEnter={e => e.currentTarget.style.borderColor = '#a78bfa'}
           onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
         >
-          <div style={{ position: 'relative', fontSize: 22 }}>🌙</div>
+          <div style={{ position: 'relative' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </div>
           <div style={{ position: 'relative', fontSize: (metrics.sleep_hours || 0) > 0 ? 18 : 24, fontWeight: 800, color: '#a78bfa', lineHeight: 1 }}>
             {(metrics.sleep_hours || 0) > 0 ? `${metrics.sleep_hours.toFixed(1)}h` : '—'}
           </div>

@@ -14,18 +14,22 @@ function convertWeight(weight, from, to) {
   return +(weight * LBS_TO_KG).toFixed(1);
 }
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function getRange(days) {
   const end = new Date();
   const start = new Date();
   start.setDate(end.getDate() - (days - 1));
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+  return { start: localDateStr(start), end: localDateStr(end) };
 }
 
 function fillDates(start, end) {
   const out = [];
   const cur = new Date(start + 'T12:00:00');
   const fin = new Date(end + 'T12:00:00');
-  while (cur <= fin) { out.push(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
+  while (cur <= fin) { out.push(localDateStr(cur)); cur.setDate(cur.getDate() + 1); }
   return out;
 }
 

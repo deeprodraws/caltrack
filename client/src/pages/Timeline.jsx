@@ -3,10 +3,14 @@ import { getTimeline } from '../api';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function offsetDate(dateStr, days) {
   const d = new Date(dateStr + 'T12:00:00');
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  return localDateStr(d);
 }
 
 function formatCardDate(dateStr) {
@@ -218,7 +222,7 @@ function DayCard({ day, todayStr, onPhotoClick }) {
               textTransform: 'uppercase', letterSpacing: '0.4px',
             }}>Yesterday</span>
           )}
-          {day.physique && <span style={{ fontSize: 14 }}>📷</span>}
+          {day.physique && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}
         </div>
         {day.weight && (
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-light)', flexShrink: 0 }}>
@@ -304,7 +308,10 @@ function DayCard({ day, todayStr, onPhotoClick }) {
         <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border)' }}>
           {day.workouts.map(w => (
             <div key={w.id} style={{ marginBottom: day.workouts.length > 1 ? 10 : 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>🏋️ {w.name}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="10" width="2.5" height="4" rx="0.5"/><rect x="19.5" y="10" width="2.5" height="4" rx="0.5"/><rect x="4.5" y="7.5" width="3" height="9" rx="0.5"/><rect x="16.5" y="7.5" width="3" height="9" rx="0.5"/><line x1="7.5" y1="12" x2="16.5" y2="12"/></svg>
+                {w.name}
+              </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 {w.exercise_count} exercises · {w.total_sets} sets
                 {' · '}{Math.round(w.total_volume).toLocaleString()} lbs
@@ -327,18 +334,21 @@ function DayCard({ day, todayStr, onPhotoClick }) {
           display: 'flex', gap: 14, flexWrap: 'wrap',
         }}>
           {day.metrics.steps > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              👟 {day.metrics.steps.toLocaleString()} steps
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg>
+              {day.metrics.steps.toLocaleString()} steps
             </span>
           )}
           {day.metrics.water_ml > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              💧 {Math.round(day.metrics.water_ml / 250)} glasses
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg>
+              {Math.round(day.metrics.water_ml / 250)} glasses
             </span>
           )}
           {day.metrics.sleep_hours > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              🌙 {day.metrics.sleep_hours}h sleep
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              {day.metrics.sleep_hours}h sleep
             </span>
           )}
         </div>
@@ -438,7 +448,7 @@ function FilterIcon() {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Timeline() {
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr(new Date());
 
   const [allDays, setAllDays]         = useState([]);
   const [goals, setGoals]             = useState(null);
@@ -555,14 +565,17 @@ export default function Timeline() {
           fontSize: 13, fontWeight: 700, color: 'var(--yellow)',
           marginBottom: 20,
         }}>
-          🔥 {streak} day{streak !== 1 ? '' : ''} streak
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          {streak} day{streak !== 1 ? '' : ''} streak
         </div>
       )}
 
       {/* ── No data empty state ── */}
       {renderList.length === 0 && (
         <div className="empty-state" style={{ marginTop: 40 }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>📅</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
           <div style={{ fontWeight: 600, marginBottom: 6 }}>No data yet</div>
           <div>Start logging your meals, workouts, and weight to build your timeline.</div>
         </div>

@@ -7,7 +7,8 @@ import {
 } from '../api';
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 const MEAL_TYPES = [
@@ -29,6 +30,7 @@ function newIngredient() {
     _id: Date.now() + Math.random(),
     food_name: '',
     weight_grams: '',
+    weight_unit: 'g',
     calories: '',
     protein: '',
     carbs: '',
@@ -43,6 +45,7 @@ function fromTemplateIngredient(ing) {
     _id: ing.id,
     food_name: ing.food_name,
     weight_grams: String(w),
+    weight_unit: ing.weight_unit || 'g',
     calories: ing.calories,
     protein:  ing.protein,
     carbs:    ing.carbs,
@@ -155,21 +158,37 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
 
       {/* Weight + macros */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        {/* Weight */}
+        {/* Amount + Unit */}
         <div style={{ flexShrink: 0 }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Weight (g)</div>
-          <input
-            type="number" min="0" step="0.1"
-            value={ing.weight_grams}
-            onChange={e => handleWeightChange(e.target.value)}
-            placeholder={memoryHint ? String(memoryHint) : '0'}
-            style={{
-              width: 72, background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 8, padding: '7px 8px', color: 'var(--text)',
-              fontFamily: 'inherit', fontSize: 14,
-            }}
-          />
-          {memoryHint && (
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+            {(ing.weight_unit || 'g') === 'ml' ? 'Amount (ml)' : 'Weight (g)'}
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <input
+              type="number" min="0" step="0.1"
+              value={ing.weight_grams}
+              onChange={e => handleWeightChange(e.target.value)}
+              placeholder={(ing.weight_unit || 'g') !== 'ml' && memoryHint ? String(memoryHint) : '0'}
+              style={{
+                width: 58, background: 'var(--surface)', border: '1px solid var(--border)',
+                borderRadius: 8, padding: '7px 8px', color: 'var(--text)',
+                fontFamily: 'inherit', fontSize: 14,
+              }}
+            />
+            <select
+              value={ing.weight_unit || 'g'}
+              onChange={e => onChange({ ...ing, weight_unit: e.target.value })}
+              style={{
+                width: 46, background: 'var(--surface)', border: '1px solid var(--border)',
+                borderRadius: 8, padding: '7px 4px', color: 'var(--text)',
+                fontFamily: 'inherit', fontSize: 13, cursor: 'pointer',
+              }}
+            >
+              <option value="g">g</option>
+              <option value="ml">ml</option>
+            </select>
+          </div>
+          {memoryHint && (ing.weight_unit || 'g') !== 'ml' && (
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'italic' }}>
               Usually {memoryHint}g
             </div>
@@ -302,7 +321,12 @@ function DeleteConfirm({ title, text, onConfirm, onCancel }) {
           <button className="modal-close" onClick={onCancel}>✕</button>
         </div>
         <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🗑️</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </div>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>{text}</p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button onClick={onCancel} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
@@ -338,6 +362,7 @@ function TemplateEditorSheet({ template, onSave, onClose }) {
         ingredients: ingredients.map(ing => ({
           food_name:    ing.food_name,
           weight_grams: +ing.weight_grams || 0,
+          weight_unit:  ing.weight_unit || 'g',
           calories:     +ing.calories     || 0,
           protein:      +ing.protein      || 0,
           carbs:        +ing.carbs        || 0,
@@ -425,6 +450,7 @@ function LogMealSheet({ template, onClose, onLogged }) {
         ingredients: ingredients.map(ing => ({
           food_name:    ing.food_name,
           weight_grams: +ing.weight_grams || 0,
+          weight_unit:  ing.weight_unit || 'g',
           calories:     +ing.calories     || 0,
           protein:      +ing.protein      || 0,
           carbs:        +ing.carbs        || 0,
@@ -511,6 +537,7 @@ function RecipeEditorSheet({ recipe, onSave, onClose }) {
         ingredients: ingredients.map(ing => ({
           food_name:    ing.food_name,
           weight_grams: +ing.weight_grams || 0,
+          weight_unit:  ing.weight_unit || 'g',
           calories:     +ing.calories     || 0,
           protein:      +ing.protein      || 0,
           carbs:        +ing.carbs        || 0,

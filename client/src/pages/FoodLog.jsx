@@ -4,12 +4,18 @@ import PhotoScanner from '../components/PhotoScanner';
 import BarcodeScanner from '../components/BarcodeScanner';
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function formatDate(str) {
   const today = todayStr();
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const yd = new Date(); yd.setDate(yd.getDate() - 1);
+  const yesterday = localDateStr(yd);
   if (str === today) return 'Today';
   if (str === yesterday) return 'Yesterday';
   return new Date(str + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
@@ -165,7 +171,12 @@ function DeleteConfirm({ entry, onConfirm, onCancel }) {
           <button className="modal-close" onClick={onCancel}>✕</button>
         </div>
         <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🗑️</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </div>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
             Remove <strong style={{ color: 'var(--text)' }}>{entry.food_name}</strong> from your log?
           </p>
@@ -207,7 +218,7 @@ export default function FoodLog() {
   function shiftDate(days) {
     const d = new Date(date + 'T12:00:00');
     d.setDate(d.getDate() + days);
-    setDate(d.toISOString().slice(0, 10));
+    setDate(localDateStr(d));
   }
 
   // When a saved food is selected from autocomplete, pre-fill form
@@ -336,7 +347,7 @@ export default function FoodLog() {
             onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
-            <span>📷</span> Photo
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Photo
           </button>
           <button
             onClick={() => setShowBarcode(true)}
@@ -349,7 +360,7 @@ export default function FoodLog() {
             onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
-            <span>📦</span> Barcode
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v3M21 16v3"/></svg> Barcode
           </button>
         </div>
       </div>
