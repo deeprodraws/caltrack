@@ -125,6 +125,7 @@ router.put('/:id', async (req, res) => {
     if (!row) return res.status(404).json({ error: 'Not found' });
     res.json(row);
   } catch (err) {
+    console.error('[PUT /workout-sessions/:id]', req.params.id, err.message);
     res.status(500).json({ error: err.message });
   }
 });

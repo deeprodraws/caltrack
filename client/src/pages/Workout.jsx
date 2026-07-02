@@ -452,7 +452,7 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
               {saveError && (
                 <div style={{ color: '#f87171', fontSize: 13, marginBottom: 8, textAlign: 'center' }}>{saveError}</div>
               )}
-              <button onClick={async () => { setSaving(true); setSaveError(null); try { await onSave(notes); } catch { setSaveError('Save failed — please try again.'); setSaving(false); } }}
+              <button onClick={async () => { setSaving(true); setSaveError(null); try { await onSave(notes); } catch (err) { setSaveError(err.message || 'Save failed — please try again.'); setSaving(false); } }}
                 disabled={saving}
                 style={{ width: '100%', background: '#34d399', color: '#000', border: 'none',
                   padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
@@ -847,6 +847,7 @@ export default function Workout() {
   }
 
   async function handleFinishSave(notes) {
+    if (!session?.id) throw new Error('Session missing — please restart the workout');
     const finished_at = new Date().toISOString();
     await updateWorkoutSession(session.id, { finished_at, notes });
     const completed = { ...session, finished_at, notes };

@@ -208,6 +208,7 @@ pool.query(`
   WHERE NOT EXISTS (SELECT 1 FROM exercises LIMIT 1)
   ON CONFLICT (name) DO NOTHING;
 
+  ALTER TABLE workout_sessions ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT '';
   ALTER TABLE meal_template_ingredients ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'g';
   ALTER TABLE recipe_ingredients ADD COLUMN IF NOT EXISTS weight_unit TEXT NOT NULL DEFAULT 'g';
 
