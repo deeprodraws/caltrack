@@ -167,6 +167,8 @@ export default function Settings() {
                     type="number"
                     min={min}
                     max={max}
+                    step="0.1"
+                    inputMode="decimal"
                     value={form[key]}
                     onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                     required

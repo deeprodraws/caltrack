@@ -25,6 +25,10 @@ function sum(entries, key) {
   return entries.reduce((acc, e) => acc + (Number(e[key]) || 0), 0);
 }
 
+function round1(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
 const emptyForm = { food_name: '', calories: '', protein: '', carbs: '', fat: '', servings: '1' };
 
 // ── Autocomplete search component ──────────────────────────────────────────────
@@ -91,7 +95,7 @@ function FoodSearch({ value, onChange, onSelect, onClear }) {
             >
               <span style={{ fontWeight: 500 }}>{f.name}</span>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {f.calories} kcal · {f.serving_size}{f.serving_unit !== 'serving' ? f.serving_unit : ' serving'}
+                {round1(f.calories)} kcal · {round1(f.serving_size)}{f.serving_unit !== 'serving' ? f.serving_unit : ' serving'}
               </span>
             </button>
           ))}
@@ -143,7 +147,7 @@ function EditModal({ entry, onSave, onClose }) {
               {['calories', 'protein', 'carbs', 'fat'].map(k => (
                 <div key={k} className="settings-field">
                   <label>{k.charAt(0).toUpperCase() + k.slice(1)}{k !== 'calories' ? ' (g)' : ' (kcal)'}</label>
-                  <input type="number" min="0" value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} />
+                  <input type="number" min="0" step="0.1" inputMode="decimal" value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} />
                 </div>
               ))}
             </div>
@@ -383,7 +387,7 @@ export default function FoodLog() {
             <div className="form-field">
               <label>Servings</label>
               <input
-                type="number" min="0.1" step="0.1" placeholder="1"
+                type="number" min="0.1" step="0.1" inputMode="decimal" placeholder="1"
                 value={form.servings}
                 onChange={e => handleServingsChange(e.target.value)}
               />
@@ -392,7 +396,7 @@ export default function FoodLog() {
 
           <div className="form-field">
             <label>Calories</label>
-            <input type="number" min="0" placeholder="0"
+            <input type="number" min="0" step="0.1" inputMode="decimal" placeholder="0"
               value={form.calories}
               onChange={e => setForm(f => ({ ...f, calories: e.target.value }))}
               readOnly={!!selectedFood}
@@ -400,7 +404,7 @@ export default function FoodLog() {
           </div>
           <div className="form-field">
             <label>Protein (g)</label>
-            <input type="number" min="0" placeholder="0"
+            <input type="number" min="0" step="0.1" inputMode="decimal" placeholder="0"
               value={form.protein}
               onChange={e => setForm(f => ({ ...f, protein: e.target.value }))}
               readOnly={!!selectedFood}
@@ -408,7 +412,7 @@ export default function FoodLog() {
           </div>
           <div className="form-field">
             <label>Carbs (g)</label>
-            <input type="number" min="0" placeholder="0"
+            <input type="number" min="0" step="0.1" inputMode="decimal" placeholder="0"
               value={form.carbs}
               onChange={e => setForm(f => ({ ...f, carbs: e.target.value }))}
               readOnly={!!selectedFood}
@@ -416,7 +420,7 @@ export default function FoodLog() {
           </div>
           <div className="form-field">
             <label>Fat (g)</label>
-            <input type="number" min="0" placeholder="0"
+            <input type="number" min="0" step="0.1" inputMode="decimal" placeholder="0"
               value={form.fat}
               onChange={e => setForm(f => ({ ...f, fat: e.target.value }))}
               readOnly={!!selectedFood}
@@ -460,7 +464,7 @@ export default function FoodLog() {
           <div className="section-header">
             <span className="section-title">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
             <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              {Math.round(totalCals)} kcal · {Math.round(totalProtein)}g P · {Math.round(totalCarbs)}g C · {Math.round(totalFat)}g F
+              {round1(totalCals)} kcal · {round1(totalProtein)}g P · {round1(totalCarbs)}g C · {round1(totalFat)}g F
             </span>
           </div>
 
@@ -470,19 +474,19 @@ export default function FoodLog() {
                 <span className="entry-name">{e.food_name}</span>
                 <div className="entry-macros">
                   <div className="entry-macro">
-                    <div className="val" style={{ color: '#6c63ff' }}>{Math.round(e.calories)}</div>
+                    <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
                     <div className="lbl">kcal</div>
                   </div>
                   <div className="entry-macro">
-                    <div className="val" style={{ color: '#60a5fa' }}>{Math.round(e.protein)}g</div>
+                    <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
                     <div className="lbl">protein</div>
                   </div>
                   <div className="entry-macro">
-                    <div className="val" style={{ color: '#fbbf24' }}>{Math.round(e.carbs)}g</div>
+                    <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
                     <div className="lbl">carbs</div>
                   </div>
                   <div className="entry-macro">
-                    <div className="val" style={{ color: '#fb923c' }}>{Math.round(e.fat)}g</div>
+                    <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
                     <div className="lbl">fat</div>
                   </div>
                 </div>
@@ -506,10 +510,10 @@ export default function FoodLog() {
               <span style={{ fontWeight: 600, fontSize: 14 }}>Daily Total</span>
               <div className="daily-totals">
                 {[
-                  { label: 'Calories', val: Math.round(totalCals), unit: 'kcal', color: '#6c63ff' },
-                  { label: 'Protein', val: Math.round(totalProtein), unit: 'g', color: '#60a5fa' },
-                  { label: 'Carbs', val: Math.round(totalCarbs), unit: 'g', color: '#fbbf24' },
-                  { label: 'Fat', val: Math.round(totalFat), unit: 'g', color: '#fb923c' },
+                  { label: 'Calories', val: round1(totalCals), unit: 'kcal', color: '#6c63ff' },
+                  { label: 'Protein', val: round1(totalProtein), unit: 'g', color: '#60a5fa' },
+                  { label: 'Carbs', val: round1(totalCarbs), unit: 'g', color: '#fbbf24' },
+                  { label: 'Fat', val: round1(totalFat), unit: 'g', color: '#fb923c' },
                 ].map(m => (
                   <div key={m.label} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.val}<span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 1 }}>{m.unit}</span></div>

@@ -4,6 +4,10 @@ import BarcodeScanner from '../components/BarcodeScanner';
 
 const emptyForm = { name: '', calories: '', protein: '', carbs: '', fat: '', serving_size: '1', serving_unit: 'serving' };
 
+function round1(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
 function FoodModal({ food, onSave, onClose }) {
   const [form, setForm] = useState(
     food
@@ -56,14 +60,14 @@ function FoodModal({ food, onSave, onClose }) {
               ].map(({ key, label }) => (
                 <div key={key} className="settings-field">
                   <label>{label}</label>
-                  <input type="number" min="0" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+                  <input type="number" min="0" step="0.1" inputMode="decimal" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
                 </div>
               ))}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
               <div className="settings-field">
                 <label>Serving Size</label>
-                <input type="number" min="0.1" step="0.1" value={form.serving_size} onChange={e => setForm(f => ({ ...f, serving_size: e.target.value }))} />
+                <input type="number" min="0.1" step="0.1" inputMode="decimal" value={form.serving_size} onChange={e => setForm(f => ({ ...f, serving_size: e.target.value }))} />
               </div>
               <div className="settings-field">
                 <label>Serving Unit</label>
@@ -211,24 +215,24 @@ export default function MyFoods({ embedded = false }) {
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 500, fontSize: 14 }}>{f.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                  per {f.serving_size} {f.serving_unit}
+                  per {round1(f.serving_size)} {f.serving_unit}
                 </div>
               </div>
               <div className="entry-macros">
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#6c63ff' }}>{Math.round(f.calories)}</div>
+                  <div className="val" style={{ color: '#6c63ff' }}>{round1(f.calories)}</div>
                   <div className="lbl">kcal</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#60a5fa' }}>{Math.round(f.protein)}g</div>
+                  <div className="val" style={{ color: '#60a5fa' }}>{round1(f.protein)}g</div>
                   <div className="lbl">protein</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fbbf24' }}>{Math.round(f.carbs)}g</div>
+                  <div className="val" style={{ color: '#fbbf24' }}>{round1(f.carbs)}g</div>
                   <div className="lbl">carbs</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fb923c' }}>{Math.round(f.fat)}g</div>
+                  <div className="val" style={{ color: '#fb923c' }}>{round1(f.fat)}g</div>
                   <div className="lbl">fat</div>
                 </div>
               </div>

@@ -43,6 +43,10 @@ function fmtElapsed(startedAt) {
 function getRestDuration() { return parseInt(localStorage.getItem('workout_rest_duration') || '90'); }
 function saveRestDuration(d) { localStorage.setItem('workout_rest_duration', String(d)); }
 
+function round1(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
 // ── EditableTitle ─────────────────────────────────────────────────────────────
 
 function EditableTitle({ value, onSave }) {
@@ -313,7 +317,7 @@ function ExerciseProgressSheet({ exerciseName, onClose }) {
           {bestEver && (
             <div style={{ background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 10, padding: '12px 16px', marginTop: 20 }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Best Set Ever</div>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>{bestEver.weight} × {bestEver.reps}</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{round1(bestEver.weight)} × {bestEver.reps}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{shortDate(bestEver.date)}</div>
             </div>
           )}
@@ -329,12 +333,12 @@ function ExerciseProgressSheet({ exerciseName, onClose }) {
                     <div style={{ fontWeight: 600, fontSize: 13 }}>{shortDate(h.date)}</div>
                     {h.best_set && (
                       <div style={{ fontSize: 12, color: 'var(--accent-light)', fontWeight: 600 }}>
-                        Best: {h.best_set.weight} × {h.best_set.reps}
+                        Best: {round1(h.best_set.weight)} × {h.best_set.reps}
                       </div>
                     )}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {h.sets.map(s => `${s.weight}×${s.reps}`).join(', ') || '—'}
+                    {h.sets.map(s => `${round1(s.weight)}×${s.reps}`).join(', ') || '—'}
                   </div>
                 </div>
               ))}
@@ -412,7 +416,7 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
               </div>
               {Object.entries(prs).map(([name, set]) => (
                 <div key={name} style={{ fontSize: 13, color: '#fbbf24', fontWeight: 600, marginBottom: 2 }}>
-                  {name} — {set.weight} × {set.reps}
+                  {name} — {round1(set.weight)} × {set.reps}
                 </div>
               ))}
             </div>
@@ -431,7 +435,7 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
                   {ex.sets.map(s => (
                     <>
                       <span key={`n${s.id}`} style={{ color: 'var(--text-muted)' }}>{s.set_number}</span>
-                      <span key={`w${s.id}`} style={{ fontWeight: 600 }}>{s.weight}</span>
+                      <span key={`w${s.id}`} style={{ fontWeight: 600 }}>{round1(s.weight)}</span>
                       <span key={`r${s.id}`} style={{ fontWeight: 600 }}>{s.reps}</span>
                     </>
                   ))}
@@ -670,7 +674,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
       ) : (
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
           Last: {shortDate(lastSession.date)}
-          {bestLast ? <span style={{ color: 'var(--text)' }}> — {bestLast.weight === 0 ? 'BW' : `${bestLast.weight} lbs`} × {bestLast.reps}</span> : ''}
+          {bestLast ? <span style={{ color: 'var(--text)' }}> — {bestLast.weight === 0 ? 'BW' : `${round1(bestLast.weight)} lbs`} × {bestLast.reps}</span> : ''}
         </div>
       )}
 
@@ -682,9 +686,9 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
           {exercise.sets.map(s => (
             <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '2rem minmax(0,1fr) minmax(0,1fr) 2.5rem 1.5rem', gap: '3px 8px', alignItems: 'center', padding: '5px 0' }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.set_number}</span>
-              <span style={{ fontSize: 15, fontWeight: 700 }}>{s.weight === 0 ? 'BW' : s.weight}</span>
+              <span style={{ fontSize: 15, fontWeight: 700 }}>{s.weight === 0 ? 'BW' : round1(s.weight)}</span>
               <span style={{ fontSize: 15, fontWeight: 700 }}>{s.reps}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.rpe ?? '—'}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.rpe != null ? round1(s.rpe) : '—'}</span>
               <button onClick={() => handleDeleteSet(s.id)}
                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13, padding: 0 }}>✕</button>
             </div>
@@ -701,7 +705,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
             BW
           </button>
         ) : (
-          <input type="number" inputMode="decimal" value={pw} onChange={e => setPw(e.target.value)}
+          <input type="number" inputMode="decimal" step="0.1" value={pw} onChange={e => setPw(e.target.value)}
             placeholder="lbs" onKeyDown={e => e.key === 'Enter' && handleLog()}
             style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
           />
@@ -710,7 +714,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
           placeholder="Reps" onKeyDown={e => e.key === 'Enter' && handleLog()}
           style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
         />
-        <input type="number" inputMode="decimal" value={prpe} onChange={e => setPrpe(e.target.value)}
+        <input type="number" inputMode="decimal" step="0.1" value={prpe} onChange={e => setPrpe(e.target.value)}
           placeholder="RPE"
           style={{ width: '100%', minWidth: 0, padding: '11px 4px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, textAlign: 'center', fontFamily: 'inherit' }}
         />

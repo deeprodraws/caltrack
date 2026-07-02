@@ -21,6 +21,10 @@ function todayStr() {
   return localDateStr(new Date());
 }
 
+function round1(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
 function formatDateRange(weekStart) {
   const sun = new Date(weekStart + 'T12:00:00');
   const sat = new Date(sun); sat.setDate(sat.getDate() + 6);
@@ -313,9 +317,9 @@ function WeekCard({ week, num, isThisWeek, onPhoto, onView, onEdit, onDelete, de
       {/* Stats row */}
       {(week.weight || week.body_fat || week.avg_calories > 0 || week.total_workouts > 0) && (
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
-          {week.weight     && <StatPill label="Weight"   value={`${week.weight} lbs`} />}
-          {week.body_fat   && <StatPill label="Body Fat" value={`${week.body_fat}%`} />}
-          {week.avg_calories > 0 && <StatPill label="Avg Cal" value={Math.round(week.avg_calories)} />}
+          {week.weight     && <StatPill label="Weight"   value={`${round1(week.weight)} lbs`} />}
+          {week.body_fat   && <StatPill label="Body Fat" value={`${round1(week.body_fat)}%`} />}
+          {week.avg_calories > 0 && <StatPill label="Avg Cal" value={round1(week.avg_calories)} />}
           {week.total_workouts > 0 && <StatPill label="Workouts" value={week.total_workouts} />}
         </div>
       )}
@@ -354,9 +358,9 @@ function ProgressView({ weeks, chartData }) {
   const latest  = weeks[weeks.length - 1];
   const earliest = weeks[0];
   const weightDiff = (latest?.weight && earliest?.weight)
-    ? (latest.weight - earliest.weight).toFixed(1) : null;
+    ? round1(latest.weight - earliest.weight) : null;
   const fatDiff = (latest?.body_fat && earliest?.body_fat)
-    ? (latest.body_fat - earliest.body_fat).toFixed(1) : null;
+    ? round1(latest.body_fat - earliest.body_fat) : null;
 
   if (weeks.length < 2) {
     return (
@@ -401,7 +405,7 @@ function ProgressView({ weeks, chartData }) {
                 contentStyle={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8 }}
                 labelStyle={{ color: 'var(--text-muted)', fontSize: 12 }}
                 itemStyle={{ color: 'var(--accent)', fontSize: 13 }}
-                formatter={v => [`${v} lbs`, 'Weight']}
+                formatter={v => [`${round1(v)} lbs`, 'Weight']}
               />
               <Line type="monotone" dataKey="weight" stroke="var(--accent)" strokeWidth={2.5}
                 dot={{ r: 4, fill: 'var(--accent)' }} activeDot={{ r: 6 }} connectNulls />
@@ -422,7 +426,7 @@ function ProgressView({ weeks, chartData }) {
                 contentStyle={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8 }}
                 labelStyle={{ color: 'var(--text-muted)', fontSize: 12 }}
                 itemStyle={{ color: '#ff6b35', fontSize: 13 }}
-                formatter={v => [`${v}%`, 'Body Fat']}
+                formatter={v => [`${round1(v)}%`, 'Body Fat']}
               />
               <Line type="monotone" dataKey="body_fat" stroke="#ff6b35" strokeWidth={2.5}
                 dot={{ r: 4, fill: '#ff6b35' }} activeDot={{ r: 6 }} connectNulls />
@@ -513,7 +517,7 @@ function WeekEditSheet({ week, onSave, onClose }) {
           <div>
             <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Weight (lbs)</label>
             <input
-              type="number" inputMode="decimal" placeholder="e.g. 82.5"
+              type="number" inputMode="decimal" step="0.1" placeholder="e.g. 82.5"
               value={weight} onChange={e => setWeight(e.target.value)}
               style={inputStyle()}
             />
@@ -521,7 +525,7 @@ function WeekEditSheet({ week, onSave, onClose }) {
           <div>
             <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Body Fat (%)</label>
             <input
-              type="number" inputMode="decimal" placeholder="e.g. 18.5"
+              type="number" inputMode="decimal" step="0.1" placeholder="e.g. 18.5"
               value={bodyFat} onChange={e => setBodyFat(e.target.value)}
               style={inputStyle()}
             />

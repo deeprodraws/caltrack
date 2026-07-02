@@ -21,6 +21,10 @@ function sum(entries, key) {
   return entries.reduce((acc, e) => acc + (Number(e[key]) || 0), 0);
 }
 
+function round1(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
 function shortDate(str) {
   const today = todayStr();
   const yd = new Date(); yd.setDate(yd.getDate() - 1);
@@ -67,8 +71,8 @@ function CalorieRing({ eaten, goal }) {
         />
       </svg>
       <div className="calorie-center">
-        <span className="cal-num" style={{ color }}>{Math.round(eaten)}</span>
-        <span className="cal-label">/ {Math.round(goal)} kcal</span>
+        <span className="cal-num" style={{ color }}>{round1(eaten)}</span>
+        <span className="cal-label">/ {round1(goal)} kcal</span>
       </div>
     </div>
   );
@@ -80,8 +84,8 @@ function MacroBar({ label, current, goal, color }) {
     <div className="macro-card">
       <div className="macro-label">{label}</div>
       <div className="macro-values">
-        <span className="macro-current" style={{ color }}>{Math.round(current)}</span>
-        <span className="macro-goal">/ {goal}g</span>
+        <span className="macro-current" style={{ color }}>{round1(current)}</span>
+        <span className="macro-goal">/ {round1(goal)}g</span>
       </div>
       <div className="progress-wrap">
         <div className="progress-bar" style={{ width: `${pct}%`, background: color }} />
@@ -114,7 +118,7 @@ function WeightModal({ log, unit, onSave, onClose }) {
             <label>Weight</label>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <input
-                type="number" min="0" step="0.1"
+                type="number" min="0" step="0.1" inputMode="decimal"
                 value={value}
                 onChange={e => setValue(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSave()}
@@ -156,7 +160,7 @@ function WeightDeleteConfirm({ log, unit, onConfirm, onCancel }) {
             </svg>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-            Remove <strong style={{ color: 'var(--text)' }}>{log.weight} {unit}</strong> logged on{' '}
+            Remove <strong style={{ color: 'var(--text)' }}>{round1(log.weight)} {unit}</strong> logged on{' '}
             <strong style={{ color: 'var(--text)' }}>{shortDate(log.date)}</strong>?
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
@@ -379,7 +383,7 @@ function SleepSheet({ metrics, onSave, onClose }) {
           <div className="settings-field" style={{ marginBottom: 20 }}>
             <label>Hours slept</label>
             <input
-              type="number" min="0" max="24" step="0.5"
+              type="number" min="0" max="24" step="0.1" inputMode="decimal"
               value={hours}
               onChange={e => setHours(e.target.value)}
               placeholder="e.g. 7.5"
@@ -550,15 +554,15 @@ export default function Dashboard() {
           <h2>Today's Calories</h2>
           <div className="calorie-stats">
             <div className="cal-stat">
-              <div className="val" style={{ color: '#6c63ff' }}>{Math.round(cals)}</div>
+              <div className="val" style={{ color: '#6c63ff' }}>{round1(cals)}</div>
               <div className="lbl">Eaten</div>
             </div>
             <div className="cal-stat">
-              <div className="val" style={{ color: '#34d399' }}>{Math.round(remaining)}</div>
+              <div className="val" style={{ color: '#34d399' }}>{round1(remaining)}</div>
               <div className="lbl">Remaining</div>
             </div>
             <div className="cal-stat">
-              <div className="val">{goals.calories}</div>
+              <div className="val">{round1(goals.calories)}</div>
               <div className="lbl">Goal</div>
             </div>
           </div>
@@ -636,7 +640,7 @@ export default function Dashboard() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </div>
           <div style={{ position: 'relative', fontSize: (metrics.sleep_hours || 0) > 0 ? 18 : 24, fontWeight: 800, color: '#a78bfa', lineHeight: 1 }}>
-            {(metrics.sleep_hours || 0) > 0 ? `${metrics.sleep_hours.toFixed(1)}h` : '—'}
+            {(metrics.sleep_hours || 0) > 0 ? `${round1(metrics.sleep_hours)}h` : '—'}
           </div>
           <div style={{ position: 'relative', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>
             sleep
@@ -667,7 +671,7 @@ export default function Dashboard() {
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>Today</div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>
-                {todayWeight.weight} <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>{unit}</span>
+                {round1(todayWeight.weight)} <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>{unit}</span>
               </div>
             </div>
             <button className="btn-icon" onClick={() => openWeightLog(todayWeight)} title="Edit">
@@ -697,7 +701,7 @@ export default function Dashboard() {
               }}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)', minWidth: 70 }}>{shortDate(w.date)}</span>
                 <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>
-                  {w.weight} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span>
+                  {round1(w.weight)} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span>
                 </span>
                 <button className="btn-icon" onClick={() => openWeightLog(w)} title="Edit" style={{ width: 30, height: 30 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -734,19 +738,19 @@ export default function Dashboard() {
               <span className="entry-name">{e.food_name}</span>
               <div className="entry-macros">
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#6c63ff' }}>{Math.round(e.calories)}</div>
+                  <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
                   <div className="lbl">kcal</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#60a5fa' }}>{Math.round(e.protein)}g</div>
+                  <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
                   <div className="lbl">protein</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fbbf24' }}>{Math.round(e.carbs)}g</div>
+                  <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
                   <div className="lbl">carbs</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fb923c' }}>{Math.round(e.fat)}g</div>
+                  <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
                   <div className="lbl">fat</div>
                 </div>
               </div>

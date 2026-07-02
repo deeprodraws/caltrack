@@ -4,12 +4,16 @@ import { scanFood } from '../api';
 const CONFIDENCE_COLOR = { high: '#34d399', medium: '#fbbf24', low: '#f87171' };
 const CONFIDENCE_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' };
 
+function round1(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
 function MacroInput({ label, value, onChange, color }) {
   return (
     <div style={{ flex: 1 }}>
       <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{label}</div>
       <input
-        type="number" min="0" step="0.1"
+        type="number" min="0" step="0.1" inputMode="decimal"
         value={value}
         onChange={e => onChange(e.target.value)}
         style={{
@@ -270,10 +274,10 @@ export default function PhotoScanner({ date, onSave, onClose }) {
                     return (
                       <>
                         <span>{inc.length} item{inc.length !== 1 ? 's' : ''} selected</span>
-                        <span style={{ color: '#6c63ff', fontWeight: 600 }}>{Math.round(totals.cal)} kcal</span>
-                        <span style={{ color: '#60a5fa' }}>{Math.round(totals.p)}g protein</span>
-                        <span style={{ color: '#fbbf24' }}>{Math.round(totals.c)}g carbs</span>
-                        <span style={{ color: '#fb923c' }}>{Math.round(totals.f)}g fat</span>
+                        <span style={{ color: '#6c63ff', fontWeight: 600 }}>{round1(totals.cal)} kcal</span>
+                        <span style={{ color: '#60a5fa' }}>{round1(totals.p)}g protein</span>
+                        <span style={{ color: '#fbbf24' }}>{round1(totals.c)}g carbs</span>
+                        <span style={{ color: '#fb923c' }}>{round1(totals.f)}g fat</span>
                       </>
                     );
                   })()}

@@ -57,6 +57,10 @@ function fromTemplateIngredient(ing) {
   };
 }
 
+function round1(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
+}
+
 function calcTotals(ings) {
   return ings.reduce(
     (acc, i) => ({
@@ -102,10 +106,10 @@ function MacroSummaryBar({ cal, p, c, f }) {
       borderRadius: 10, padding: '10px 16px', display: 'flex', gap: 14, flexWrap: 'wrap',
       fontSize: 13, marginBottom: 16,
     }}>
-      <span style={{ color: '#6c63ff', fontWeight: 700 }}>{Math.round(cal)} kcal</span>
-      <span style={{ color: '#60a5fa' }}>{+p.toFixed(1)}g P</span>
-      <span style={{ color: '#fbbf24' }}>{+c.toFixed(1)}g C</span>
-      <span style={{ color: '#fb923c' }}>{+f.toFixed(1)}g F</span>
+      <span style={{ color: '#6c63ff', fontWeight: 700 }}>{round1(cal)} kcal</span>
+      <span style={{ color: '#60a5fa' }}>{round1(p)}g P</span>
+      <span style={{ color: '#fbbf24' }}>{round1(c)}g C</span>
+      <span style={{ color: '#fb923c' }}>{round1(f)}g F</span>
     </div>
   );
 }
@@ -165,7 +169,7 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <input
-              type="number" min="0" step="0.1"
+              type="number" min="0" step="0.1" inputMode="decimal"
               value={ing.weight_grams}
               onChange={e => handleWeightChange(e.target.value)}
               placeholder={(ing.weight_unit || 'g') !== 'ml' && memoryHint ? String(memoryHint) : '0'}
@@ -206,7 +210,7 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
             ].map(m => (
               <div key={m.label} style={{ textAlign: 'center', minWidth: 38 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: m.color, lineHeight: 1 }}>
-                  {m.label === 'kcal' ? Math.round(Number(m.val) || 0) : `${+(Number(m.val)||0).toFixed(1)}g`}
+                  {m.label === 'kcal' ? round1(m.val) : `${round1(m.val)}g`}
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{m.label}</div>
               </div>
@@ -223,7 +227,7 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
               <div key={m.key}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{m.label}</div>
                 <input
-                  type="number" min="0" step="0.1"
+                  type="number" min="0" step="0.1" inputMode="decimal"
                   value={ing[m.key]}
                   onChange={e => onChange({ ...ing, [m.key]: e.target.value })}
                   style={{
@@ -580,12 +584,12 @@ function RecipeEditorSheet({ recipe, onSave, onClose }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
               <div className="settings-field">
                 <label>Total Servings</label>
-                <input type="number" min="0.1" step="0.1" value={servings} onChange={e => setServings(e.target.value)} />
+                <input type="number" min="0.1" step="0.1" inputMode="decimal" value={servings} onChange={e => setServings(e.target.value)} />
               </div>
               <div className="settings-field" style={{ opacity: 0.7 }}>
                 <label>Per Serving</label>
                 <div style={{ padding: '10px 0', fontSize: 13, color: 'var(--accent-light)', fontWeight: 600 }}>
-                  {Math.round(perSrv.cal)} kcal
+                  {round1(perSrv.cal)} kcal
                 </div>
               </div>
             </div>
@@ -660,7 +664,7 @@ function LogRecipeSheet({ recipe, onClose, onLogged }) {
         <div className="modal-header">
           <div>
             <h3>Log — {recipe.name}</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>{recipe.total_servings} servings total</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>{round1(recipe.total_servings)} servings total</p>
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
@@ -672,10 +676,10 @@ function LogRecipeSheet({ recipe, onClose, onLogged }) {
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Per serving</div>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               {[
-                { label: 'kcal', val: Math.round(recipe.cal_per_serving), color: '#6c63ff' },
-                { label: 'protein', val: `${+recipe.protein_per_serving.toFixed(1)}g`, color: '#60a5fa' },
-                { label: 'carbs', val: `${+recipe.carbs_per_serving.toFixed(1)}g`, color: '#fbbf24' },
-                { label: 'fat', val: `${+recipe.fat_per_serving.toFixed(1)}g`, color: '#fb923c' },
+                { label: 'kcal', val: round1(recipe.cal_per_serving), color: '#6c63ff' },
+                { label: 'protein', val: `${round1(recipe.protein_per_serving)}g`, color: '#60a5fa' },
+                { label: 'carbs', val: `${round1(recipe.carbs_per_serving)}g`, color: '#fbbf24' },
+                { label: 'fat', val: `${round1(recipe.fat_per_serving)}g`, color: '#fb923c' },
               ].map(m => (
                 <div key={m.label} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.val}</div>
@@ -689,7 +693,7 @@ function LogRecipeSheet({ recipe, onClose, onLogged }) {
           <div className="settings-field" style={{ marginBottom: 20 }}>
             <label>How many servings?</label>
             <input
-              type="number" min="0.1" step="0.1"
+              type="number" min="0.1" step="0.1" inputMode="decimal"
               value={servings}
               onChange={e => setServings(e.target.value)}
               style={{ fontSize: 20, fontWeight: 600, textAlign: 'center' }}
@@ -797,11 +801,11 @@ function RecipeCard({ recipe, onLog, onEdit, onDelete }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13 }}>
-        <span style={{ color: '#6c63ff', fontWeight: 600 }}>{Math.round(recipe.cal_per_serving)} kcal / srv</span>
-        <span style={{ color: '#60a5fa' }}>{+recipe.protein_per_serving?.toFixed(1)}g P</span>
-        <span style={{ color: '#fbbf24' }}>{+recipe.carbs_per_serving?.toFixed(1)}g C</span>
-        <span style={{ color: '#fb923c' }}>{+recipe.fat_per_serving?.toFixed(1)}g F</span>
-        <span style={{ color: 'var(--text-muted)' }}>· {recipe.total_servings} srv total</span>
+        <span style={{ color: '#6c63ff', fontWeight: 600 }}>{round1(recipe.cal_per_serving)} kcal / srv</span>
+        <span style={{ color: '#60a5fa' }}>{round1(recipe.protein_per_serving)}g P</span>
+        <span style={{ color: '#fbbf24' }}>{round1(recipe.carbs_per_serving)}g C</span>
+        <span style={{ color: '#fb923c' }}>{round1(recipe.fat_per_serving)}g F</span>
+        <span style={{ color: 'var(--text-muted)' }}>· {round1(recipe.total_servings)} srv total</span>
       </div>
     </div>
   );
