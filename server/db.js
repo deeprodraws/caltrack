@@ -25,10 +25,6 @@ pool.query(`
     fat      REAL NOT NULL DEFAULT 65
   );
 
-  INSERT INTO daily_goals (id, calories, protein, carbs, fat)
-  VALUES (1, 2000, 150, 250, 65)
-  ON CONFLICT (id) DO NOTHING;
-
   CREATE TABLE IF NOT EXISTS saved_foods (
     id           SERIAL PRIMARY KEY,
     name         TEXT NOT NULL,
