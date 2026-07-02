@@ -51,6 +51,24 @@ router.get('/recent', async (req, res) => {
   }
 });
 
+// GET /api/workout-sessions/active — the user's current unfinished session, if any,
+// regardless of date (so a workout that spans a midnight rollover, or is resumed
+// after the tab/app was backgrounded and reloaded, is never "lost").
+router.get('/active', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id FROM workout_sessions
+       WHERE user_id = $1 AND finished_at IS NULL
+       ORDER BY started_at DESC LIMIT 1`,
+      [req.userId]
+    );
+    if (!rows.length) return res.json(null);
+    res.json(await buildSessionWithExercises(rows[0].id));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/workout-sessions?date=YYYY-MM-DD
 router.get('/', async (req, res) => {
   const { date } = req.query;

@@ -25,6 +25,33 @@ function todayStr() {
   return localDateStr(new Date());
 }
 
+// Downscale + re-encode to JPEG so large phone-camera photos don't blow past
+// the API's body-size limit or time out on upload.
+function resizeImageFile(file, maxDim = 1600, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      const [header, b64] = dataUrl.split(',');
+      resolve({ b64, mediaType: header.match(/data:([^;]+)/)[1] });
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Could not read image')); };
+    img.src = objectUrl;
+  });
+}
+
 function round1(value) {
   return Math.round((Number(value) || 0) * 10) / 10;
 }
@@ -80,32 +107,22 @@ export default function Physique() {
     if (!file) return;
     setUploading(true);
     try {
-      await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const dataUrl = e.target.result;
-            const [header, b64] = dataUrl.split(',');
-            const mediaType = header.match(/data:([^;]+)/)[1];
-            let weekId = week?.id;
-            if (!weekId) {
-              const created = await createPhysiqueWeek({ week_start: week.week_start });
-              weekId = created.id;
-            }
-            await uploadPhysiquePhoto({
-              week_id: weekId, photo_type: photoType,
-              image_base64: b64, media_type: mediaType,
-            });
-            resolve();
-          } catch (err) { reject(err); }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+      const { b64, mediaType } = await resizeImageFile(file);
+      let weekId = week?.id;
+      if (!weekId) {
+        const created = await createPhysiqueWeek({ week_start: week.week_start });
+        weekId = created.id;
+      }
+      await uploadPhysiquePhoto({
+        week_id: weekId, photo_type: photoType,
+        image_base64: b64, media_type: mediaType,
       });
       invalidateCache('physique-weeks');
       await load();
       setCaptureSheet(null);
-    } catch {}
+    } catch (err) {
+      alert(err.message || 'Photo upload failed. Please try again.');
+    }
     setUploading(false);
   }
 

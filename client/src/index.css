@@ -120,15 +120,12 @@ input, select {
 
 /* ── Timeline scroll performance ─────────────────────────────────────────────  */
 .timeline-list {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  will-change: scroll-position;
-  transform: translateZ(0);
+  contain: layout style;
 }
 
 .day-card {
   contain: layout style;
+  transform: translateZ(0);
 }
 
 .month-divider {

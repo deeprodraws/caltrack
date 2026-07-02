@@ -306,6 +306,11 @@ export async function getRecentWorkoutSessions(limit = 5) {
   return res.json();
 }
 
+export async function getActiveWorkoutSession() {
+  const res = await apiFetch(`${BASE}/workout-sessions/active`);
+  return res.json();
+}
+
 export async function createWorkoutSession(data) {
   const res = await apiFetch(`${BASE}/workout-sessions`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

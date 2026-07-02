@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import {
   getWorkoutSessions, getRecentWorkoutSessions, getWorkoutTemplates,
+  getActiveWorkoutSession,
   createWorkoutSession, updateWorkoutSession, deleteWorkoutSession,
   addExerciseToSession, removeExerciseFromSession,
   addSet, deleteSet,
@@ -998,6 +999,11 @@ export default function Workout() {
       const cacheKey = 'workout-' + today;
       const cached = getCached(cacheKey);
 
+      // Resolved fresh, never from cache and never scoped to "today" — this is what
+      // lets an in-progress workout survive a backgrounded-tab reload or a workout
+      // that crosses midnight, instead of silently reverting to the idle screen.
+      const activePromise = getActiveWorkoutSession().catch(() => null);
+
       let sessions, tmpl, recent;
       if (cached) {
         ({ sessions, tmpl, recent } = cached);
@@ -1007,15 +1013,13 @@ export default function Workout() {
           getWorkoutTemplates(),
           getRecentWorkoutSessions(5),
         ]);
-        // Never persist an in-progress session into the cache — that state must always be live
-        const hasInProgress = sessions.some(s => !s.finished_at);
-        if (!hasInProgress) setCached(cacheKey, { sessions, tmpl, recent });
+        setCached(cacheKey, { sessions, tmpl, recent });
       }
 
       setTemplates(tmpl);
       setRecentSessions(recent);
-      const inProgress = sessions.find(s => !s.finished_at);
       setTodaySessions(sessions.filter(s => s.finished_at));
+      const inProgress = await activePromise;
       if (inProgress) {
         setSession(inProgress);
         setPageState('active');
