@@ -348,6 +348,7 @@ function ExerciseProgressSheet({ exerciseName, onClose }) {
 function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
   const [notes, setNotes] = useState(session.notes || '');
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [prs, setPrs] = useState({});
@@ -389,7 +390,7 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
         </div>
         <div className="modal-body">
           <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            {[{ label: 'Duration', val: duration }, { label: 'Sets', val: totalSets }, { label: 'Volume', val: `${Math.round(totalVol).toLocaleString()} kg` }].map(({ label, val }) => (
+            {[{ label: 'Duration', val: duration }, { label: 'Sets', val: totalSets }, { label: 'Volume', val: `${Math.round(totalVol).toLocaleString()} lbs` }].map(({ label, val }) => (
               <div key={label} style={{ flex: 1, textAlign: 'center', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 6px' }}>
                 <div style={{ fontSize: 17, fontWeight: 800 }}>{val}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
@@ -439,7 +440,10 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
                   background: 'var(--surface2)', border: '1px solid var(--border)',
                   color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}
               />
-              <button onClick={async () => { setSaving(true); await onSave(notes); setSaving(false); }}
+              {saveError && (
+                <div style={{ color: '#f87171', fontSize: 13, marginBottom: 8, textAlign: 'center' }}>{saveError}</div>
+              )}
+              <button onClick={async () => { setSaving(true); setSaveError(null); try { await onSave(notes); } catch { setSaveError('Save failed — please try again.'); setSaving(false); } }}
                 disabled={saving}
                 style={{ width: '100%', background: '#34d399', color: '#000', border: 'none',
                   padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
@@ -597,6 +601,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
   const [pw, setPw] = useState('');
   const [pr, setPr] = useState('');
   const [prpe, setPrpe] = useState('');
+  const [bwMode, setBwMode] = useState(false);
   const [logging, setLogging] = useState(false);
 
   // Pre-fill once when lastSession resolves (undefined = loading, null = never logged)
@@ -605,10 +610,12 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
     if (lastSession === undefined) return;
     if (exercise.sets.length > 0) {
       const last = exercise.sets[exercise.sets.length - 1];
-      setPw(String(last.weight)); setPr(String(last.reps));
+      if (last.weight === 0) { setBwMode(true); } else { setPw(String(last.weight)); }
+      setPr(String(last.reps));
     } else if (lastSession?.sets?.length > 0) {
       const last = lastSession.sets[lastSession.sets.length - 1];
-      setPw(String(last.weight)); setPr(String(last.reps));
+      if (last.weight === 0) { setBwMode(true); } else { setPw(String(last.weight)); }
+      setPr(String(last.reps));
     }
     prefilled.current = true;
   }, [lastSession]);
@@ -616,12 +623,14 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
   const bestLast = lastSession?.sets?.reduce((b, s) => !b || s.weight > b.weight ? s : b, null);
 
   async function handleLog() {
-    if (!pw || !pr) return;
+    if ((!bwMode && !pw) || !pr) return;
     setLogging(true);
     try {
-      const newSet = await addSet(exercise.id, { weight: +pw, reps: +pr, rpe: prpe ? +prpe : null });
+      const weight = bwMode ? 0 : +pw;
+      const newSet = await addSet(exercise.id, { weight, reps: +pr, rpe: prpe ? +prpe : null });
       onSetsChanged({ ...exercise, sets: [...exercise.sets, newSet] });
-      setPw(String(newSet.weight)); setPr(String(newSet.reps)); setPrpe('');
+      if (!bwMode) setPw(String(newSet.weight));
+      setPr(String(newSet.reps)); setPrpe('');
       onSetLogged();
     } finally { setLogging(false); }
   }
@@ -631,7 +640,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
     onSetsChanged({ ...exercise, sets: exercise.sets.filter(s => s.id !== setId) });
   }
 
-  const canLog = pw !== '' && pr !== '' && !logging;
+  const canLog = (bwMode || pw !== '') && pr !== '' && !logging;
 
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 14px 12px', marginBottom: 12 }}>
@@ -649,7 +658,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
       ) : (
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
           Last: {shortDate(lastSession.date)}
-          {bestLast ? <span style={{ color: 'var(--text)' }}> — {bestLast.weight} × {bestLast.reps}</span> : ''}
+          {bestLast ? <span style={{ color: 'var(--text)' }}> — {bestLast.weight === 0 ? 'BW' : `${bestLast.weight} lbs`} × {bestLast.reps}</span> : ''}
         </div>
       )}
 
@@ -661,7 +670,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
           {exercise.sets.map(s => (
             <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '2rem minmax(0,1fr) minmax(0,1fr) 2.5rem 1.5rem', gap: '3px 8px', alignItems: 'center', padding: '5px 0' }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.set_number}</span>
-              <span style={{ fontSize: 15, fontWeight: 700 }}>{s.weight}</span>
+              <span style={{ fontSize: 15, fontWeight: 700 }}>{s.weight === 0 ? 'BW' : s.weight}</span>
               <span style={{ fontSize: 15, fontWeight: 700 }}>{s.reps}</span>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.rpe ?? '—'}</span>
               <button onClick={() => handleDeleteSet(s.id)}
@@ -672,10 +681,19 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 3rem 3rem', gap: 8 }}>
-        <input type="number" inputMode="decimal" value={pw} onChange={e => setPw(e.target.value)}
-          placeholder="Weight" onKeyDown={e => e.key === 'Enter' && handleLog()}
-          style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
-        />
+        {bwMode ? (
+          <button onClick={() => { setBwMode(false); setPw(''); }}
+            style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8,
+              background: 'var(--accent)', border: 'none', color: '#fff',
+              fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+            BW
+          </button>
+        ) : (
+          <input type="number" inputMode="decimal" value={pw} onChange={e => setPw(e.target.value)}
+            placeholder="lbs" onKeyDown={e => e.key === 'Enter' && handleLog()}
+            style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
+          />
+        )}
         <input type="number" inputMode="numeric" value={pr} onChange={e => setPr(e.target.value)}
           placeholder="Reps" onKeyDown={e => e.key === 'Enter' && handleLog()}
           style={{ width: '100%', minWidth: 0, padding: '11px 6px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 17, fontWeight: 700, textAlign: 'center', fontFamily: 'inherit' }}
@@ -690,6 +708,13 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
           ✓
         </button>
       </div>
+      {!bwMode && (
+        <button onClick={() => { setBwMode(true); setPw(''); }}
+          style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--text-muted)',
+            fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0, letterSpacing: '0.5px' }}>
+          BODYWEIGHT
+        </button>
+      )}
     </div>
   );
 }
@@ -942,7 +967,7 @@ export default function Workout() {
                   <div style={{ fontWeight: 700, fontSize: 15 }}>{s.name}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{fmtDuration(s.started_at, s.finished_at)}</div>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{sets} sets · {Math.round(vol).toLocaleString()} kg</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{sets} sets · {Math.round(vol).toLocaleString()} lbs</div>
               </div>
             );
           })}
@@ -1014,7 +1039,7 @@ export default function Workout() {
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{shortDate(s.date)}</div>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                {s.total_sets} sets · {Math.round(s.total_volume).toLocaleString()} kg
+                {s.total_sets} sets · {Math.round(s.total_volume).toLocaleString()} lbs
               </div>
             </div>
           ))}

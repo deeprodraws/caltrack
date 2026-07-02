@@ -309,7 +309,7 @@ function WeekCard({ week, num, isThisWeek, onPhoto, onView, onEdit, onDelete, de
       {/* Stats row */}
       {(week.weight || week.body_fat || week.avg_calories > 0 || week.total_workouts > 0) && (
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
-          {week.weight     && <StatPill label="Weight"   value={`${week.weight} kg`} />}
+          {week.weight     && <StatPill label="Weight"   value={`${week.weight} lbs`} />}
           {week.body_fat   && <StatPill label="Body Fat" value={`${week.body_fat}%`} />}
           {week.avg_calories > 0 && <StatPill label="Avg Cal" value={Math.round(week.avg_calories)} />}
           {week.total_workouts > 0 && <StatPill label="Workouts" value={week.total_workouts} />}
@@ -369,7 +369,7 @@ function ProgressView({ weeks, chartData }) {
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4 }}>TOTAL CHANGE</div>
             <div style={{ fontSize: 22, fontWeight: 800, color: parseFloat(weightDiff) <= 0 ? 'var(--accent)' : '#ff6b35' }}>
-              {parseFloat(weightDiff) > 0 ? '+' : ''}{weightDiff} kg
+              {parseFloat(weightDiff) > 0 ? '+' : ''}{weightDiff} lbs
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>body weight</div>
           </div>
@@ -387,7 +387,7 @@ function ProgressView({ weeks, chartData }) {
 
       {weightData.length >= 2 && (
         <div className="card" style={{ marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Body Weight (kg)</div>
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Body Weight (lbs)</div>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={weightData} margin={{ top: 4, right: 8, bottom: 0, left: -10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -397,7 +397,7 @@ function ProgressView({ weeks, chartData }) {
                 contentStyle={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8 }}
                 labelStyle={{ color: 'var(--text-muted)', fontSize: 12 }}
                 itemStyle={{ color: 'var(--accent)', fontSize: 13 }}
-                formatter={v => [`${v} kg`, 'Weight']}
+                formatter={v => [`${v} lbs`, 'Weight']}
               />
               <Line type="monotone" dataKey="weight" stroke="var(--accent)" strokeWidth={2.5}
                 dot={{ r: 4, fill: 'var(--accent)' }} activeDot={{ r: 6 }} connectNulls />
@@ -507,7 +507,7 @@ function WeekEditSheet({ week, onSave, onClose }) {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <div>
-            <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Weight (kg)</label>
+            <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Weight (lbs)</label>
             <input
               type="number" inputMode="decimal" placeholder="e.g. 82.5"
               value={weight} onChange={e => setWeight(e.target.value)}

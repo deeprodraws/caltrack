@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getGoals, updateGoals } from '../api';
 
 export default function Settings() {
-  const [form, setForm] = useState({ calories: '', protein: '', carbs: '', fat: '', weight_unit: 'kg' });
+  const [form, setForm] = useState({ calories: '', protein: '', carbs: '', fat: '', weight_unit: 'lbs' });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +13,7 @@ export default function Settings() {
         protein: g.protein,
         carbs: g.carbs,
         fat: g.fat,
-        weight_unit: g.weight_unit || 'kg',
+        weight_unit: 'lbs',
       });
       setLoading(false);
     });
@@ -62,36 +62,6 @@ export default function Settings() {
                     required
                   />
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <hr style={{ borderColor: 'var(--border)', margin: '24px 0' }} />
-
-          <div className="settings-section" style={{ marginBottom: 0 }}>
-            <h3>Weight Unit</h3>
-            <p>Choose the unit used when logging your weight.</p>
-            <div style={{ display: 'flex', gap: 10 }}>
-              {['kg', 'lbs'].map(u => (
-                <button
-                  key={u}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, weight_unit: u }))}
-                  style={{
-                    padding: '10px 28px',
-                    borderRadius: 8,
-                    fontSize: 14,
-                    fontWeight: 600,
-                    border: '2px solid',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    background: form.weight_unit === u ? 'var(--accent)' : 'var(--surface2)',
-                    borderColor: form.weight_unit === u ? 'var(--accent)' : 'var(--border)',
-                    color: form.weight_unit === u ? '#fff' : 'var(--text-muted)',
-                  }}
-                >
-                  {u}
-                </button>
               ))}
             </div>
           </div>

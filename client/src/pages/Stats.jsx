@@ -59,11 +59,11 @@ export default function Stats() {
   const [period, setPeriod] = useState(7);
   const [weightPeriod, setWeightPeriod] = useState(30);
   const [allEntries, setAllEntries] = useState([]);
-  const [goals, setGoals] = useState({ calories: 2000, protein: 150, carbs: 250, fat: 65, weight_unit: 'kg' });
+  const [goals, setGoals] = useState({ calories: 2000, protein: 150, carbs: 250, fat: 65, weight_unit: 'lbs' });
   const [weightLogs, setWeightLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const unit = goals.weight_unit || 'kg';
+  const unit = goals.weight_unit || 'lbs';
 
   useEffect(() => {
     const { start, end } = getRange(30);
