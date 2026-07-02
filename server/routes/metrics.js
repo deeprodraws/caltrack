@@ -51,17 +51,18 @@ router.put('/', async (req, res) => {
   try {
     const { rows: [row] } = await pool.query(
       `INSERT INTO daily_metrics (user_id, date, steps, water_ml, sleep_hours, updated_at)
-       VALUES ($1, $2, COALESCE($3, 0), COALESCE($4, 0), COALESCE($5, 0), NOW())
+       VALUES ($1, $2, COALESCE($3::INTEGER, 0), COALESCE($4::INTEGER, 0), COALESCE($5::REAL, 0), NOW())
        ON CONFLICT (user_id, date) DO UPDATE SET
-         steps       = CASE WHEN $3 IS NOT NULL THEN $3 ELSE daily_metrics.steps       END,
-         water_ml    = CASE WHEN $4 IS NOT NULL THEN $4 ELSE daily_metrics.water_ml    END,
-         sleep_hours = CASE WHEN $5 IS NOT NULL THEN $5 ELSE daily_metrics.sleep_hours END,
+         steps       = COALESCE($3::INTEGER, daily_metrics.steps),
+         water_ml    = COALESCE($4::INTEGER, daily_metrics.water_ml),
+         sleep_hours = COALESCE($5::REAL,    daily_metrics.sleep_hours),
          updated_at  = NOW()
        RETURNING *`,
       [req.userId, date, s, w, sl]
     );
     res.json(row);
   } catch (err) {
+    console.error('[PUT /metrics]', err.message);
     res.status(500).json({ error: err.message });
   }
 });

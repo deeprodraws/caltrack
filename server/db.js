@@ -452,6 +452,18 @@ pool.query(`
 
   ALTER TABLE physique_weeks DROP CONSTRAINT IF EXISTS physique_weeks_week_start_key;
   CREATE UNIQUE INDEX IF NOT EXISTS physique_weeks_user_week_idx ON physique_weeks(user_id, week_start);
+
+  -- ── Missing user_id indexes (multi-user migration added the filter column
+  --    but not an index for it on these tables — every query on them was
+  --    doing a full table scan) ──────────────────────────────────────────────
+
+  CREATE INDEX IF NOT EXISTS food_entries_user_date_idx      ON food_entries(user_id, date);
+  CREATE INDEX IF NOT EXISTS saved_foods_user_id_idx         ON saved_foods(user_id);
+  CREATE INDEX IF NOT EXISTS weight_logs_user_date_idx       ON weight_logs(user_id, date);
+  CREATE INDEX IF NOT EXISTS meal_templates_user_id_idx      ON meal_templates(user_id);
+  CREATE INDEX IF NOT EXISTS recipes_user_id_idx             ON recipes(user_id);
+  CREATE INDEX IF NOT EXISTS workout_templates_user_id_idx   ON workout_templates(user_id);
+  CREATE INDEX IF NOT EXISTS workout_sessions_user_date_idx  ON workout_sessions(user_id, date);
 `).then(() => console.log('Database ready'))
   .catch(err => { console.error('Database init failed:', err.message || err.code || JSON.stringify(err), '| DATABASE_URL set:', !!process.env.DATABASE_URL); process.exit(1); });
 
