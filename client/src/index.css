@@ -94,6 +94,7 @@ input, select {
 .main-content {
   margin-left: 220px;
   flex: 1;
+  min-width: 0;
   padding: 32px;
   max-width: 900px;
 }

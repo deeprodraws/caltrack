@@ -164,8 +164,9 @@ function Chip({ emoji, label, c }) {
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
       height: 24, padding: '0 9px', borderRadius: 6,
-      fontSize: 11, fontWeight: 700,
+      fontSize: 11, fontWeight: 700, maxWidth: '100%',
       background: c.bg, color: c.color, whiteSpace: 'nowrap',
+      overflow: 'hidden', textOverflow: 'ellipsis',
     }}>
       {emoji} {label}
     </span>
@@ -465,9 +466,11 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
                   {w.name}{w.duration_minutes != null ? ` — ${fmtMinutes(w.duration_minutes)}` : ''}
                 </div>
                 {(w.exercises || []).map((ex, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
-                    <span>{highlight(ex.exercise_name, highlightQuery)}</span>
-                    <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13, marginBottom: 3 }}>
+                    <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {highlight(ex.exercise_name, highlightQuery)}
+                    </span>
+                    <span style={{ fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0 }}>
                       {ex.best_weight === 0 ? 'BW' : round1(ex.best_weight)} × {ex.best_reps}
                     </span>
                   </div>
@@ -539,6 +542,7 @@ function DayCard({ day, todayStr, streak, highlightQuery, goals, expanded, onTog
       borderRadius: 12,
       boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
       overflow: 'hidden',
+      minWidth: 0,
       padding: '14px 16px',
     }}>
       {/* Header (tap to expand) */}

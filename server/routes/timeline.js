@@ -271,7 +271,7 @@ router.get('/', async (req, res) => {
         };
       }
 
-      const has_any_data = !!(food || weight || workouts.length > 0 || metrics);
+      const has_any_data = !!(food || weight || workouts.length > 0 || metrics || physique);
 
       const d = new Date(date + 'T12:00:00');
       const day_label = d.toLocaleDateString('en-US', {
