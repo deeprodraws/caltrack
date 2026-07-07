@@ -119,6 +119,17 @@ input, select {
   padding: 16px 20px;
 }
 
+/* ── Install banner ────────────────────────────────────────────────────────── */
+.install-banner {
+  bottom: 0;
+}
+
+@media (max-width: 700px) {
+  .install-banner {
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+}
+
 /* ── Timeline scroll performance ─────────────────────────────────────────────  */
 .timeline-list {
   contain: layout style;

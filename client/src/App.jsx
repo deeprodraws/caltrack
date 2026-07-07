@@ -1,8 +1,9 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route, NavLink } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import SkeletonLoader from './components/SkeletonLoader';
+import InstallBanner from './components/InstallBanner';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -139,6 +140,9 @@ function AppShell() {
 export default function App() {
   const { loading } = useAuth();
 
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -147,17 +151,65 @@ export default function App() {
     }
   }, []);
 
+  useEffect(() => {
+    // Detect iOS — never show on iOS
+    const isIOS = /iPad|iPhone|iPod/.test(
+      navigator.userAgent
+    ) || (
+      navigator.platform === 'MacIntel' &&
+      navigator.maxTouchPoints > 1
+    );
+
+    // Detect already installed
+    const isInstalled = window.matchMedia(
+      '(display-mode: standalone)'
+    ).matches || window.navigator.standalone === true;
+
+    // If iOS or already installed, never show
+    if (isIOS || isInstalled) return;
+
+    // Listen for Chrome's install prompt
+    const handler = (e) => {
+      e.preventDefault(); // prevent auto-prompt
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
+  }, []);
+
   if (loading) return <div className="empty-state" style={{ minHeight: '100vh' }}>Loading…</div>;
 
   return (
-    <Routes>
-      <Route path="/login"  element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/*" element={
-        <ProtectedRoute>
-          <AppShell />
-        </ProtectedRoute>
-      } />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/login"  element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/*" element={
+          <ProtectedRoute>
+            <AppShell />
+          </ProtectedRoute>
+        } />
+      </Routes>
+
+      {showInstallBanner && installPrompt && (
+        <InstallBanner
+          onInstall={async () => {
+            installPrompt.prompt();
+            const { outcome } = await installPrompt.userChoice;
+            if (outcome === 'accepted') {
+              console.log('PWA installed');
+              setShowInstallBanner(false);
+            }
+            setInstallPrompt(null);
+          }}
+          onDismiss={() => setShowInstallBanner(false)}
+        />
+      )}
+    </>
   );
 }
