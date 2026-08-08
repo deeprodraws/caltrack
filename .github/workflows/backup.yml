@@ -5,6 +5,9 @@ on:
     - cron: '0 8 * * 0'   # every Sunday at 8:00 UTC
   workflow_dispatch:        # lets you also trigger it manually from GitHub's UI
 
+permissions:
+  contents: write   # the default is read-only; pushing the backup commit needs write access
+
 jobs:
   backup:
     runs-on: ubuntu-latest
@@ -15,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install server dependencies
         working-directory: server
