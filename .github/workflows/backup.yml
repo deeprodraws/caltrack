@@ -1,0 +1,36 @@
+name: Weekly Database Backup
+
+on:
+  schedule:
+    - cron: '0 8 * * 0'   # every Sunday at 8:00 UTC
+  workflow_dispatch:        # lets you also trigger it manually from GitHub's UI
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run the backup script
+        working-directory: server
+        run: npm run backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Commit and push the new backup file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add server/scripts/backups/
+          git diff --staged --quiet || git commit -m "Automated weekly backup"
+          git push

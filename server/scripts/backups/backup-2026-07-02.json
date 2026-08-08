@@ -1,0 +1,1723 @@
+{
+  "food_entries": [
+    {
+      "id": 1,
+      "date": "2026-07-01",
+      "food_name": "Oats, cranberries, date, prune, banana, 2% milk",
+      "calories": 582,
+      "protein": 18,
+      "carbs": 93,
+      "fat": 18,
+      "created_at": "2026-07-01T14:18:09.021Z"
+    },
+    {
+      "id": 3,
+      "date": "2026-07-01",
+      "food_name": "Lime water",
+      "calories": 5,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 0,
+      "created_at": "2026-07-01T15:01:37.861Z"
+    },
+    {
+      "id": 4,
+      "date": "2026-07-01",
+      "food_name": "Vanilla layered Fruitcake (small piece)",
+      "calories": 210,
+      "protein": 3,
+      "carbs": 40,
+      "fat": 10,
+      "created_at": "2026-07-01T17:29:55.350Z"
+    },
+    {
+      "id": 5,
+      "date": "2026-07-01",
+      "food_name": "Whole Wheat Roti · Chicken Rezala · Cholar Dal · Cucumber Raita · Tamarind Sherbet",
+      "calories": 905,
+      "protein": 63,
+      "carbs": 96,
+      "fat": 26,
+      "created_at": "2026-07-01T19:59:21.406Z"
+    },
+    {
+      "id": 6,
+      "date": "2026-07-01",
+      "food_name": "Whole wheat toast",
+      "calories": 300,
+      "protein": 15,
+      "carbs": 56,
+      "fat": 5,
+      "created_at": "2026-07-01T23:42:41.580Z"
+    },
+    {
+      "id": 7,
+      "date": "2026-07-01",
+      "food_name": "Fried eggs",
+      "calories": 150,
+      "protein": 12,
+      "carbs": 1.2,
+      "fat": 10,
+      "created_at": "2026-07-01T23:42:41.581Z"
+    },
+    {
+      "id": 8,
+      "date": "2026-07-01",
+      "food_name": "Wilted spinach",
+      "calories": 9,
+      "protein": 1.2,
+      "carbs": 1.4,
+      "fat": 0.2,
+      "created_at": "2026-07-01T23:42:41.585Z"
+    },
+    {
+      "id": 9,
+      "date": "2026-07-01",
+      "food_name": "Goat cheese crumbles",
+      "calories": 40,
+      "protein": 2.1,
+      "carbs": 0.6,
+      "fat": 3.2,
+      "created_at": "2026-07-01T23:42:41.585Z"
+    },
+    {
+      "id": 10,
+      "date": "2026-07-01",
+      "food_name": "Bread, boiled egg, spinach & guacamole",
+      "calories": 480,
+      "protein": 21,
+      "carbs": 70,
+      "fat": 15,
+      "created_at": "2026-07-02T01:32:24.274Z"
+    },
+    {
+      "id": 16,
+      "date": "2026-07-01",
+      "food_name": "5 rajshahi lichis",
+      "calories": 33,
+      "protein": 0,
+      "carbs": 3,
+      "fat": 0,
+      "created_at": "2026-07-02T02:59:33.906Z"
+    },
+    {
+      "id": 17,
+      "date": "2026-07-01",
+      "food_name": "10 small dark grapes",
+      "calories": 34,
+      "protein": 0,
+      "carbs": 9,
+      "fat": 0,
+      "created_at": "2026-07-02T02:59:55.680Z"
+    },
+    {
+      "id": 18,
+      "date": "2026-07-01",
+      "food_name": "Kit Kat Halzenut",
+      "calories": 515,
+      "protein": 6.5,
+      "carbs": 61,
+      "fat": 229,
+      "created_at": "2026-07-02T03:01:52.446Z"
+    },
+    {
+      "id": 19,
+      "date": "2026-07-02",
+      "food_name": "Mutton Biryani",
+      "calories": 600,
+      "protein": 32,
+      "carbs": 69,
+      "fat": 28,
+      "created_at": "2026-07-02T04:07:13.048Z"
+    }
+  ],
+  "daily_goals": [
+    {
+      "id": 1,
+      "calories": 2000,
+      "protein": 150,
+      "carbs": 250,
+      "fat": 65,
+      "weight_unit": "lbs"
+    }
+  ],
+  "saved_foods": [
+    {
+      "id": 1,
+      "name": "Oats, cranberries, dates, prunes, banana, 2% milk",
+      "calories": 750,
+      "protein": 20,
+      "carbs": 120,
+      "fat": 25,
+      "serving_size": 1,
+      "serving_unit": "serving",
+      "tags": "",
+      "created_at": "2026-07-01T14:18:09.145Z"
+    },
+    {
+      "id": 2,
+      "name": "Lime water",
+      "calories": 5,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 0,
+      "serving_size": 1,
+      "serving_unit": "serving",
+      "tags": "",
+      "created_at": "2026-07-01T15:01:38.073Z"
+    }
+  ],
+  "weight_logs": [
+    {
+      "id": 1,
+      "date": "2026-07-01",
+      "weight": 137.6,
+      "unit": "lbs",
+      "created_at": "2026-07-01T23:35:49.261Z"
+    },
+    {
+      "id": 2,
+      "date": "2026-07-02",
+      "weight": 137.6,
+      "unit": "lbs",
+      "created_at": "2026-07-02T00:01:27.736Z"
+    }
+  ],
+  "meal_templates": [
+    {
+      "id": 1,
+      "name": "Morning oats Canada",
+      "meal_type": "breakfast",
+      "created_at": "2026-07-01T20:07:32.642Z"
+    }
+  ],
+  "meal_template_ingredients": [
+    {
+      "id": 1,
+      "template_id": 1,
+      "food_name": "Rolled oats",
+      "weight_grams": 40,
+      "calories": 150,
+      "protein": 5,
+      "carbs": 27,
+      "fat": 3,
+      "sort_order": 0,
+      "weight_unit": "g"
+    },
+    {
+      "id": 2,
+      "template_id": 1,
+      "food_name": "Walnuts",
+      "weight_grams": 10,
+      "calories": 58,
+      "protein": 2,
+      "carbs": 2,
+      "fat": 5,
+      "sort_order": 1,
+      "weight_unit": "g"
+    },
+    {
+      "id": 3,
+      "template_id": 1,
+      "food_name": "Prune",
+      "weight_grams": 25,
+      "calories": 23,
+      "protein": 0,
+      "carbs": 6,
+      "fat": 0,
+      "sort_order": 2,
+      "weight_unit": "g"
+    },
+    {
+      "id": 4,
+      "template_id": 1,
+      "food_name": "Cranberries ",
+      "weight_grams": 20,
+      "calories": 5,
+      "protein": 0,
+      "carbs": 1,
+      "fat": 0,
+      "sort_order": 3,
+      "weight_unit": "g"
+    },
+    {
+      "id": 5,
+      "template_id": 1,
+      "food_name": "Dates",
+      "weight_grams": 24,
+      "calories": 66,
+      "protein": 1,
+      "carbs": 18,
+      "fat": 0,
+      "sort_order": 4,
+      "weight_unit": "g"
+    },
+    {
+      "id": 6,
+      "template_id": 1,
+      "food_name": "2‰ milk",
+      "weight_grams": 230,
+      "calories": 120,
+      "protein": 8,
+      "carbs": 12,
+      "fat": 5,
+      "sort_order": 5,
+      "weight_unit": "g"
+    }
+  ],
+  "ingredient_memory": [],
+  "recipes": [],
+  "recipe_ingredients": [],
+  "daily_metrics": [
+    {
+      "id": 1,
+      "date": "2026-07-01",
+      "steps": 0,
+      "water_ml": 750,
+      "sleep_hours": 9,
+      "updated_at": "2026-07-01T20:46:29.877Z"
+    }
+  ],
+  "exercises": [
+    {
+      "id": 1,
+      "name": "Bench Press",
+      "muscle_group": "chest",
+      "equipment": "barbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 2,
+      "name": "Incline Bench Press",
+      "muscle_group": "chest",
+      "equipment": "barbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 3,
+      "name": "Push Ups",
+      "muscle_group": "chest",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 4,
+      "name": "Pull Ups",
+      "muscle_group": "back",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 5,
+      "name": "Lat Pulldown",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 6,
+      "name": "Cable Row",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 7,
+      "name": "Deadlift",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 8,
+      "name": "Overhead Press",
+      "muscle_group": "shoulders",
+      "equipment": "barbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 9,
+      "name": "Lateral Raise",
+      "muscle_group": "shoulders",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 10,
+      "name": "Shoulder Press",
+      "muscle_group": "shoulders",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 11,
+      "name": "Hammer Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 12,
+      "name": "Bicep Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 13,
+      "name": "Tricep Pushdown",
+      "muscle_group": "triceps",
+      "equipment": "cable",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 14,
+      "name": "Skull Crusher",
+      "muscle_group": "triceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 15,
+      "name": "Squat",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 16,
+      "name": "Romanian Deadlift",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 17,
+      "name": "Leg Press",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 18,
+      "name": "Leg Curl",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 19,
+      "name": "Leg Extension",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 20,
+      "name": "Calf Raise",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 21,
+      "name": "Plank",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 22,
+      "name": "Running",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 23,
+      "name": "Cycling",
+      "muscle_group": "cardio",
+      "equipment": "machine",
+      "created_at": "2026-07-01T21:34:04.831Z"
+    },
+    {
+      "id": 24,
+      "name": "Shoulder Press (machine)",
+      "muscle_group": "Shoulders",
+      "equipment": "Shoulder Press machine ",
+      "created_at": "2026-07-01T21:56:44.446Z"
+    },
+    {
+      "id": 25,
+      "name": "Cable lateral raises",
+      "muscle_group": "Shoulder",
+      "equipment": "Cable Machine",
+      "created_at": "2026-07-01T22:21:16.938Z"
+    },
+    {
+      "id": 26,
+      "name": "Bench Decline Crunch",
+      "muscle_group": "Abs",
+      "equipment": "Benxh",
+      "created_at": "2026-07-01T22:38:44.833Z"
+    },
+    {
+      "id": 27,
+      "name": "Barbell Bench Press",
+      "muscle_group": "chest",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 28,
+      "name": "Incline Barbell Bench Press",
+      "muscle_group": "chest",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 29,
+      "name": "Decline Barbell Bench Press",
+      "muscle_group": "chest",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 30,
+      "name": "Dumbbell Bench Press",
+      "muscle_group": "chest",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 31,
+      "name": "Incline Dumbbell Bench Press",
+      "muscle_group": "chest",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 32,
+      "name": "Decline Dumbbell Bench Press",
+      "muscle_group": "chest",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 33,
+      "name": "Dumbbell Flyes",
+      "muscle_group": "chest",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 34,
+      "name": "Incline Dumbbell Flyes",
+      "muscle_group": "chest",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 35,
+      "name": "Cable Flyes",
+      "muscle_group": "chest",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 36,
+      "name": "Low-to-High Cable Flyes",
+      "muscle_group": "chest",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 37,
+      "name": "High-to-Low Cable Flyes",
+      "muscle_group": "chest",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 39,
+      "name": "Wide Push Ups",
+      "muscle_group": "chest",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 40,
+      "name": "Diamond Push Ups",
+      "muscle_group": "chest",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 41,
+      "name": "Decline Push Ups",
+      "muscle_group": "chest",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 42,
+      "name": "Incline Push Ups",
+      "muscle_group": "chest",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 43,
+      "name": "Chest Dips",
+      "muscle_group": "chest",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 44,
+      "name": "Machine Chest Press",
+      "muscle_group": "chest",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 45,
+      "name": "Pec Deck",
+      "muscle_group": "chest",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 46,
+      "name": "Smith Machine Bench Press",
+      "muscle_group": "chest",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 47,
+      "name": "Landmine Press",
+      "muscle_group": "chest",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 49,
+      "name": "Chin Ups",
+      "muscle_group": "back",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 50,
+      "name": "Wide Grip Pull Ups",
+      "muscle_group": "back",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 51,
+      "name": "Neutral Grip Pull Ups",
+      "muscle_group": "back",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 52,
+      "name": "Barbell Deadlift",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 54,
+      "name": "Sumo Deadlift",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 55,
+      "name": "Trap Bar Deadlift",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 56,
+      "name": "Barbell Row",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 57,
+      "name": "Pendlay Row",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 58,
+      "name": "Dumbbell Row",
+      "muscle_group": "back",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 59,
+      "name": "Single Arm Dumbbell Row",
+      "muscle_group": "back",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 60,
+      "name": "T-Bar Row",
+      "muscle_group": "back",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 61,
+      "name": "Seated Cable Row",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 62,
+      "name": "Wide Grip Cable Row",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 64,
+      "name": "Wide Grip Lat Pulldown",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 65,
+      "name": "Close Grip Lat Pulldown",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 66,
+      "name": "Straight Arm Pulldown",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 67,
+      "name": "Face Pull",
+      "muscle_group": "back",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 68,
+      "name": "Barbell Shrug",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 69,
+      "name": "Dumbbell Shrug",
+      "muscle_group": "back",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 70,
+      "name": "Good Morning",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 71,
+      "name": "Back Extension",
+      "muscle_group": "back",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 72,
+      "name": "Rack Pull",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 73,
+      "name": "Inverted Row",
+      "muscle_group": "back",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 74,
+      "name": "Meadows Row",
+      "muscle_group": "back",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 75,
+      "name": "Chest Supported Row",
+      "muscle_group": "back",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 76,
+      "name": "Overhead Barbell Press",
+      "muscle_group": "shoulders",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 77,
+      "name": "Seated Dumbbell Shoulder Press",
+      "muscle_group": "shoulders",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 78,
+      "name": "Standing Dumbbell Shoulder Press",
+      "muscle_group": "shoulders",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 79,
+      "name": "Arnold Press",
+      "muscle_group": "shoulders",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 81,
+      "name": "Cable Lateral Raise",
+      "muscle_group": "shoulders",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 82,
+      "name": "Dumbbell Front Raise",
+      "muscle_group": "shoulders",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 83,
+      "name": "Cable Front Raise",
+      "muscle_group": "shoulders",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 84,
+      "name": "Rear Delt Flyes",
+      "muscle_group": "shoulders",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 85,
+      "name": "Reverse Pec Deck",
+      "muscle_group": "shoulders",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 86,
+      "name": "Upright Row",
+      "muscle_group": "shoulders",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 87,
+      "name": "Machine Shoulder Press",
+      "muscle_group": "shoulders",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 88,
+      "name": "Smith Machine Shoulder Press",
+      "muscle_group": "shoulders",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 89,
+      "name": "Landmine Lateral Raise",
+      "muscle_group": "shoulders",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 90,
+      "name": "Barbell Curl",
+      "muscle_group": "biceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 91,
+      "name": "EZ Bar Curl",
+      "muscle_group": "biceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 92,
+      "name": "Dumbbell Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 93,
+      "name": "Alternating Dumbbell Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 95,
+      "name": "Incline Dumbbell Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 96,
+      "name": "Concentration Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 97,
+      "name": "Preacher Curl",
+      "muscle_group": "biceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 98,
+      "name": "Cable Curl",
+      "muscle_group": "biceps",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 99,
+      "name": "Rope Hammer Curl",
+      "muscle_group": "biceps",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 100,
+      "name": "Reverse Curl",
+      "muscle_group": "biceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 101,
+      "name": "Zottman Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 102,
+      "name": "Spider Curl",
+      "muscle_group": "biceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 103,
+      "name": "21s",
+      "muscle_group": "biceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 104,
+      "name": "Close Grip Bench Press",
+      "muscle_group": "triceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 105,
+      "name": "EZ Bar Skull Crusher",
+      "muscle_group": "triceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 106,
+      "name": "Dumbbell Skull Crusher",
+      "muscle_group": "triceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 107,
+      "name": "Tricep Pushdown (Bar)",
+      "muscle_group": "triceps",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 108,
+      "name": "Tricep Pushdown (Rope)",
+      "muscle_group": "triceps",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 109,
+      "name": "Overhead Tricep Extension (Dumbbell)",
+      "muscle_group": "triceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 110,
+      "name": "Overhead Tricep Extension (Cable)",
+      "muscle_group": "triceps",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 111,
+      "name": "Overhead Tricep Extension (EZ Bar)",
+      "muscle_group": "triceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 112,
+      "name": "Tricep Dips",
+      "muscle_group": "triceps",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 113,
+      "name": "Bench Dips",
+      "muscle_group": "triceps",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 114,
+      "name": "Tricep Kickback",
+      "muscle_group": "triceps",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 115,
+      "name": "JM Press",
+      "muscle_group": "triceps",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 116,
+      "name": "Barbell Back Squat",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 117,
+      "name": "Barbell Front Squat",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 118,
+      "name": "Goblet Squat",
+      "muscle_group": "legs",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 119,
+      "name": "Sumo Squat",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 120,
+      "name": "Bulgarian Split Squat",
+      "muscle_group": "legs",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 121,
+      "name": "Stiff Leg Deadlift",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 123,
+      "name": "Hack Squat",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 125,
+      "name": "Lying Leg Curl",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 126,
+      "name": "Seated Leg Curl",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 127,
+      "name": "Standing Leg Curl",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 128,
+      "name": "Standing Calf Raise",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 129,
+      "name": "Seated Calf Raise",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 130,
+      "name": "Leg Press Calf Raise",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 131,
+      "name": "Walking Lunges",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 132,
+      "name": "Reverse Lunges",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 133,
+      "name": "Lateral Lunges",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 134,
+      "name": "Step Ups",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 135,
+      "name": "Hip Thrust",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 136,
+      "name": "Glute Bridge",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 137,
+      "name": "Cable Pull Through",
+      "muscle_group": "legs",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 138,
+      "name": "Hip Abduction Machine",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 139,
+      "name": "Hip Adduction Machine",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 140,
+      "name": "Nordic Curl",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 141,
+      "name": "Sissy Squat",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 142,
+      "name": "Smith Machine Squat",
+      "muscle_group": "legs",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 143,
+      "name": "Pistol Squat",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 144,
+      "name": "Box Squat",
+      "muscle_group": "legs",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 145,
+      "name": "Jump Squat",
+      "muscle_group": "legs",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 147,
+      "name": "Side Plank",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 148,
+      "name": "Crunch",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 149,
+      "name": "Bicycle Crunch",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 150,
+      "name": "Reverse Crunch",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 151,
+      "name": "Leg Raise",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 152,
+      "name": "Hanging Leg Raise",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 153,
+      "name": "Hanging Knee Raise",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 154,
+      "name": "Ab Wheel Rollout",
+      "muscle_group": "core",
+      "equipment": "other",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 155,
+      "name": "Cable Crunch",
+      "muscle_group": "core",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 156,
+      "name": "Russian Twist",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 157,
+      "name": "Dead Bug",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 158,
+      "name": "Hollow Body Hold",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 159,
+      "name": "Mountain Climber",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 160,
+      "name": "Dragon Flag",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 161,
+      "name": "V-Up",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 162,
+      "name": "Oblique Crunch",
+      "muscle_group": "core",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 163,
+      "name": "Pallof Press",
+      "muscle_group": "core",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 164,
+      "name": "Cable Woodchop",
+      "muscle_group": "core",
+      "equipment": "cable",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 165,
+      "name": "Running (Treadmill)",
+      "muscle_group": "cardio",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 166,
+      "name": "Running (Outdoor)",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 167,
+      "name": "Cycling (Stationary)",
+      "muscle_group": "cardio",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 168,
+      "name": "Cycling (Outdoor)",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 169,
+      "name": "Rowing Machine",
+      "muscle_group": "cardio",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 170,
+      "name": "Elliptical",
+      "muscle_group": "cardio",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 171,
+      "name": "Stair Climber",
+      "muscle_group": "cardio",
+      "equipment": "machine",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 172,
+      "name": "Jump Rope",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 173,
+      "name": "Swimming",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 174,
+      "name": "Battle Ropes",
+      "muscle_group": "cardio",
+      "equipment": "other",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 175,
+      "name": "Burpees",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 176,
+      "name": "High Knees",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 177,
+      "name": "Jumping Jacks",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 178,
+      "name": "Sprints",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 179,
+      "name": "Box Jumps",
+      "muscle_group": "cardio",
+      "equipment": "bodyweight",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 180,
+      "name": "Power Clean",
+      "muscle_group": "compound",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 181,
+      "name": "Hang Clean",
+      "muscle_group": "compound",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 182,
+      "name": "Clean and Press",
+      "muscle_group": "compound",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 183,
+      "name": "Thruster",
+      "muscle_group": "compound",
+      "equipment": "barbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 184,
+      "name": "Kettlebell Swing",
+      "muscle_group": "compound",
+      "equipment": "kettlebell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 185,
+      "name": "Kettlebell Clean and Press",
+      "muscle_group": "compound",
+      "equipment": "kettlebell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 186,
+      "name": "Turkish Get Up",
+      "muscle_group": "compound",
+      "equipment": "kettlebell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 187,
+      "name": "Farmer's Walk",
+      "muscle_group": "compound",
+      "equipment": "dumbbell",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 188,
+      "name": "Sled Push",
+      "muscle_group": "compound",
+      "equipment": "other",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 189,
+      "name": "Sled Pull",
+      "muscle_group": "compound",
+      "equipment": "other",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 190,
+      "name": "Medicine Ball Slam",
+      "muscle_group": "compound",
+      "equipment": "other",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    },
+    {
+      "id": 191,
+      "name": "Tire Flip",
+      "muscle_group": "compound",
+      "equipment": "other",
+      "created_at": "2026-07-02T02:28:32.505Z"
+    }
+  ],
+  "workout_templates": [],
+  "workout_template_exercises": [],
+  "workout_sessions": [
+    {
+      "id": 1,
+      "date": "2026-07-01",
+      "name": "Jul 1 2026",
+      "started_at": "2026-07-01T21:34:44.976Z",
+      "finished_at": null,
+      "notes": "",
+      "created_at": "2026-07-01T21:34:44.976Z"
+    }
+  ],
+  "session_exercises": [
+    {
+      "id": 1,
+      "session_id": 1,
+      "exercise_name": "Shoulder Press (machine)",
+      "sort_order": 0
+    },
+    {
+      "id": 2,
+      "session_id": 1,
+      "exercise_name": "Pull Ups",
+      "sort_order": 1
+    },
+    {
+      "id": 3,
+      "session_id": 1,
+      "exercise_name": "Cable Row",
+      "sort_order": 2
+    },
+    {
+      "id": 4,
+      "session_id": 1,
+      "exercise_name": "Cable lateral raises",
+      "sort_order": 3
+    },
+    {
+      "id": 5,
+      "session_id": 1,
+      "exercise_name": "Bench Decline Crunch",
+      "sort_order": 4
+    }
+  ],
+  "session_sets": [
+    {
+      "id": 1,
+      "session_exercise_id": 1,
+      "set_number": 1,
+      "weight": 45,
+      "reps": 8,
+      "rpe": null,
+      "completed_at": "2026-07-01T21:57:07.445Z"
+    },
+    {
+      "id": 2,
+      "session_exercise_id": 1,
+      "set_number": 2,
+      "weight": 45,
+      "reps": 8,
+      "rpe": null,
+      "completed_at": "2026-07-01T21:57:16.443Z"
+    },
+    {
+      "id": 3,
+      "session_exercise_id": 2,
+      "set_number": 1,
+      "weight": 0,
+      "reps": 5,
+      "rpe": null,
+      "completed_at": "2026-07-01T21:57:57.423Z"
+    },
+    {
+      "id": 4,
+      "session_exercise_id": 3,
+      "set_number": 1,
+      "weight": 9,
+      "reps": 9,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:01:18.929Z"
+    },
+    {
+      "id": 6,
+      "session_exercise_id": 3,
+      "set_number": 2,
+      "weight": 9,
+      "reps": 10,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:05:30.838Z"
+    },
+    {
+      "id": 7,
+      "session_exercise_id": 1,
+      "set_number": 3,
+      "weight": 45,
+      "reps": 10,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:08:49.444Z"
+    },
+    {
+      "id": 8,
+      "session_exercise_id": 4,
+      "set_number": 1,
+      "weight": 2,
+      "reps": 9,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:21:25.396Z"
+    },
+    {
+      "id": 9,
+      "session_exercise_id": 3,
+      "set_number": 3,
+      "weight": 10,
+      "reps": 10,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:25:28.055Z"
+    },
+    {
+      "id": 10,
+      "session_exercise_id": 4,
+      "set_number": 2,
+      "weight": 2,
+      "reps": 9,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:38:21.661Z"
+    },
+    {
+      "id": 11,
+      "session_exercise_id": 5,
+      "set_number": 1,
+      "weight": 0,
+      "reps": 12,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:38:53.318Z"
+    },
+    {
+      "id": 13,
+      "session_exercise_id": 5,
+      "set_number": 2,
+      "weight": 0,
+      "reps": 10,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:39:03.715Z"
+    },
+    {
+      "id": 14,
+      "session_exercise_id": 4,
+      "set_number": 3,
+      "weight": 2,
+      "reps": 9,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:46:53.393Z"
+    },
+    {
+      "id": 15,
+      "session_exercise_id": 5,
+      "set_number": 3,
+      "weight": 0,
+      "reps": 12,
+      "rpe": null,
+      "completed_at": "2026-07-01T22:49:55.878Z"
+    }
+  ],
+  "physique_weeks": [],
+  "physique_photos": []
+}
