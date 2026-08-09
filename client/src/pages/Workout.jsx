@@ -790,16 +790,16 @@ function PRCard({ pr, weightUnit, onViewProgress }) {
       position: 'relative', background: 'var(--surface)', border: '1px solid var(--border)',
       borderRadius: 12, padding: '22px 18px', marginBottom: 14,
     }}>
-      <div style={{ fontWeight: 700, fontSize: 18, paddingRight: 56 }}>{pr.exercise_name}</div>
+      <div style={{ fontWeight: 700, fontSize: 20, paddingRight: 56 }}>{pr.exercise_name}</div>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 12, marginBottom: 20 }}>
-        <span style={{ display: 'inline-flex', color: 'var(--yellow)' }}>
-          <TrophyIcon size={16} />
+        <span style={{ display: 'inline-flex', color: 'var(--accent-light)' }}>
+          <TrophyIcon size={14} />
         </span>
-        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)', marginRight: -4 }}>
           {isBodyweight ? 'BW' : `${pr.reps}x`}
         </span>
-        <span style={{ fontSize: 18, fontWeight: 800 }}>
+        <span style={{ fontSize: 21, fontWeight: 800 }}>
           {isBodyweight ? pr.reps : `${round1(pr.weight)} ${weightUnit}`}
         </span>
       </div>
