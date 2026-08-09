@@ -263,7 +263,7 @@ function ExerciseSearchSheet({ onAdd, onClose }) {
 
 // ── Exercise Progress Sheet ───────────────────────────────────────────────────
 
-function ExerciseProgressSheet({ exerciseName, onClose }) {
+function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -281,6 +281,9 @@ function ExerciseProgressSheet({ exerciseName, onClose }) {
     if (!h.best_set) return b;
     return !b || h.best_set.weight > b.weight ? { ...h.best_set, date: h.date } : b;
   }, null);
+
+  const best1RM = history.reduce((max, h) =>
+    h.estimated_1rm != null && h.estimated_1rm > max ? h.estimated_1rm : max, 0);
 
   const ttStyle = { background: '#1a1d2e', border: '1px solid #2e3250', borderRadius: 8, fontSize: 12 };
 
@@ -333,6 +336,11 @@ function ExerciseProgressSheet({ exerciseName, onClose }) {
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Best Set Ever</div>
               <div style={{ fontSize: 20, fontWeight: 700 }}>{round1(bestEver.weight)} × {bestEver.reps}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{shortDate(bestEver.date)}</div>
+              {best1RM > 0 && (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
+                  Est. 1RM: {round1(best1RM)} {weightUnit}
+                </div>
+              )}
             </div>
           )}
 
@@ -751,31 +759,64 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
 
 // ── PR Tracker Tab ────────────────────────────────────────────────────────────
 
-function PRCard({ pr, weightUnit, onViewProgress }) {
+function TrophyIcon({ size = 16 }) {
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>{pr.exercise_name}</div>
-        {pr.muscle_group && (
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--surface2)', padding: '2px 8px', borderRadius: 99, textTransform: 'capitalize' }}>
-            {pr.muscle_group}
-          </span>
-        )}
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+    </svg>
+  );
+}
+
+function PlusIcon({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  );
+}
+
+function SearchIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  );
+}
+
+function PRCard({ pr, weightUnit, onViewProgress }) {
+  const isBodyweight = pr.weight === 0;
+  return (
+    <div style={{
+      position: 'relative', background: 'var(--surface)', border: '1px solid var(--border)',
+      borderRadius: 12, padding: '22px 18px', marginBottom: 14,
+    }}>
+      <div style={{ fontWeight: 700, fontSize: 18, paddingRight: 56 }}>{pr.exercise_name}</div>
+
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 12, marginBottom: 20 }}>
+        <span style={{ display: 'inline-flex', color: 'var(--yellow)' }}>
+          <TrophyIcon size={16} />
+        </span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)' }}>
+          {isBodyweight ? 'BW' : `${pr.reps}x`}
+        </span>
+        <span style={{ fontSize: 18, fontWeight: 800 }}>
+          {isBodyweight ? pr.reps : `${round1(pr.weight)} ${weightUnit}`}
+        </span>
       </div>
-      <div style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-        <span>🏆</span>
-        <span>{round1(pr.weight)} × {pr.reps} {weightUnit}</span>
-        <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>· est. 1RM: {round1(pr.estimated_1rm)} {weightUnit}</span>
+
+      <div style={{ position: 'absolute', top: 18, right: 18, fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>
+        {shortDate(pr.date)}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {shortDate(pr.date)} · {pr.session_name}
-        </div>
-        <button onClick={() => onViewProgress(pr.exercise_name)}
-          style={{ background: 'none', border: 'none', color: 'var(--accent-light)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-          View Progress
-        </button>
-      </div>
+
+      <button onClick={() => onViewProgress(pr.exercise_name)}
+        style={{
+          position: 'absolute', bottom: 14, right: 14,
+          background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8,
+          width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'var(--accent-light)', cursor: 'pointer',
+        }}>
+        <PlusIcon size={18} />
+      </button>
     </div>
   );
 }
@@ -905,16 +946,20 @@ function PRsTab({ weightUnit, onViewProgress }) {
 
   return (
     <div>
-      <input
-        placeholder="🔍 Search exercises…"
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{
-          width: '100%', padding: '10px 14px', borderRadius: 8, marginBottom: 14,
-          background: 'var(--surface2)', border: '1px solid var(--border)',
-          color: 'var(--text)', fontSize: 14, fontFamily: 'inherit',
-        }}
-      />
+      <div style={{ position: 'relative', marginBottom: 14 }}>
+        <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', display: 'flex', pointerEvents: 'none' }}>
+          <SearchIcon size={16} />
+        </span>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{
+            width: '100%', padding: '10px 14px 10px 38px', borderRadius: 8,
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            color: 'var(--text)', fontSize: 14, fontFamily: 'inherit',
+          }}
+        />
+      </div>
 
       {filtered.map(pr => (
         <PRCard key={pr.exercise_name} pr={pr} weightUnit={weightUnit} onViewProgress={onViewProgress} />
@@ -1186,7 +1231,7 @@ export default function Workout() {
           <WorkoutSummarySheet session={summaryTarget.session} mode={summaryTarget.mode}
             onSave={handleFinishSave} onDelete={() => handleDeleteSession(summaryTarget.session.id)} onClose={() => setSummaryTarget(null)}/>
         )}
-        {progressExercise && <ExerciseProgressSheet exerciseName={progressExercise} onClose={() => setProgressExercise(null)}/>}
+        {progressExercise && <ExerciseProgressSheet exerciseName={progressExercise} weightUnit={weightUnit} onClose={() => setProgressExercise(null)}/>}
       </div>
     );
   }
@@ -1329,7 +1374,7 @@ export default function Workout() {
           template={templateEditor === 'new' ? null : templateEditor}
           onSave={handleTemplateSaved} onClose={() => setTemplateEditor(null)}/>
       )}
-      {progressExercise && <ExerciseProgressSheet exerciseName={progressExercise} onClose={() => setProgressExercise(null)}/>}
+      {progressExercise && <ExerciseProgressSheet exerciseName={progressExercise} weightUnit={weightUnit} onClose={() => setProgressExercise(null)}/>}
     </div>
   );
 }
