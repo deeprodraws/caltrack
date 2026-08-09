@@ -3,16 +3,27 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// Exercises are global (shared library), no user_id filtering on the list/create
+// Exercises are a global (shared) library, but result ORDER is personalized —
+// exercises this user has actually logged before are surfaced first, most-used first.
 router.get('/', async (req, res) => {
   const { q } = req.query;
   try {
-    const { rows } = q
-      ? await pool.query(
-          `SELECT * FROM exercises WHERE name ILIKE $1 ORDER BY name LIMIT 10`,
-          [`%${q}%`]
-        )
-      : await pool.query(`SELECT * FROM exercises ORDER BY name`);
+    const like = q ? `%${q}%` : null;
+    const limitClause = q ? 'LIMIT 10' : '';
+    const { rows } = await pool.query(`
+      SELECT e.*, COALESCE(u.cnt, 0)::int AS usage_count
+      FROM exercises e
+      LEFT JOIN (
+        SELECT se.exercise_name, COUNT(*) AS cnt
+        FROM session_exercises se
+        JOIN workout_sessions ws ON ws.id = se.session_id
+        WHERE ws.user_id = $1 AND ws.finished_at IS NOT NULL
+        GROUP BY se.exercise_name
+      ) u ON LOWER(u.exercise_name) = LOWER(e.name)
+      WHERE $2::text IS NULL OR e.name ILIKE $2
+      ORDER BY usage_count DESC, e.name ASC
+      ${limitClause}
+    `, [req.userId, like]);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

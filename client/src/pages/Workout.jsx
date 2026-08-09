@@ -168,6 +168,8 @@ function ExerciseSearchSheet({ onAdd, onClose }) {
   const [newMuscle, setNewMuscle] = useState('');
   const [newEquip, setNewEquip] = useState('');
   const [creating, setCreating] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const dragRef = useRef({ startY: 0, dragging: false });
 
   useEffect(() => { searchExercises('').then(setResults); }, []);
 
@@ -187,9 +189,33 @@ function ExerciseSearchSheet({ onAdd, onClose }) {
     setCreating(false);
   }
 
+  function handleHandlePointerDown(e) {
+    dragRef.current = { startY: e.clientY, dragging: true };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+  function handleHandlePointerMove(e) {
+    if (!dragRef.current.dragging) return;
+    const delta = dragRef.current.startY - e.clientY; // positive = dragged up
+    if (delta > 40) setExpanded(true);
+    else if (delta < -40) setExpanded(false);
+  }
+  function handleHandlePointerUp() {
+    dragRef.current.dragging = false;
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxHeight: '85vh' }}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}
+        style={{ maxHeight: expanded ? '92vh' : '65vh', transition: 'max-height 0.25s ease' }}>
+        <div
+          onPointerDown={handleHandlePointerDown}
+          onPointerMove={handleHandlePointerMove}
+          onPointerUp={handleHandlePointerUp}
+          onClick={() => setExpanded(e => !e)}
+          style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 2px', cursor: 'grab', touchAction: 'none' }}
+        >
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
+        </div>
         <div className="modal-header">
           <h3>Add Exercise</h3>
           <button className="modal-close" onClick={onClose}>✕</button>
@@ -201,7 +227,7 @@ function ExerciseSearchSheet({ onAdd, onClose }) {
               background: 'var(--surface2)', border: '1px solid var(--border)',
               color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }}
           />
-          <div style={{ overflowY: 'auto', maxHeight: 260, marginBottom: 8 }}>
+          <div style={{ overflowY: 'auto', maxHeight: expanded ? 560 : 260, marginBottom: 8, transition: 'max-height 0.25s ease' }}>
             {results.map(ex => (
               <div key={ex.id} onClick={() => onAdd(ex.name)}
                 style={{ padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
@@ -292,14 +318,22 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
       <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
         <div className="modal-header">
           <h3>{exerciseName}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose} style={{ width: 30, height: 30, fontSize: 13 }}>✕</button>
         </div>
         <div className="modal-body">
           {loading ? (
             <div className="empty-state">Loading…</div>
           ) : history.length < 2 ? (
-            <div className="empty-state" style={{ marginBottom: 16 }}>
-              {history.length === 0 ? 'No history yet.' : 'Log at least 2 sessions to see charts.'}
+            <div className="empty-state" style={{ position: 'relative', marginBottom: 16, overflow: 'hidden', borderRadius: 10 }}>
+              <svg viewBox="0 0 300 90" preserveAspectRatio="none" style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.12, pointerEvents: 'none',
+              }}>
+                <polyline points="0,70 40,55 80,60 120,35 160,42 200,20 240,28 300,8"
+                  fill="none" stroke="var(--accent-light)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div style={{ position: 'relative' }}>
+                {history.length === 0 ? 'No history yet.' : 'Log at least 2 sessions to see charts.'}
+              </div>
             </div>
           ) : (
             <>
@@ -333,7 +367,7 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
 
           {bestEver && (
             <div style={{ background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 10, padding: '12px 16px', marginTop: 20 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Best Set Ever</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Best</div>
               <div style={{ fontSize: 20, fontWeight: 700 }}>{round1(bestEver.weight)} × {bestEver.reps}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{shortDate(bestEver.date)}</div>
               {best1RM > 0 && (
@@ -1285,7 +1319,7 @@ export default function Workout() {
             </div>
           </div>
           <button onClick={() => setSummaryTarget({ session: { ...session }, mode: 'finish' })}
-            style={{ background: '#34d399', color: '#000', border: 'none', padding: '10px 18px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+            style={{ background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,0.5)', padding: '10px 18px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
             Finish
           </button>
         </div>
