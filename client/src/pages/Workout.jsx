@@ -401,18 +401,13 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
   }
 
   async function handleSetBlur(exId, setId) {
-    console.log('[DEBUG] handleSetBlur called', exId, setId);
     const ex = exercises.find(e => e.id === exId);
     const s = ex?.sets.find(s => s.id === setId);
-    console.log('[DEBUG] found ex/s', ex, s);
     if (!s) return;
     try {
-      console.log('[DEBUG] calling updateSet', setId, { weight: +s.weight || 0, reps: +s.reps || 0 });
-      const result = await updateSet(setId, { weight: +s.weight || 0, reps: +s.reps || 0 });
-      console.log('[DEBUG] updateSet result', result);
+      await updateSet(setId, { weight: +s.weight || 0, reps: +s.reps || 0 });
       onExercisesChanged?.(exercises);
     } catch (err) {
-      console.log('[DEBUG] updateSet threw', err);
       alert(err.message || 'Could not save that change — please try again.');
     }
   }
