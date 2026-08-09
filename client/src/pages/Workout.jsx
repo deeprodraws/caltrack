@@ -8,7 +8,7 @@ import {
   getActiveWorkoutSession,
   createWorkoutSession, updateWorkoutSession, deleteWorkoutSession,
   addExerciseToSession, removeExerciseFromSession,
-  addSet, deleteSet,
+  addSet, updateSet, deleteSet,
   searchExercises, createExercise,
   getExerciseHistory, getExerciseLastSession,
   createWorkoutTemplate, updateWorkoutTemplate, deleteWorkoutTemplate,
@@ -374,7 +374,16 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
 
 // ── Workout Summary Sheet ─────────────────────────────────────────────────────
 
-function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
+function EditIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  );
+}
+
+function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExercisesChanged }) {
   const [notes, setNotes] = useState(session.notes || '');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
@@ -382,6 +391,33 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [prs, setPrs] = useState({});
   const [loadingPrs, setLoadingPrs] = useState(mode === 'finish');
+  const [editing, setEditing] = useState(false);
+  const [exercises, setExercises] = useState(session.exercises);
+
+  function handleSetField(exId, setId, field, value) {
+    setExercises(prev => prev.map(ex => ex.id !== exId ? ex : {
+      ...ex, sets: ex.sets.map(s => s.id === setId ? { ...s, [field]: value } : s),
+    }));
+  }
+
+  async function handleSetBlur(exId, setId) {
+    const ex = exercises.find(e => e.id === exId);
+    const s = ex?.sets.find(s => s.id === setId);
+    if (!s) return;
+    try {
+      await updateSet(setId, { weight: +s.weight || 0, reps: +s.reps || 0 });
+      onExercisesChanged?.(exercises);
+    } catch {}
+  }
+
+  async function handleDeleteSetRow(exId, setId) {
+    await deleteSet(setId);
+    setExercises(prev => {
+      const next = prev.map(ex => ex.id !== exId ? ex : { ...ex, sets: ex.sets.filter(s => s.id !== setId) });
+      onExercisesChanged?.(next);
+      return next;
+    });
+  }
 
   const totalSets = session.exercises.reduce((n, ex) => n + ex.sets.length, 0);
   const totalVol  = session.exercises.reduce((n, ex) =>
@@ -418,7 +454,21 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
             {mode === 'finish' && <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>}
             {mode === 'finish' ? 'Workout Complete' : session.name}
           </h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {mode === 'view' && (
+              <button onClick={() => setEditing(e => !e)}
+                aria-label="Edit workout"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: editing ? 'var(--accent)' : 'var(--surface2)',
+                  border: 'none', color: editing ? '#fff' : 'var(--text-muted)', cursor: 'pointer',
+                }}>
+                <EditIcon size={15} />
+              </button>
+            )}
+            <button className="modal-close" onClick={onClose}>✕</button>
+          </div>
         </div>
         <div className="modal-body">
           <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
@@ -444,27 +494,59 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose }) {
             </div>
           )}
 
-          {mode === 'view' && session.exercises.map(ex => (
-            <div key={ex.id} style={{ marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{ex.exercise_name}</div>
-              {ex.sets.length === 0 ? (
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No sets logged</div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '2rem 1fr 1fr', gap: '4px 12px', fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-muted)' }}>#</span>
-                  <span style={{ color: 'var(--text-muted)' }}>Weight</span>
-                  <span style={{ color: 'var(--text-muted)' }}>Reps</span>
-                  {ex.sets.map(s => (
-                    <>
-                      <span key={`n${s.id}`} style={{ color: 'var(--text-muted)' }}>{s.set_number}</span>
-                      <span key={`w${s.id}`} style={{ fontWeight: 600 }}>{round1(s.weight)}</span>
-                      <span key={`r${s.id}`} style={{ fontWeight: 600 }}>{s.reps}</span>
-                    </>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          {mode === 'view' && exercises.map(ex => {
+            const cols = editing ? '2rem 1fr 1fr 1.6rem' : '2rem 1fr 1fr';
+            const inputStyle = {
+              width: '100%', padding: '5px 6px', borderRadius: 6, textAlign: 'center',
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              color: 'var(--text)', fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+            };
+            return (
+              <div key={ex.id} style={{
+                background: 'var(--surface2)', border: '1px solid var(--border)',
+                borderRadius: 12, padding: '12px 14px', marginBottom: 12,
+              }}>
+                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{ex.exercise_name}</div>
+                {ex.sets.length === 0 ? (
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No sets logged</div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: cols, gap: '6px 10px', fontSize: 12, alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>#</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Weight</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Reps</span>
+                    {editing && <span />}
+                    {ex.sets.map(s => (
+                      <>
+                        <span key={`n${s.id}`} style={{ color: 'var(--text-muted)' }}>{s.set_number}</span>
+                        {editing ? (
+                          <input key={`w${s.id}`} type="number" inputMode="decimal" value={s.weight}
+                            onChange={e => handleSetField(ex.id, s.id, 'weight', e.target.value)}
+                            onBlur={() => handleSetBlur(ex.id, s.id)}
+                            style={inputStyle} />
+                        ) : (
+                          <span key={`w${s.id}`} style={{ fontWeight: 600 }}>{s.weight === 0 ? 'BW' : round1(s.weight)}</span>
+                        )}
+                        {editing ? (
+                          <input key={`r${s.id}`} type="number" inputMode="numeric" value={s.reps}
+                            onChange={e => handleSetField(ex.id, s.id, 'reps', e.target.value)}
+                            onBlur={() => handleSetBlur(ex.id, s.id)}
+                            style={inputStyle} />
+                        ) : (
+                          <span key={`r${s.id}`} style={{ fontWeight: 600 }}>{s.reps}</span>
+                        )}
+                        {editing && (
+                          <button key={`d${s.id}`} onClick={() => handleDeleteSetRow(ex.id, s.id)}
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }}>
+                            ✕
+                          </button>
+                        )}
+                      </>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           {mode === 'finish' ? (
             <>
@@ -789,19 +871,22 @@ function PRCard({ pr, weightUnit, onViewProgress }) {
     <div style={{
       position: 'relative', background: 'var(--surface)', border: '1px solid var(--border)',
       borderRadius: 12, padding: '22px 18px', marginBottom: 14,
+      display: 'flex', flexDirection: 'column', minHeight: 128,
     }}>
       <div style={{ fontWeight: 700, fontSize: 20, paddingRight: 56 }}>{pr.exercise_name}</div>
 
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 12, marginBottom: 20 }}>
-        <span style={{ display: 'inline-flex', color: 'var(--accent-light)' }}>
-          <TrophyIcon size={14} />
-        </span>
-        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)', marginRight: -4 }}>
-          {isBodyweight ? 'BW' : `${pr.reps}x`}
-        </span>
-        <span style={{ fontSize: 21, fontWeight: 800 }}>
-          {isBodyweight ? pr.reps : `${round1(pr.weight)} ${weightUnit}`}
-        </span>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span style={{ display: 'inline-flex', color: 'var(--accent-light)' }}>
+            <TrophyIcon size={14} />
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)', marginRight: -4 }}>
+            {isBodyweight ? 'BW' : `${pr.reps}x`}
+          </span>
+          <span style={{ fontSize: 21, fontWeight: 800 }}>
+            {isBodyweight ? pr.reps : `${round1(pr.weight)} ${weightUnit}`}
+          </span>
+        </div>
       </div>
 
       <div style={{ position: 'absolute', top: 18, right: 18, fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>
@@ -1144,6 +1229,14 @@ export default function Workout() {
     setPageState('idle');
   }
 
+  function patchSessionExercises(sessionId, sessionDate, updatedExercises) {
+    setTodaySessions(prev => prev.map(s => s.id === sessionId ? { ...s, exercises: updatedExercises } : s));
+    const totalSets = updatedExercises.reduce((n, e) => n + e.sets.length, 0);
+    const totalVol  = updatedExercises.reduce((n, e) => n + e.sets.reduce((s, set) => s + set.weight * set.reps, 0), 0);
+    setRecentSessions(prev => prev.map(s => s.id === sessionId ? { ...s, total_sets: totalSets, total_volume: totalVol } : s));
+    invalidateCache('workout-' + sessionDate);
+  }
+
   async function handleDeleteSession(sessionId) {
     await deleteWorkoutSession(sessionId);
     setTodaySessions(prev => prev.filter(s => s.id !== sessionId));
@@ -1229,7 +1322,7 @@ export default function Workout() {
         {showExSearch && <ExerciseSearchSheet onAdd={handleAddExercise} onClose={() => setShowExSearch(false)}/>}
         {summaryTarget && (
           <WorkoutSummarySheet session={summaryTarget.session} mode={summaryTarget.mode}
-            onSave={handleFinishSave} onDelete={() => handleDeleteSession(summaryTarget.session.id)} onClose={() => setSummaryTarget(null)}/>
+            onSave={handleFinishSave} onDelete={() => handleDeleteSession(summaryTarget.session.id)} onClose={() => setSummaryTarget(null)} onExercisesChanged={(updated) => patchSessionExercises(summaryTarget.session.id, summaryTarget.session.date, updated)}/>
         )}
         {progressExercise && <ExerciseProgressSheet exerciseName={progressExercise} weightUnit={weightUnit} onClose={() => setProgressExercise(null)}/>}
       </div>
@@ -1367,7 +1460,7 @@ export default function Workout() {
 
       {summaryTarget && (
         <WorkoutSummarySheet session={summaryTarget.session} mode={summaryTarget.mode}
-          onSave={handleFinishSave} onDelete={() => handleDeleteSession(summaryTarget.session.id)} onClose={() => setSummaryTarget(null)}/>
+          onSave={handleFinishSave} onDelete={() => handleDeleteSession(summaryTarget.session.id)} onClose={() => setSummaryTarget(null)} onExercisesChanged={(updated) => patchSessionExercises(summaryTarget.session.id, summaryTarget.session.date, updated)}/>
       )}
       {templateEditor !== null && (
         <TemplateEditorSheet
