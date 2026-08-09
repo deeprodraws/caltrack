@@ -51,9 +51,9 @@ setsRouter.put('/:id', async (req, res) => {
 
     const { rows: [row] } = await pool.query(`
       UPDATE session_sets SET
-        weight = CASE WHEN $2 IS NOT NULL THEN $2 ELSE weight END,
-        reps   = CASE WHEN $3 IS NOT NULL THEN $3 ELSE reps   END,
-        rpe    = CASE WHEN $4 IS NOT NULL THEN $4 ELSE rpe    END
+        weight = CASE WHEN $2::real    IS NOT NULL THEN $2::real    ELSE weight END,
+        reps   = CASE WHEN $3::integer IS NOT NULL THEN $3::integer ELSE reps   END,
+        rpe    = CASE WHEN $4::real    IS NOT NULL THEN $4::real    ELSE rpe    END
       WHERE id = $1 RETURNING *`,
       [req.params.id,
        weight !== undefined ? +weight : null,

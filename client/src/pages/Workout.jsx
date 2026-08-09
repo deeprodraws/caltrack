@@ -407,7 +407,9 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
     try {
       await updateSet(setId, { weight: +s.weight || 0, reps: +s.reps || 0 });
       onExercisesChanged?.(exercises);
-    } catch {}
+    } catch (err) {
+      alert(err.message || 'Could not save that change — please try again.');
+    }
   }
 
   async function handleDeleteSetRow(exId, setId) {

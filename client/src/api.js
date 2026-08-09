@@ -369,7 +369,9 @@ export async function updateSet(id, data) {
     method: 'PUT', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return res.json();
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Update failed');
+  return json;
 }
 
 export async function deleteSet(id) {
