@@ -1,4 +1,4 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 :root {
   --bg: #0f1117;
@@ -99,8 +99,8 @@ input, select {
   max-width: 900px;
 }
 
-/* ── Floating nav + quick-add + settings FAB (mobile only) ───────────────────  */
-.float-nav-row, .settings-fab {
+/* ── Floating nav + quick-add (mobile only) ───────────────────────────────  */
+.float-nav-row {
   display: none;
 }
 
@@ -609,8 +609,8 @@ input, select {
     bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: 200;
     align-items: flex-end;
-    justify-content: space-between;
-    gap: 8px;
+    justify-content: flex-start;
+    gap: 30px;
     pointer-events: none;
   }
 
@@ -619,6 +619,8 @@ input, select {
     pointer-events: auto;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex: 1;
     gap: 2px;
     background: rgba(26, 29, 39, 0.72);
     backdrop-filter: blur(20px) saturate(180%);
@@ -767,28 +769,6 @@ input, select {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
-
-  .settings-fab {
-    display: flex;
-    position: fixed;
-    top: calc(16px + env(safe-area-inset-top));
-    right: 16px;
-    z-index: 200;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(26, 29, 39, 0.72);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .settings-fab svg { width: 18px; height: 18px; }
 
   /* ── Macro grid: 2 columns ── */
   .macro-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }

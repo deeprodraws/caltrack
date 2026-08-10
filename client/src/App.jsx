@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react';
-import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import SkeletonLoader from './components/SkeletonLoader';
@@ -195,10 +195,6 @@ function AppShell() {
           </NavLink>
         ))}
       </nav>
-
-      <Link to="/settings" className="settings-fab" aria-label="Settings">
-        <IconSettings />
-      </Link>
 
       <main className="main-content">
         <div key={location.pathname} className="page-transition">
