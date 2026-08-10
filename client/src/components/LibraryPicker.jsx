@@ -359,14 +359,14 @@ export default function LibraryPicker({ onClose, onLogged }) {
           onClick={onClose}
           aria-label="Close"
           style={{
-            position: 'absolute', top: -22, right: 16, zIndex: 5,
-            width: 44, height: 44, borderRadius: '50%',
+            position: 'absolute', top: -55, right: 16, zIndex: 5,
+            width: 45, height: 45, borderRadius: '50%',
             background: 'var(--surface2)', border: '1px solid var(--border)',
             color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 16px rgba(0,0,0,0.4)', cursor: 'pointer',
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
@@ -392,8 +392,8 @@ export default function LibraryPicker({ onClose, onLogged }) {
           </div>
 
           <div className="modal-body">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10, flexWrap: 'nowrap' }}>
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', minWidth: 0, overflowX: 'auto' }}>
                 {TABS.map(t => (
                   <button
                     key={t.key}
@@ -403,7 +403,7 @@ export default function LibraryPicker({ onClose, onLogged }) {
                       borderBottom: `2px solid ${tab === t.key ? 'var(--accent)' : 'transparent'}`,
                       color: tab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
                       fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                      marginBottom: -1, transition: 'all 0.15s',
+                      marginBottom: -1, transition: 'all 0.15s', flexShrink: 0, whiteSpace: 'nowrap',
                     }}
                   >{t.label}</button>
                 ))}
@@ -411,6 +411,7 @@ export default function LibraryPicker({ onClose, onLogged }) {
               <button
                 className="btn-primary"
                 type="button"
+                style={{ flexShrink: 0 }}
                 onClick={() => setModal(
                   tab === 'templates' ? { type: 'createTemplate' } :
                   tab === 'recipes'   ? { type: 'createRecipe' } :
