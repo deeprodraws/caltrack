@@ -16,7 +16,7 @@
   --orange: #fb923c;
   --radius: 12px;
   --radius-sm: 8px;
-  --bottom-nav-h: 64px;
+  --bottom-nav-h: 80px; /* floating pill/plus-button height + bottom margin */
 }
 
 body {
@@ -99,9 +99,18 @@ input, select {
   max-width: 900px;
 }
 
-/* ── Bottom nav (mobile only) ────────────────────────────────────────────────  */
-.bottom-nav {
+/* ── Floating nav + quick-add + settings FAB (mobile only) ───────────────────  */
+.float-nav-row, .settings-fab {
   display: none;
+}
+
+/* ── Page transition ───────────────────────────────────────────────────────── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-transition {
+  animation: pageFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Cards ───────────────────────────────────────────────────────────────────  */
@@ -591,48 +600,173 @@ input, select {
   /* Page title */
   .page-title { font-size: 20px; margin-bottom: 18px; }
 
-  /* ── Bottom navigation ── */
-  .bottom-nav {
+  /* ── Floating glass nav ── */
+  .float-nav-row {
     display: flex;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
-    background: var(--surface);
-    border-top: 1px solid var(--border);
+    left: 16px;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: 200;
-    padding-bottom: env(safe-area-inset-bottom);
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    pointer-events: none;
   }
 
-  .bottom-nav-item {
-    flex: 1;
+  .float-pill {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(26, 29, 39, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .float-pill-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 10px;
+    border-radius: 999px;
     color: var(--text-muted);
     text-decoration: none;
-    padding: 8px 4px;
-    transition: color 0.15s;
+    transition: background 0.25s ease, color 0.25s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .bottom-nav-item.active { color: var(--accent-light); }
+  .float-pill-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
 
-  .bottom-nav-icon svg {
-    width: 22px;
-    height: 22px;
+  .float-pill-icon svg {
+    width: 20px;
+    height: 20px;
     display: block;
   }
 
-  .bottom-nav-label {
+  .float-pill-label {
     font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.3px;
     text-transform: uppercase;
   }
+
+  .float-plus-wrap {
+    pointer-events: auto;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .float-plus-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(26, 29, 39, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.25s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .float-plus-btn svg {
+    width: 22px;
+    height: 22px;
+    transition: transform 0.25s ease;
+  }
+
+  .float-plus-btn.open { background: var(--accent); }
+  .float-plus-btn.open svg { transform: rotate(45deg); }
+
+  .float-plus-menu {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(26, 29, 39, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    animation: floatMenuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+  }
+
+  @keyframes floatMenuIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .float-plus-menu button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .float-plus-menu button:active { background: rgba(255, 255, 255, 0.08); }
+  .float-plus-menu button svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .float-menu-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: transparent;
+  }
+
+  .settings-fab {
+    display: flex;
+    position: fixed;
+    top: calc(16px + env(safe-area-inset-top));
+    right: 16px;
+    z-index: 200;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(26, 29, 39, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .settings-fab svg { width: 18px; height: 18px; }
 
   /* ── Macro grid: 2 columns ── */
   .macro-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
@@ -725,10 +859,10 @@ input, select {
   .btn-icon, .btn-delete { width: 36px; height: 36px; }
 }
 
-/* ── Very small screens: hide nav labels so 7 icons fit ───────────────────── */
+/* ── Very small screens: tighten the pill so 4 items + plus button fit ──────── */
 @media (max-width: 380px) {
-  .bottom-nav-label { display: none; }
-  .bottom-nav-item  { padding: 10px 2px; }
+  .float-pill-label { display: none; }
+  .float-pill-item  { padding: 10px; min-width: 40px; }
 }
 
 /* ── Meals & Recipes page ─────────────────────────────────────────────────── */

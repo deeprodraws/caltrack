@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { Routes, Route, NavLink } from 'react-router-dom';
+import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import SkeletonLoader from './components/SkeletonLoader';
@@ -82,6 +82,13 @@ const IconSettings = () => (
   </svg>
 );
 
+const IconPlus = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+// Full set — used by the desktop sidebar, which has room for everything.
 const navItems = [
   { to: '/',          end: true, icon: <IconDashboard />, label: 'Home' },
   { to: '/log',                  icon: <IconLog />,       label: 'Log' },
@@ -90,10 +97,65 @@ const navItems = [
   { to: '/timeline',             icon: <IconTimeline />,  label: 'Timeline' },
   { to: '/library',              icon: <IconLibrary />,   label: 'Library' },
   { to: '/stats',                icon: <IconStats />,     label: 'Stats' },
-  { to: '/settings',             icon: <IconSettings />,  label: 'Settings', mobileHidden: true },
+  { to: '/settings',             icon: <IconSettings />,  label: 'Settings' },
 ];
 
+// Consolidated set for the mobile floating pill — the rest (Log, Workout) move
+// into the + quick-add menu, and Settings becomes its own small icon.
+const mobileNavItems = [
+  { to: '/',          end: true, icon: <IconDashboard />, label: 'Home' },
+  { to: '/timeline',             icon: <IconTimeline />,  label: 'Timeline' },
+  { to: '/physique',             icon: <IconPhysique />,  label: 'Physique' },
+  { to: '/stats',                icon: <IconStats />,     label: 'Stats' },
+];
+
+function FloatingNav() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  function goTo(path) {
+    setMenuOpen(false);
+    navigate(path);
+  }
+
+  return (
+    <>
+      {menuOpen && <div className="float-menu-scrim" onClick={() => setMenuOpen(false)} />}
+      <div className="float-nav-row">
+        <nav className="float-pill">
+          {mobileNavItems.map(({ to, end, icon, label }) => (
+            <NavLink key={to} to={to} end={end}
+              className={({ isActive }) => `float-pill-item ${isActive ? 'active' : ''}`}>
+              <span className="float-pill-icon">{icon}</span>
+              <span className="float-pill-label">{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="float-plus-wrap">
+          {menuOpen && (
+            <div className="float-plus-menu">
+              <button onClick={() => goTo('/log')}><IconLog /> Add Meal</button>
+              <button onClick={() => goTo('/workout')}><IconWorkout /> Add Workout</button>
+            </div>
+          )}
+          <button
+            className={`float-plus-btn ${menuOpen ? 'open' : ''}`}
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Quick add"
+            aria-expanded={menuOpen}
+          >
+            <IconPlus />
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function AppShell() {
+  const location = useLocation();
+
   return (
     <div className="app-shell">
       <nav className="sidebar">
@@ -109,30 +171,28 @@ function AppShell() {
         ))}
       </nav>
 
+      <Link to="/settings" className="settings-fab" aria-label="Settings">
+        <IconSettings />
+      </Link>
+
       <main className="main-content">
-        <Suspense fallback={<SkeletonLoader count={4} height={64} />}>
-          <Routes>
-            <Route path="/"          element={<Dashboard />} />
-            <Route path="/log"       element={<FoodLog />} />
-            <Route path="/workout"   element={<Workout />} />
-            <Route path="/physique"  element={<Physique />} />
-            <Route path="/timeline"  element={<Timeline />} />
-            <Route path="/library"   element={<Library />} />
-            <Route path="/stats"     element={<Stats />} />
-            <Route path="/settings"  element={<Settings />} />
-          </Routes>
-        </Suspense>
+        <div key={location.pathname} className="page-transition">
+          <Suspense fallback={<SkeletonLoader count={4} height={64} />}>
+            <Routes>
+              <Route path="/"          element={<Dashboard />} />
+              <Route path="/log"       element={<FoodLog />} />
+              <Route path="/workout"   element={<Workout />} />
+              <Route path="/physique"  element={<Physique />} />
+              <Route path="/timeline"  element={<Timeline />} />
+              <Route path="/library"   element={<Library />} />
+              <Route path="/stats"     element={<Stats />} />
+              <Route path="/settings"  element={<Settings />} />
+            </Routes>
+          </Suspense>
+        </div>
       </main>
 
-      <nav className="bottom-nav">
-        {navItems.filter(item => !item.mobileHidden).map(({ to, end, icon, label }) => (
-          <NavLink key={to} to={to} end={end}
-            className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
-            <span className="bottom-nav-icon">{icon}</span>
-            <span className="bottom-nav-label">{label}</span>
-          </NavLink>
-        ))}
-      </nav>
+      <FloatingNav />
     </div>
   );
 }

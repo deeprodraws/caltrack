@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { getEntries, addEntry, updateEntry, deleteEntry, searchSavedFoods, createSavedFood } from '../api';
 import PhotoScanner from '../components/PhotoScanner';
 import BarcodeScanner from '../components/BarcodeScanner';
@@ -528,7 +529,16 @@ export default function FoodLog() {
 
   return (
     <div>
-      <div className="page-title">Food Log</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div className="page-title" style={{ marginBottom: 0 }}>Food Log</div>
+        <Link to="/library" style={{
+          fontSize: 13, fontWeight: 600, color: 'var(--accent-light)',
+          padding: '6px 12px', borderRadius: 8, background: 'var(--surface2)',
+          border: '1px solid var(--border)',
+        }}>
+          Library
+        </Link>
+      </div>
 
       <div className="log-date-row">
         <div className="date-nav" style={{ margin: 0 }}>
