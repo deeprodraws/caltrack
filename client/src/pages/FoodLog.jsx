@@ -691,7 +691,7 @@ export default function FoodLog() {
                 onChange={e => setSaveAsTemplate(e.target.checked)}
                 style={{ width: 15, height: 15, accentColor: 'var(--accent)', cursor: 'pointer' }}
               />
-              Save as template
+              Save to My Foods
             </label>
           )}
 
