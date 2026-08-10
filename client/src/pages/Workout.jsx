@@ -318,7 +318,7 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
       <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
         <div className="modal-header">
           <h3>{exerciseName}</h3>
-          <button className="modal-close" onClick={onClose} style={{ width: 30, height: 30, fontSize: 13 }}>✕</button>
+          <button className="modal-close" onClick={onClose} style={{ width: 30, minWidth: 30, height: 30, fontSize: 13 }}>✕</button>
         </div>
         <div className="modal-body">
           {loading ? (
