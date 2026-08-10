@@ -4,6 +4,7 @@ import { getEntries, addEntry, updateEntry, deleteEntry, searchSavedFoods, creat
 import PhotoScanner from '../components/PhotoScanner';
 import BarcodeScanner from '../components/BarcodeScanner';
 import SkeletonLoader from '../components/SkeletonLoader';
+import Collapse from '../components/Collapse';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 
@@ -253,38 +254,36 @@ function TemplateEntryRow({ entry, expanded, onToggle, onDelete }) {
         )}
       </div>
 
-      {expanded && (
-        <>
-          <div style={{ borderTop: '1px solid var(--border)', padding: '4px 16px' }}>
-            {ingredients.map(ing => (
-              <div key={ing.id} style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                fontSize: 13, padding: '7px 0', borderBottom: '1px solid var(--border)',
+      <Collapse open={expanded}>
+        <div style={{ borderTop: '1px solid var(--border)', padding: '4px 16px' }}>
+          {ingredients.map(ing => (
+            <div key={ing.id} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              fontSize: 13, padding: '7px 0', borderBottom: '1px solid var(--border)',
+            }}>
+              <span style={{
+                color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap', marginRight: 10, minWidth: 0,
               }}>
-                <span style={{
-                  color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap', marginRight: 10, minWidth: 0,
-                }}>
-                  {ing.food_name} ({round1(ing.weight_grams)}{ing.weight_unit || 'g'})
-                </span>
-                <span style={{ flexShrink: 0 }}>{round1(ing.calories)} cal</span>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              Logged from {entry.entry_type === 'recipe' ? 'recipe' : 'template'}
-            </span>
-            <button className="btn-delete" title="Delete" onClick={e => { e.stopPropagation(); onDelete(); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </>
-      )}
+                {ing.food_name} ({round1(ing.weight_grams)}{ing.weight_unit || 'g'})
+              </span>
+              <span style={{ flexShrink: 0 }}>{round1(ing.calories)} cal</span>
+            </div>
+          ))}
+        </div>
+        <div style={{
+          padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            Logged from {entry.entry_type === 'recipe' ? 'recipe' : 'template'}
+          </span>
+          <button className="btn-delete" title="Delete" onClick={e => { e.stopPropagation(); onDelete(); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </Collapse>
     </div>
   );
 }

@@ -88,6 +88,33 @@ const IconPlus = () => (
   </svg>
 );
 
+const IconWater = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2.5s7 7.02 7 11.5a7 7 0 1 1-14 0c0-4.48 7-11.5 7-11.5z"/>
+  </svg>
+);
+
+const IconSteps = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <ellipse cx="8" cy="7" rx="2.5" ry="3.5" transform="rotate(-15 8 7)"/>
+    <ellipse cx="16" cy="16" rx="2.5" ry="3.5" transform="rotate(15 16 16)"/>
+  </svg>
+);
+
+const IconScaleWeight = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="3"/>
+    <path d="M12 8a4 4 0 0 0-4 4"/>
+    <circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/>
+  </svg>
+);
+
+const IconSleep = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>
+  </svg>
+);
+
 // Full set — used by the desktop sidebar, which has room for everything.
 const navItems = [
   { to: '/',          end: true, icon: <IconDashboard />, label: 'Home' },
@@ -117,9 +144,9 @@ function FloatingNav() {
   const pillRef = useRef(null);
   const itemRefs = useRef({});
 
-  function goTo(path) {
+  function goTo(path, state) {
     setMenuOpen(false);
-    navigate(path);
+    navigate(path, state ? { state } : undefined);
   }
 
   useEffect(() => {
@@ -162,6 +189,10 @@ function FloatingNav() {
             <div className="float-plus-menu">
               <button onClick={() => goTo('/log')}><IconLog /> Add Meal</button>
               <button onClick={() => goTo('/workout')}><IconWorkout /> Add Workout</button>
+              <button onClick={() => goTo('/', { openMetric: 'weight' })}><IconScaleWeight /> Log Weight</button>
+              <button onClick={() => goTo('/', { openMetric: 'water' })}><IconWater /> Log Water</button>
+              <button onClick={() => goTo('/', { openMetric: 'steps' })}><IconSteps /> Log Steps</button>
+              <button onClick={() => goTo('/', { openMetric: 'sleep' })}><IconSleep /> Log Sleep</button>
             </div>
           )}
           <button
@@ -178,8 +209,43 @@ function FloatingNav() {
   );
 }
 
+function findTab(pathname) {
+  return mobileNavItems.find(item =>
+    item.end ? pathname === item.to : pathname.startsWith(item.to)
+  );
+}
+
 function AppShell() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [swipeDir, setSwipeDir] = useState(null);
+  const touchStart = useRef(null);
+
+  function handleTouchStart(e) {
+    if (window.innerWidth > 700 || !findTab(location.pathname)) { touchStart.current = null; return; }
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  }
+
+  function handleTouchEnd(e) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start) return;
+
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+
+    const current = findTab(location.pathname);
+    if (!current) return;
+    const idx = mobileNavItems.indexOf(current);
+    const nextIdx = idx + (dx < 0 ? 1 : -1);
+    if (nextIdx < 0 || nextIdx >= mobileNavItems.length) return;
+
+    setSwipeDir(dx < 0 ? 'left' : 'right');
+    navigate(mobileNavItems[nextIdx].to);
+  }
 
   return (
     <div className="app-shell">
@@ -196,8 +262,12 @@ function AppShell() {
         ))}
       </nav>
 
-      <main className="main-content">
-        <div key={location.pathname} className="page-transition">
+      <main className="main-content" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+        <div
+          key={location.pathname}
+          className={`page-transition ${swipeDir ? `slide-${swipeDir}` : ''}`}
+          onAnimationEnd={() => setSwipeDir(null)}
+        >
           <Suspense fallback={<SkeletonLoader count={4} height={64} />}>
             <Routes>
               <Route path="/"          element={<Dashboard />} />

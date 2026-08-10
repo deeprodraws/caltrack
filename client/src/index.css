@@ -113,6 +113,17 @@ input, select {
   animation: pageFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes pageSlideInLeft {
+  from { opacity: 0; transform: translateX(36px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pageSlideInRight {
+  from { opacity: 0; transform: translateX(-36px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.page-transition.slide-left  { animation: pageSlideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+.page-transition.slide-right { animation: pageSlideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+
 /* ── Cards ───────────────────────────────────────────────────────────────────  */
 .card {
   background: var(--surface);
@@ -610,7 +621,7 @@ input, select {
     z-index: 200;
     align-items: flex-end;
     justify-content: flex-start;
-    gap: 30px;
+    gap: 20px;
     pointer-events: none;
   }
 

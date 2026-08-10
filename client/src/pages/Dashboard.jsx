@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   getEntries, getGoals, getWeightLogs,
   addWeightLog, updateWeightLog, deleteWeightLog,
@@ -419,6 +419,8 @@ function SleepSheet({ metrics, onSave, onClose }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [entries, setEntries]       = useState([]);
   const [goals, setGoals]           = useState({ calories: 2000, protein: 150, carbs: 250, fat: 65, weight_unit: 'kg' });
   const [weightLogs, setWeightLogs] = useState([]);
@@ -453,6 +455,19 @@ export default function Dashboard() {
       setLoading(false);
       setCached(cacheKey, { entries: e, goals: g, weightLogs: w, metrics: m });
     });
+  }, []);
+
+  // Quick-add menu can deep-link here to pop a specific log sheet straight open.
+  useEffect(() => {
+    const metric = location.state?.openMetric;
+    if (!metric) return;
+    if (metric === 'weight') {
+      setEditWeight(null);
+      setShowWeightModal(true);
+    } else {
+      setMetricModal(metric);
+    }
+    navigate(location.pathname, { replace: true, state: null });
   }, []);
 
   // ── Computed ──────────────────────────────────────────────────────────────

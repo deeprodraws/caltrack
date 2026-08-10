@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getTimeline, saveReflection, searchTimeline, getOnThisDay } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
+import Collapse from '../components/Collapse';
 import { getCached, setCached } from '../utils/cache';
 
 const TIMELINE_CACHE_TTL = 120000; // 2 minutes
@@ -612,9 +613,9 @@ function DayCard({ day, todayStr, streak, highlightQuery, goals, expanded, onTog
         </div>
       )}
 
-      {expanded && (
+      <Collapse open={expanded}>
         <ExpandedContent day={day} goals={goals} onPhotoClick={onPhotoClick} onSaveReflection={onSaveReflection} highlightQuery={highlightQuery} />
-      )}
+      </Collapse>
     </div>
   );
 }
