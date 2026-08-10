@@ -860,10 +860,11 @@ input, select {
   .btn-icon, .btn-delete { width: 36px; height: 36px; }
 }
 
-/* ── Very small screens: tighten the pill so 4 items + plus button fit ──────── */
-@media (max-width: 380px) {
+/* ── Very small screens: drop labels for breathing room, but never shrink
+   tap targets below the 44x44px minimum ──────────────────────────────────── */
+@media (max-width: 340px) {
   .float-pill-label { display: none; }
-  .float-pill-item  { padding: 10px; min-width: 40px; }
+  .float-pill-item  { padding: 10px; }
 }
 
 /* ── Meals & Recipes page ─────────────────────────────────────────────────── */
