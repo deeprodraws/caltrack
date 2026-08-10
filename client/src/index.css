@@ -634,6 +634,7 @@ input, select {
     align-items: center;
     justify-content: center;
     gap: 2px;
+    flex-shrink: 0;
     min-width: 44px;
     min-height: 44px;
     padding: 6px 10px;
