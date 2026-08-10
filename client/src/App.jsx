@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -111,20 +111,45 @@ const mobileNavItems = [
 
 function FloatingNav() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, opacity: 0 });
   const navigate = useNavigate();
+  const location = useLocation();
+  const pillRef = useRef(null);
+  const itemRefs = useRef({});
 
   function goTo(path) {
     setMenuOpen(false);
     navigate(path);
   }
 
+  useEffect(() => {
+    function measure() {
+      const active = mobileNavItems.find(item =>
+        item.end ? location.pathname === item.to : location.pathname.startsWith(item.to)
+      );
+      const el = active && itemRefs.current[active.to];
+      if (!el || !pillRef.current) return;
+      const pillRect = pillRef.current.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      setIndicator({ left: elRect.left - pillRect.left, width: elRect.width, opacity: 1 });
+    }
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [location.pathname]);
+
   return (
     <>
       {menuOpen && <div className="float-menu-scrim" onClick={() => setMenuOpen(false)} />}
       <div className="float-nav-row">
-        <nav className="float-pill">
+        <nav className="float-pill" ref={pillRef}>
+          <div className="float-pill-indicator" style={{
+            transform: `translateX(${indicator.left}px)`, width: indicator.width, opacity: indicator.opacity,
+          }} />
           {mobileNavItems.map(({ to, end, icon, label }) => (
             <NavLink key={to} to={to} end={end}
+              ref={el => { itemRefs.current[to] = el; }}
+              onClick={() => setMenuOpen(false)}
               className={({ isActive }) => `float-pill-item ${isActive ? 'active' : ''}`}>
               <span className="float-pill-icon">{icon}</span>
               <span className="float-pill-label">{label}</span>

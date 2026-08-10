@@ -610,11 +610,12 @@ input, select {
     z-index: 200;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 12px;
+    gap: 8px;
     pointer-events: none;
   }
 
   .float-pill {
+    position: relative;
     pointer-events: auto;
     display: flex;
     align-items: center;
@@ -628,7 +629,21 @@ input, select {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
+  .float-pill-indicator {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), width 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
   .float-pill-item {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -641,12 +656,11 @@ input, select {
     border-radius: 999px;
     color: var(--text-muted);
     text-decoration: none;
-    transition: background 0.25s ease, color 0.25s ease;
+    transition: color 0.25s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .float-pill-item.active {
-    background: rgba(255, 255, 255, 0.1);
     color: #fff;
   }
 
@@ -660,7 +674,6 @@ input, select {
     font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.3px;
-    text-transform: uppercase;
   }
 
   .float-plus-wrap {
@@ -744,7 +757,15 @@ input, select {
     position: fixed;
     inset: 0;
     z-index: 199;
-    background: transparent;
+    background: rgba(10, 11, 16, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: scrimFadeIn 0.2s ease;
+  }
+
+  @keyframes scrimFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   .settings-fab {
