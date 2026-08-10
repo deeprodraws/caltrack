@@ -606,6 +606,8 @@ input, select {
     margin-left: 0;
     padding: 20px 16px;
     padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 16px);
+    /* Clips the tab content while it's being dragged/slid horizontally */
+    overflow-x: hidden;
   }
 
   /* Page title */

@@ -458,6 +458,8 @@ export default function Dashboard() {
   }, []);
 
   // Quick-add menu can deep-link here to pop a specific log sheet straight open.
+  // Keyed on location.state (not just mount) so this also fires when the
+  // quick-add menu is used while already sitting on the home tab.
   useEffect(() => {
     const metric = location.state?.openMetric;
     if (!metric) return;
@@ -468,7 +470,7 @@ export default function Dashboard() {
       setMetricModal(metric);
     }
     navigate(location.pathname, { replace: true, state: null });
-  }, []);
+  }, [location.state]);
 
   // ── Computed ──────────────────────────────────────────────────────────────
   const cals      = sum(entries, 'calories');

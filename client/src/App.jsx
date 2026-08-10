@@ -219,33 +219,97 @@ function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const [swipeDir, setSwipeDir] = useState(null);
-  const touchStart = useRef(null);
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false); // true = live 1:1 tracking (no transition)
+  const dragWrapRef = useRef(null);
+  const dragState = useRef({ active: false, committed: false, startX: 0, startY: 0, dx: 0 });
 
-  function handleTouchStart(e) {
-    if (window.innerWidth > 700 || !findTab(location.pathname)) { touchStart.current = null; return; }
-    const t = e.touches[0];
-    touchStart.current = { x: t.clientX, y: t.clientY };
-  }
+  // Native (non-passive) listeners so we can preventDefault once a horizontal
+  // drag is committed — that's what stops the page from also scrolling
+  // sideways while the tab content is being dragged.
+  useEffect(() => {
+    const el = dragWrapRef.current;
+    if (!el) return;
 
-  function handleTouchEnd(e) {
-    const start = touchStart.current;
-    touchStart.current = null;
-    if (!start) return;
+    function onTouchStart(e) {
+      if (window.innerWidth > 700 || !findTab(location.pathname)) return;
+      // Don't hijack drags happening on an open modal/sheet.
+      if (document.querySelector('.modal-overlay, .float-menu-scrim')) return;
+      const t = e.touches[0];
+      dragState.current = { active: true, committed: false, startX: t.clientX, startY: t.clientY, dx: 0 };
+    }
 
-    const t = e.changedTouches[0];
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    function onTouchMove(e) {
+      const ds = dragState.current;
+      if (!ds.active) return;
+      const t = e.touches[0];
+      const dx = t.clientX - ds.startX;
+      const dy = t.clientY - ds.startY;
 
-    const current = findTab(location.pathname);
-    if (!current) return;
-    const idx = mobileNavItems.indexOf(current);
-    const nextIdx = idx + (dx < 0 ? 1 : -1);
-    if (nextIdx < 0 || nextIdx >= mobileNavItems.length) return;
+      if (!ds.committed) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        if (Math.abs(dy) >= Math.abs(dx)) { ds.active = false; return; }
+        ds.committed = true;
+        setDragging(true);
+      }
 
-    setSwipeDir(dx < 0 ? 'left' : 'right');
-    navigate(mobileNavItems[nextIdx].to);
-  }
+      const current = findTab(location.pathname);
+      const idx = mobileNavItems.indexOf(current);
+      // Rubber-band resistance at the first/last tab instead of a hard stop.
+      let clamped = dx;
+      if (dx > 0 && idx === 0) clamped = dx * 0.35;
+      if (dx < 0 && idx === mobileNavItems.length - 1) clamped = dx * 0.35;
+
+      ds.dx = clamped;
+      setDragX(clamped);
+      e.preventDefault();
+    }
+
+    function onTouchEnd() {
+      const ds = dragState.current;
+      ds.active = false;
+      if (!ds.committed) return;
+
+      const dx = ds.dx;
+      const width = el.getBoundingClientRect().width || window.innerWidth;
+      const threshold = Math.min(90, width * 0.22);
+      const current = findTab(location.pathname);
+      const idx = mobileNavItems.indexOf(current);
+
+      setDragging(false); // enable the settle transition
+
+      if (dx <= -threshold && idx < mobileNavItems.length - 1) {
+        setDragX(-width);
+        setSwipeDir('left');
+        setTimeout(() => {
+          navigate(mobileNavItems[idx + 1].to);
+          setDragging(true);
+          setDragX(0);
+        }, 200);
+      } else if (dx >= threshold && idx > 0) {
+        setDragX(width);
+        setSwipeDir('right');
+        setTimeout(() => {
+          navigate(mobileNavItems[idx - 1].to);
+          setDragging(true);
+          setDragX(0);
+        }, 200);
+      } else {
+        setDragX(0); // snap back — didn't clear the threshold
+      }
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [location.pathname, navigate]);
 
   return (
     <div className="app-shell">
@@ -262,24 +326,32 @@ function AppShell() {
         ))}
       </nav>
 
-      <main className="main-content" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-        <div
-          key={location.pathname}
-          className={`page-transition ${swipeDir ? `slide-${swipeDir}` : ''}`}
-          onAnimationEnd={() => setSwipeDir(null)}
-        >
-          <Suspense fallback={<SkeletonLoader count={4} height={64} />}>
-            <Routes>
-              <Route path="/"          element={<Dashboard />} />
-              <Route path="/log"       element={<FoodLog />} />
-              <Route path="/workout"   element={<Workout />} />
-              <Route path="/physique"  element={<Physique />} />
-              <Route path="/timeline"  element={<Timeline />} />
-              <Route path="/library"   element={<Library />} />
-              <Route path="/stats"     element={<Stats />} />
-              <Route path="/settings"  element={<Settings />} />
-            </Routes>
-          </Suspense>
+      <main className="main-content" ref={dragWrapRef} style={{ touchAction: 'pan-y' }}>
+        <div style={{
+          // Omit transform entirely at rest — a non-'none' transform value
+          // creates a containing block for fixed-position descendants, which
+          // would break every full-screen modal's `position: fixed` overlay.
+          transform: dragX !== 0 ? `translateX(${dragX}px)` : undefined,
+          transition: dragging ? 'none' : 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}>
+          <div
+            key={location.pathname}
+            className={`page-transition ${swipeDir ? `slide-${swipeDir}` : ''}`}
+            onAnimationEnd={() => setSwipeDir(null)}
+          >
+            <Suspense fallback={<SkeletonLoader count={4} height={64} />}>
+              <Routes>
+                <Route path="/"          element={<Dashboard />} />
+                <Route path="/log"       element={<FoodLog />} />
+                <Route path="/workout"   element={<Workout />} />
+                <Route path="/physique"  element={<Physique />} />
+                <Route path="/timeline"  element={<Timeline />} />
+                <Route path="/library"   element={<Library />} />
+                <Route path="/stats"     element={<Stats />} />
+                <Route path="/settings"  element={<Settings />} />
+              </Routes>
+            </Suspense>
+          </div>
         </div>
       </main>
 

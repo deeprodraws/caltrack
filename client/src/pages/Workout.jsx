@@ -1089,7 +1089,7 @@ function PRsTab({ weightUnit, onViewProgress }) {
       <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.8px', color: 'var(--text-muted)', textTransform: 'uppercase', margin: '24px 0 10px' }}>
         Select an exercise to view progression
       </div>
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 4 }}>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 4, touchAction: 'pan-x' }}>
         {pillExercises.map(p => (
           <button key={p.exercise_name} onClick={() => setSelectedExercise(p.exercise_name)}
             style={{
