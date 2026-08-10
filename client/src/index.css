@@ -621,12 +621,14 @@ input, select {
     right: 16px;
     bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: 200;
-    align-items: flex-end;
+    align-items: center;
     justify-content: flex-start;
-    gap: 20px;
+    gap: 10px;
     pointer-events: none;
   }
 
+  /* Pill and plus button must stay the same height (60px) so they line up
+     — .float-plus-btn below matches this exactly. */
   .float-pill {
     position: relative;
     pointer-events: auto;
@@ -634,6 +636,7 @@ input, select {
     align-items: center;
     justify-content: space-between;
     flex: 1;
+    height: 60px;
     gap: 2px;
     background: rgba(26, 29, 39, 0.72);
     backdrop-filter: blur(20px) saturate(180%);
@@ -698,8 +701,8 @@ input, select {
   }
 
   .float-plus-btn {
-    width: 52px;
-    height: 52px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: rgba(26, 29, 39, 0.72);
     backdrop-filter: blur(20px) saturate(180%);
