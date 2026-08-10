@@ -8,7 +8,7 @@ import {
 import SkeletonLoader from '../components/SkeletonLoader';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
-const MEALS_CACHE_TTL = 300000; // 5 minutes
+export const MEALS_CACHE_TTL = 300000; // 5 minutes
 
 function invalidateMealsCache() {
   invalidateCache('meals-templates');
@@ -325,7 +325,7 @@ function IngredientEditor({ ingredients, onChange, mode = 'edit' }) {
   );
 }
 
-function DeleteConfirm({ title, text, onConfirm, onCancel }) {
+export function DeleteConfirm({ title, text, onConfirm, onCancel }) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -353,7 +353,7 @@ function DeleteConfirm({ title, text, onConfirm, onCancel }) {
 
 // ── Template Editor Sheet ─────────────────────────────────────────────────────
 
-function TemplateEditorSheet({ template, onSave, onClose }) {
+export function TemplateEditorSheet({ template, onSave, onClose }) {
   const isEdit = !!template;
   const [name, setName] = useState(template?.name ?? '');
   const [mealType, setMealType] = useState(template?.meal_type ?? 'breakfast');
@@ -444,7 +444,7 @@ function TemplateEditorSheet({ template, onSave, onClose }) {
 
 // ── Log Meal Sheet ────────────────────────────────────────────────────────────
 
-function LogMealSheet({ template, onClose, onLogged }) {
+export function LogMealSheet({ template, onClose, onLogged }) {
   const [mealType, setMealType] = useState(template.meal_type ?? 'breakfast');
   const [ingredients, setIngredients] = useState(
     template.ingredients?.map(fromTemplateIngredient) ?? []
@@ -457,7 +457,7 @@ function LogMealSheet({ template, onClose, onLogged }) {
     setLogging(true);
     setError('');
     try {
-      await logMealTemplate(template.id, {
+      const { entry } = await logMealTemplate(template.id, {
         date: todayStr(),
         meal_type: mealType,
         ingredients: ingredients.map(ing => ({
@@ -470,7 +470,7 @@ function LogMealSheet({ template, onClose, onLogged }) {
           fat:          +ing.fat          || 0,
         })),
       });
-      onLogged();
+      onLogged(entry);
     } catch (err) {
       setError(err.message || 'Log failed');
       setLogging(false);
@@ -530,7 +530,7 @@ function LogMealSheet({ template, onClose, onLogged }) {
 
 // ── Recipe Editor Sheet ───────────────────────────────────────────────────────
 
-function RecipeEditorSheet({ recipe, onSave, onClose }) {
+export function RecipeEditorSheet({ recipe, onSave, onClose }) {
   const isEdit = !!recipe;
   const [name, setName] = useState(recipe?.name ?? '');
   const [servings, setServings] = useState(String(recipe?.total_servings ?? 1));
@@ -644,7 +644,7 @@ function RecipeEditorSheet({ recipe, onSave, onClose }) {
 
 // ── Log Recipe Sheet ──────────────────────────────────────────────────────────
 
-function LogRecipeSheet({ recipe, onClose, onLogged }) {
+export function LogRecipeSheet({ recipe, onClose, onLogged }) {
   const [servings, setServings] = useState('1');
   const [mealType, setMealType] = useState('breakfast');
   const [logging, setLogging] = useState(false);
@@ -663,8 +663,8 @@ function LogRecipeSheet({ recipe, onClose, onLogged }) {
     setLogging(true);
     setError('');
     try {
-      await logRecipe(recipe.id, { date: todayStr(), servings: srv, meal_type: mealType });
-      onLogged();
+      const { entry } = await logRecipe(recipe.id, { date: todayStr(), servings: srv, meal_type: mealType });
+      onLogged(entry);
     } catch (err) {
       setError(err.message || 'Log failed');
       setLogging(false);
@@ -748,7 +748,7 @@ function LogRecipeSheet({ recipe, onClose, onLogged }) {
 
 // ── Item cards for list ───────────────────────────────────────────────────────
 
-function TemplateCard({ tmpl, onLog, onEdit, onDelete }) {
+export function TemplateCard({ tmpl, onLog, onEdit, onDelete }) {
   const color = MEAL_TYPE_COLORS[tmpl.meal_type] || 'var(--accent)';
   return (
     <div
@@ -771,6 +771,11 @@ function TemplateCard({ tmpl, onLog, onEdit, onDelete }) {
           <div style={{ fontWeight: 600, fontSize: 15 }}>{tmpl.name}</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
+          <button className="btn-check" title="Add to log" onClick={onLog}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20,6 9,17 4,12"/>
+            </svg>
+          </button>
           <button className="btn-icon" title="Edit" onClick={onEdit}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -789,7 +794,7 @@ function TemplateCard({ tmpl, onLog, onEdit, onDelete }) {
   );
 }
 
-function RecipeCard({ recipe, onLog, onEdit, onDelete }) {
+export function RecipeCard({ recipe, onLog, onEdit, onDelete }) {
   return (
     <div
       style={{
@@ -804,6 +809,11 @@ function RecipeCard({ recipe, onLog, onEdit, onDelete }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ fontWeight: 600, fontSize: 15 }}>{recipe.name}</div>
         <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
+          <button className="btn-check" title="Add to log" onClick={onLog}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20,6 9,17 4,12"/>
+            </svg>
+          </button>
           <button className="btn-icon" title="Edit" onClick={onEdit}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

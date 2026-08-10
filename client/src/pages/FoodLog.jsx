@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { getEntries, addEntry, updateEntry, deleteEntry, searchSavedFoods, createSavedFood } from '../api';
 import PhotoScanner from '../components/PhotoScanner';
 import BarcodeScanner from '../components/BarcodeScanner';
 import SkeletonLoader from '../components/SkeletonLoader';
 import Collapse from '../components/Collapse';
+import LibraryPicker from '../components/LibraryPicker';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 
@@ -338,6 +338,7 @@ export default function FoodLog() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showBarcode, setShowBarcode] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   const [expandedEntryId, setExpandedEntryId] = useState(null);
 
   useEffect(() => {
@@ -501,6 +502,14 @@ export default function FoodLog() {
     setShowBarcode(false);
   }
 
+  function handleLibraryLogged(entry) {
+    // Templates/recipes always log to today, regardless of which date this page is viewing.
+    const today = todayStr();
+    if (date === today) setEntries(prev => [...prev, entry]);
+    invalidateFoodlogAndDashboard(today);
+    setShowLibrary(false);
+  }
+
   async function handleDeleteConfirmed() {
     await deleteEntry(deleteTarget.id);
     setEntries(prev => prev.filter(e => e.id !== deleteTarget.id));
@@ -528,16 +537,7 @@ export default function FoodLog() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <div className="page-title" style={{ marginBottom: 0 }}>Food Log</div>
-        <Link to="/library" style={{
-          fontSize: 13, fontWeight: 600, color: 'var(--accent-light)',
-          padding: '6px 12px', borderRadius: 8, background: 'var(--surface2)',
-          border: '1px solid var(--border)',
-        }}>
-          Library
-        </Link>
-      </div>
+      <div className="page-title">Food Log</div>
 
       <div className="log-date-row">
         <div className="date-nav" style={{ margin: 0 }}>
@@ -577,7 +577,27 @@ export default function FoodLog() {
 
       {/* ── Add food form ── */}
       <form className="add-form" onSubmit={handleAdd}>
-        <h3>Add Food</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h3 style={{ margin: 0 }}>Add Food</h3>
+          <button
+            type="button"
+            onClick={() => setShowLibrary(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface2)',
+              border: '1px solid var(--border)', color: 'var(--accent-light)', padding: '7px 14px',
+              borderRadius: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Add from Library
+          </button>
+        </div>
         <div className={`form-row${selectedFood ? ' with-servings' : ''}`}>
           <div className="form-field">
             <label>Food Name</label>
@@ -780,6 +800,7 @@ export default function FoodLog() {
       {deleteTarget && <DeleteConfirm entry={deleteTarget} onConfirm={handleDeleteConfirmed} onCancel={() => setDeleteTarget(null)} />}
       {showScanner && <PhotoScanner date={date} onSave={handleScanSave} onClose={() => setShowScanner(false)} />}
       {showBarcode && <BarcodeScanner date={date} onSave={handleBarcodeSave} onClose={() => setShowBarcode(false)} />}
+      {showLibrary && <LibraryPicker onClose={() => setShowLibrary(false)} onLogged={handleLibraryLogged} />}
     </div>
   );
 }
