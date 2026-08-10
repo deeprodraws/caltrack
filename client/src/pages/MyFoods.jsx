@@ -54,7 +54,7 @@ function PortionsEditor({ portions, onChange }) {
   );
 }
 
-function FoodModal({ food, onSave, onClose }) {
+export function FoodModal({ food, onSave, onClose }) {
   const [form, setForm] = useState(
     food
       ? { name: food.name, calories: food.calories, protein: food.protein, carbs: food.carbs, fat: food.fat, serving_size: food.serving_size, serving_unit: food.serving_unit }
