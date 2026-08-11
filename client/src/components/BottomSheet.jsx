@@ -3,8 +3,9 @@ import { useState, useRef } from 'react';
 const CLOSE_DRAG_PX = 120;        // non-expandable: how far down before it counts as "let go to close"
 const CLOSE_VH_BELOW_COLLAPSED = 18; // expandable: how far below the collapsed height before it closes instead of snapping back
 
-// Shared bottom-sheet shell used across the app: floating X button, a floating
-// drag handle above the sheet, and drag-to-dismiss. Sheets with more content
+// Shared bottom-sheet shell used across the app: a drag handle at the top of
+// the sheet, a floating close button above it, and drag-to-dismiss (both move
+// and fade together as the sheet is dragged away). Sheets with more content
 // than fits (expandable) can also be dragged up to reveal more; sheets sized
 // to their content (the default) only drag down to close.
 export default function BottomSheet({
@@ -78,24 +79,20 @@ export default function BottomSheet({
 
   const handleDrag = { onTouchStart: handleStart, onTouchMove: handleMove, onTouchEnd: handleEnd };
 
+  // 0 = fully open, 1 = about to close — drives the fade as it's dragged away.
+  const closeProgress = expandable
+    ? Math.min(Math.max(collapsedVh - heightVh, 0) / CLOSE_VH_BELOW_COLLAPSED, 1)
+    : Math.min(translateY / CLOSE_DRAG_PX, 1);
+  const dismissTransform = !expandable && translateY !== 0 ? `translateY(${translateY}px)` : undefined;
+  const dismissOpacity = closeProgress > 0 ? 1 - closeProgress : undefined;
+  const dismissTransition = dragging
+    ? 'none'
+    : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, height 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+
   return (
     <div className="modal-overlay" onClick={onBackdropClick || onClose}>
       <div style={{ position: 'relative', width: '100%', maxWidth }} onClick={e => e.stopPropagation()}>
-        {/* Floating drag handle — centered above the sheet, not inside it */}
-        <div
-          {...handleDrag}
-          style={{
-            position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', zIndex: 5,
-            width: 56, height: 30, borderRadius: 99,
-            background: 'var(--surface2)', border: '1px solid var(--border)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.4)', cursor: 'grab', touchAction: 'none',
-          }}
-        >
-          <div style={{ width: 32, height: 4, borderRadius: 99, background: 'var(--text-muted)' }} />
-        </div>
-
-        {/* Floating close button */}
+        {/* Floating close button — moves and fades together with the sheet while it's being dismissed */}
         <button
           onClick={onClose}
           aria-label="Close"
@@ -105,6 +102,9 @@ export default function BottomSheet({
             background: 'var(--surface2)', border: '1px solid var(--border)',
             color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 16px rgba(0,0,0,0.4)', cursor: 'pointer',
+            transform: dismissTransform,
+            opacity: dismissOpacity,
+            transition: dismissTransition,
           }}
         >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -116,15 +116,25 @@ export default function BottomSheet({
           className="modal-box"
           style={{
             height: expandable ? `${heightVh}vh` : undefined,
-            transform: !expandable && translateY !== 0 ? `translateY(${translateY}px)` : undefined,
-            transition: dragging ? 'none' : (expandable ? 'height 0.25s cubic-bezier(0.16, 1, 0.3, 1)' : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)'),
+            transform: dismissTransform,
+            opacity: dismissOpacity,
+            transition: dismissTransition,
           }}
         >
-          {title && (
-            <div className="modal-header" style={{ justifyContent: 'flex-start' }}>
-              {typeof title === 'string' ? <h3>{title}</h3> : title}
+          {/* Drag handle lives inside the sheet, sticky so it's always reachable even when scrolled */}
+          <div style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 2, borderBottom: '1px solid var(--border)' }}>
+            <div
+              {...handleDrag}
+              style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 8px', touchAction: 'none', cursor: 'grab' }}
+            >
+              <div style={{ width: 40, height: 5, borderRadius: 99, background: 'var(--border)' }} />
             </div>
-          )}
+            {title && (
+              <div style={{ padding: '0 20px 14px' }}>
+                {typeof title === 'string' ? <h3 style={{ margin: 0 }}>{title}</h3> : title}
+              </div>
+            )}
+          </div>
           <div className="modal-body">
             {children}
           </div>

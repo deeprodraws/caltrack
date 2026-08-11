@@ -567,39 +567,9 @@ input, select {
   animation: sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--surface);
-  z-index: 1;
-  flex-shrink: 0;
-}
-
-.modal-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
-
-.modal-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--surface2);
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 18px;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-
-.modal-close:hover { background: var(--border); }
+/* Title styling for every BottomSheet — covers both the plain-string title
+   case and the custom JSX titles (icon+text, title+subtitle) sheets pass in. */
+.modal-box h3 { font-size: 16px; font-weight: 600; margin: 0; }
 
 .modal-body { padding: 20px; }
 
