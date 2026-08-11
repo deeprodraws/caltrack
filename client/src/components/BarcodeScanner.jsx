@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import BottomSheet from './BottomSheet';
 
 const OFF_FACTS_API = 'https://world.openfoodfacts.org/api/v2/product';
 
@@ -202,23 +203,21 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div>
-            <h3>
-              {phase === 'scanning' && '📷 Scan Barcode'}
-              {phase === 'found' && '✅ Product Found'}
-              {phase === 'notfound' && '⚠️ Not Found'}
-              {phase === 'error' && '❌ Error'}
-            </h3>
-            {phase === 'scanning' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Aim at barcode · whole frame is scanned</p>}
-            {phase === 'found' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Edit values before saving</p>}
-          </div>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-
-        <div className="modal-body">
+    <BottomSheet
+      onClose={onClose}
+      title={
+        <>
+          <h3>
+            {phase === 'scanning' && '📷 Scan Barcode'}
+            {phase === 'found' && '✅ Product Found'}
+            {phase === 'notfound' && '⚠️ Not Found'}
+            {phase === 'error' && '❌ Error'}
+          </h3>
+          {phase === 'scanning' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Aim at barcode · whole frame is scanned</p>}
+          {phase === 'found' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Edit values before saving</p>}
+        </>
+      }
+    >
 
           {/* Scanning phase */}
           {phase === 'scanning' && (
@@ -402,9 +401,7 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 }
 

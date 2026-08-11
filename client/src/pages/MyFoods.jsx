@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getSavedFoods, createSavedFood, updateSavedFood, deleteSavedFood } from '../api';
 import BarcodeScanner from '../components/BarcodeScanner';
+import BottomSheet from '../components/BottomSheet';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
@@ -94,111 +95,97 @@ export function FoodModal({ food, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>{food ? 'Edit Food' : 'Add Food Template'}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+    <BottomSheet onClose={onClose} title={food ? 'Edit Food' : 'Add Food Template'}>
+      <form onSubmit={handleSubmit}>
+        <div className="settings-field" style={{ marginBottom: 14 }}>
+          <label>Food Name</label>
+          <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. Chicken breast" />
         </div>
-        <div className="modal-body">
-          <form onSubmit={handleSubmit}>
-            <div className="settings-field" style={{ marginBottom: 14 }}>
-              <label>Food Name</label>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. Chicken breast" />
-            </div>
 
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8,
-              padding: '10px 14px', marginBottom: 16,
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 500 }}>Store macros per 100g (enables portion scaling)</span>
-              <label style={{ position: 'relative', display: 'inline-block', width: 40, height: 22, flexShrink: 0, marginLeft: 10 }}>
-                <input type="checkbox" checked={macrosPer100g} onChange={e => setMacrosPer100g(e.target.checked)}
-                  style={{ opacity: 0, width: 0, height: 0 }} />
-                <span style={{
-                  position: 'absolute', inset: 0, borderRadius: 99, cursor: 'pointer', transition: 'background 0.15s',
-                  background: macrosPer100g ? 'var(--accent)' : 'var(--border)',
-                }} onClick={() => setMacrosPer100g(v => !v)} />
-                <span style={{
-                  position: 'absolute', top: 3, left: macrosPer100g ? 21 : 3, width: 16, height: 16,
-                  borderRadius: '50%', background: '#fff', transition: 'left 0.15s', pointerEvents: 'none',
-                }} />
-              </label>
-            </div>
-
-            <div className="modal-macros">
-              {[
-                { key: 'calories', label: macrosPer100g ? 'Calories /100g' : 'Calories (kcal)' },
-                { key: 'protein', label: macrosPer100g ? 'Protein /100g' : 'Protein (g)' },
-                { key: 'carbs', label: macrosPer100g ? 'Carbs /100g' : 'Carbs (g)' },
-                { key: 'fat', label: macrosPer100g ? 'Fat /100g' : 'Fat (g)' },
-              ].map(({ key, label }) => (
-                <div key={key} className="settings-field">
-                  <label>{label}</label>
-                  <input type="number" min="0" step="0.1" inputMode="decimal" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-              <div className="settings-field">
-                <label>Serving Size</label>
-                <input type="number" min="0.1" step="0.1" inputMode="decimal" value={form.serving_size} onChange={e => setForm(f => ({ ...f, serving_size: e.target.value }))} />
-              </div>
-              <div className="settings-field">
-                <label>Serving Unit</label>
-                <input value={form.serving_unit} onChange={e => setForm(f => ({ ...f, serving_unit: e.target.value }))} placeholder="serving, g, ml…" />
-              </div>
-            </div>
-
-            {macrosPer100g && <PortionsEditor portions={portions} onChange={setPortions} />}
-
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button type="button" onClick={onClose} style={{
-                background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-                padding: '10px 18px', borderRadius: 8, fontSize: 14,
-              }}>Cancel</button>
-              <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : food ? 'Save Changes' : 'Add Food'}</button>
-            </div>
-          </form>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8,
+          padding: '10px 14px', marginBottom: 16,
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 500 }}>Store macros per 100g (enables portion scaling)</span>
+          <label style={{ position: 'relative', display: 'inline-block', width: 40, height: 22, flexShrink: 0, marginLeft: 10 }}>
+            <input type="checkbox" checked={macrosPer100g} onChange={e => setMacrosPer100g(e.target.checked)}
+              style={{ opacity: 0, width: 0, height: 0 }} />
+            <span style={{
+              position: 'absolute', inset: 0, borderRadius: 99, cursor: 'pointer', transition: 'background 0.15s',
+              background: macrosPer100g ? 'var(--accent)' : 'var(--border)',
+            }} onClick={() => setMacrosPer100g(v => !v)} />
+            <span style={{
+              position: 'absolute', top: 3, left: macrosPer100g ? 21 : 3, width: 16, height: 16,
+              borderRadius: '50%', background: '#fff', transition: 'left 0.15s', pointerEvents: 'none',
+            }} />
+          </label>
         </div>
-      </div>
-    </div>
+
+        <div className="modal-macros">
+          {[
+            { key: 'calories', label: macrosPer100g ? 'Calories /100g' : 'Calories (kcal)' },
+            { key: 'protein', label: macrosPer100g ? 'Protein /100g' : 'Protein (g)' },
+            { key: 'carbs', label: macrosPer100g ? 'Carbs /100g' : 'Carbs (g)' },
+            { key: 'fat', label: macrosPer100g ? 'Fat /100g' : 'Fat (g)' },
+          ].map(({ key, label }) => (
+            <div key={key} className="settings-field">
+              <label>{label}</label>
+              <input type="number" min="0" step="0.1" inputMode="decimal" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+          <div className="settings-field">
+            <label>Serving Size</label>
+            <input type="number" min="0.1" step="0.1" inputMode="decimal" value={form.serving_size} onChange={e => setForm(f => ({ ...f, serving_size: e.target.value }))} />
+          </div>
+          <div className="settings-field">
+            <label>Serving Unit</label>
+            <input value={form.serving_unit} onChange={e => setForm(f => ({ ...f, serving_unit: e.target.value }))} placeholder="serving, g, ml…" />
+          </div>
+        </div>
+
+        {macrosPer100g && <PortionsEditor portions={portions} onChange={setPortions} />}
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" onClick={onClose} style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+            padding: '10px 18px', borderRadius: 8, fontSize: 14,
+          }}>Cancel</button>
+          <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : food ? 'Save Changes' : 'Add Food'}</button>
+        </div>
+      </form>
+    </BottomSheet>
   );
 }
 
 function DeleteConfirm({ food, onConfirm, onCancel }) {
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Delete food template?</h3>
-          <button className="modal-close" onClick={onCancel}>✕</button>
+    <BottomSheet onClose={onCancel} title="Delete food template?">
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
         </div>
-        <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
-              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-            </svg>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-            Remove <strong style={{ color: 'var(--text)' }}>{food.name}</strong> from your saved foods?<br />
-            <span style={{ fontSize: 12 }}>This won't affect existing log entries.</span>
-          </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <button onClick={onCancel} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '10px 20px', borderRadius: 8, fontSize: 14,
-            }}>Cancel</button>
-            <button onClick={onConfirm} style={{
-              background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
-              borderRadius: 8, fontSize: 14, fontWeight: 600,
-            }}>Delete</button>
-          </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+          Remove <strong style={{ color: 'var(--text)' }}>{food.name}</strong> from your saved foods?<br />
+          <span style={{ fontSize: 12 }}>This won't affect existing log entries.</span>
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+          <button onClick={onCancel} style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+            padding: '10px 20px', borderRadius: 8, fontSize: 14,
+          }}>Cancel</button>
+          <button onClick={onConfirm} style={{
+            background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
+            borderRadius: 8, fontSize: 14, fontWeight: 600,
+          }}>Delete</button>
         </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 }
 

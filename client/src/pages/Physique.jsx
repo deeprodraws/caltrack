@@ -7,6 +7,7 @@ import {
   uploadPhysiquePhoto, deletePhysiquePhoto,
 } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
+import BottomSheet from '../components/BottomSheet';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
 const PHYSIQUE_CACHE_TTL = 300000; // 5 minutes
@@ -481,42 +482,37 @@ function PhotoCaptureSheet({ week, photoType, uploading, onFile, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: 24 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4, textTransform: 'capitalize' }}>
-          {photoType} Photo
-        </div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-          Choose a photo from your gallery
-        </div>
-
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={handleChange}
-        />
-
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          className="btn-primary"
-          style={{ width: '100%', marginBottom: 12, opacity: uploading ? 0.6 : 1 }}
-        >
-          {uploading ? 'Uploading...' : 'Choose Photo'}
-        </button>
-
-        <button
-          onClick={onClose}
-          disabled={uploading}
-          style={{ width: '100%', padding: '12px', borderRadius: 10, border: '1px solid var(--border)',
-            background: 'none', color: 'var(--text-muted)', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
-        >
-          Cancel
-        </button>
+    <BottomSheet onClose={onClose} title={<h3 style={{ textTransform: 'capitalize' }}>{photoType} Photo</h3>}>
+      <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+        Choose a photo from your gallery
       </div>
-    </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleChange}
+      />
+
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={uploading}
+        className="btn-primary"
+        style={{ width: '100%', marginBottom: 12, opacity: uploading ? 0.6 : 1 }}
+      >
+        {uploading ? 'Uploading...' : 'Choose Photo'}
+      </button>
+
+      <button
+        onClick={onClose}
+        disabled={uploading}
+        style={{ width: '100%', padding: '12px', borderRadius: 10, border: '1px solid var(--border)',
+          background: 'none', color: 'var(--text-muted)', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+      >
+        Cancel
+      </button>
+    </BottomSheet>
   );
 }
 
@@ -541,52 +537,48 @@ function WeekEditSheet({ week, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ padding: 24 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Log Week Stats</div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-          <div>
-            <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Weight (lbs)</label>
-            <input
-              type="number" inputMode="decimal" step="0.1" placeholder="e.g. 82.5"
-              value={weight} onChange={e => setWeight(e.target.value)}
-              style={inputStyle()}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Body Fat (%)</label>
-            <input
-              type="number" inputMode="decimal" step="0.1" placeholder="e.g. 18.5"
-              value={bodyFat} onChange={e => setBodyFat(e.target.value)}
-              style={inputStyle()}
-            />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Notes</label>
-          <textarea
-            value={notes} onChange={e => setNotes(e.target.value)}
-            placeholder="How are you feeling this week?"
-            rows={3}
-            style={{ ...inputStyle(), resize: 'none', fontFamily: 'inherit' }}
+    <BottomSheet onClose={onClose} title="Log Week Stats">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+        <div>
+          <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Weight (lbs)</label>
+          <input
+            type="number" inputMode="decimal" step="0.1" placeholder="e.g. 82.5"
+            value={weight} onChange={e => setWeight(e.target.value)}
+            style={inputStyle()}
           />
         </div>
-
-        <button
-          onClick={handleSave} disabled={saving}
-          className="btn-primary"
-          style={{ width: '100%', marginBottom: 10, opacity: saving ? 0.6 : 1 }}
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-        <button onClick={onClose} style={{
-          width: '100%', padding: '12px', borderRadius: 10, border: '1px solid var(--border)',
-          background: 'none', color: 'var(--text-muted)', fontWeight: 600, fontSize: 15, cursor: 'pointer',
-        }}>Cancel</button>
+        <div>
+          <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Body Fat (%)</label>
+          <input
+            type="number" inputMode="decimal" step="0.1" placeholder="e.g. 18.5"
+            value={bodyFat} onChange={e => setBodyFat(e.target.value)}
+            style={inputStyle()}
+          />
+        </div>
       </div>
-    </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: 4 }}>Notes</label>
+        <textarea
+          value={notes} onChange={e => setNotes(e.target.value)}
+          placeholder="How are you feeling this week?"
+          rows={3}
+          style={{ ...inputStyle(), resize: 'none', fontFamily: 'inherit' }}
+        />
+      </div>
+
+      <button
+        onClick={handleSave} disabled={saving}
+        className="btn-primary"
+        style={{ width: '100%', marginBottom: 10, opacity: saving ? 0.6 : 1 }}
+      >
+        {saving ? 'Saving...' : 'Save'}
+      </button>
+      <button onClick={onClose} style={{
+        width: '100%', padding: '12px', borderRadius: 10, border: '1px solid var(--border)',
+        background: 'none', color: 'var(--text-muted)', fontWeight: 600, fontSize: 15, cursor: 'pointer',
+      }}>Cancel</button>
+    </BottomSheet>
   );
 }
 

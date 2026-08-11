@@ -6,6 +6,7 @@ import {
   getIngredientMemory,
 } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
+import BottomSheet from '../components/BottomSheet';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
 export const MEALS_CACHE_TTL = 300000; // 5 minutes
@@ -327,27 +328,21 @@ function IngredientEditor({ ingredients, onChange, mode = 'edit' }) {
 
 export function DeleteConfirm({ title, text, onConfirm, onCancel }) {
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>{title}</h3>
-          <button className="modal-close" onClick={onCancel}>✕</button>
+    <BottomSheet onClose={onCancel} title={title}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
         </div>
-        <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
-              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-            </svg>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>{text}</p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <button onClick={onCancel} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
-            <button onClick={onConfirm} style={{ background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}>Delete</button>
-          </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>{text}</p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+          <button onClick={onCancel} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
+          <button onClick={onConfirm} style={{ background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}>Delete</button>
         </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 }
 
@@ -395,50 +390,42 @@ export function TemplateEditorSheet({ template, onSave, onClose }) {
   const totals = calcTotals(ingredients);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>{isEdit ? 'Edit Template' : 'New Meal Template'}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+    <BottomSheet onClose={onClose} title={isEdit ? 'Edit Template' : 'New Meal Template'}>
+      <form onSubmit={handleSave}>
+        <div className="settings-field" style={{ marginBottom: 16 }}>
+          <label>Template Name</label>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="e.g. Morning Oats"
+            required
+          />
         </div>
-        <div className="modal-body">
-          <form onSubmit={handleSave}>
-            <div className="settings-field" style={{ marginBottom: 16 }}>
-              <label>Template Name</label>
-              <input
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Morning Oats"
-                required
-              />
-            </div>
 
-            <MealTypeSelector value={mealType} onChange={setMealType} />
+        <MealTypeSelector value={mealType} onChange={setMealType} />
 
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Ingredients
-            </div>
-
-            <IngredientEditor ingredients={ingredients} onChange={setIngredients} mode="edit" />
-
-            {ingredients.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <MacroSummaryBar cal={totals.cal} p={totals.p} c={totals.c} f={totals.f} />
-              </div>
-            )}
-
-            {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-
-            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-              <button type="button" onClick={onClose} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
-              <button className="btn-primary" type="submit" disabled={saving} style={{ flex: 1 }}>
-                {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Template'}
-              </button>
-            </div>
-          </form>
+        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Ingredients
         </div>
-      </div>
-    </div>
+
+        <IngredientEditor ingredients={ingredients} onChange={setIngredients} mode="edit" />
+
+        {ingredients.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <MacroSummaryBar cal={totals.cal} p={totals.p} c={totals.c} f={totals.f} />
+          </div>
+        )}
+
+        {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button type="button" onClick={onClose} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
+          <button className="btn-primary" type="submit" disabled={saving} style={{ flex: 1 }}>
+            {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Template'}
+          </button>
+        </div>
+      </form>
+    </BottomSheet>
   );
 }
 
@@ -480,51 +467,43 @@ export function LogMealSheet({ template, onClose, onLogged }) {
   const totals = calcTotals(ingredients);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div>
-            <h3>Log — {template.name}</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Adjust weights before logging to today</p>
-          </div>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <MealTypeSelector value={mealType} onChange={setMealType} />
+    <BottomSheet
+      onClose={onClose}
+      title={<><h3>Log — {template.name}</h3><p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Adjust weights before logging to today</p></>}
+    >
+      <MealTypeSelector value={mealType} onChange={setMealType} />
 
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-            Ingredients
-          </div>
-
-          <IngredientEditor ingredients={ingredients} onChange={setIngredients} mode="log" />
-
-          {ingredients.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <MacroSummaryBar cal={totals.cal} p={totals.p} c={totals.c} f={totals.f} />
-            </div>
-          )}
-
-          {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
-            This will log as a single entry in your food log
-          </p>
-
-          <button
-            onClick={handleLog}
-            disabled={logging || !ingredients.length}
-            style={{
-              width: '100%', background: 'var(--accent)', color: '#fff', border: 'none',
-              padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
-              fontWeight: 600, cursor: 'pointer', marginTop: 4,
-              opacity: logging || !ingredients.length ? 0.5 : 1,
-            }}
-          >
-            {logging ? 'Logging…' : `Log ${ingredients.length} Item${ingredients.length !== 1 ? 's' : ''} to Today`}
-          </button>
-        </div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
+        Ingredients
       </div>
-    </div>
+
+      <IngredientEditor ingredients={ingredients} onChange={setIngredients} mode="log" />
+
+      {ingredients.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <MacroSummaryBar cal={totals.cal} p={totals.p} c={totals.c} f={totals.f} />
+        </div>
+      )}
+
+      {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+        This will log as a single entry in your food log
+      </p>
+
+      <button
+        onClick={handleLog}
+        disabled={logging || !ingredients.length}
+        style={{
+          width: '100%', background: 'var(--accent)', color: '#fff', border: 'none',
+          padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
+          fontWeight: 600, cursor: 'pointer', marginTop: 4,
+          opacity: logging || !ingredients.length ? 0.5 : 1,
+        }}
+      >
+        {logging ? 'Logging…' : `Log ${ingredients.length} Item${ingredients.length !== 1 ? 's' : ''} to Today`}
+      </button>
+    </BottomSheet>
   );
 }
 
@@ -581,64 +560,56 @@ export function RecipeEditorSheet({ recipe, onSave, onClose }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>{isEdit ? 'Edit Recipe' : 'New Recipe'}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+    <BottomSheet onClose={onClose} title={isEdit ? 'Edit Recipe' : 'New Recipe'}>
+      <form onSubmit={handleSave}>
+        <div className="settings-field" style={{ marginBottom: 12 }}>
+          <label>Recipe Name</label>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Chicken Curry" required />
         </div>
-        <div className="modal-body">
-          <form onSubmit={handleSave}>
-            <div className="settings-field" style={{ marginBottom: 12 }}>
-              <label>Recipe Name</label>
-              <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Chicken Curry" required />
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div className="settings-field">
+            <label>Total Servings</label>
+            <input type="number" min="0.1" step="0.1" inputMode="decimal" value={servings} onChange={e => setServings(e.target.value)} />
+          </div>
+          <div className="settings-field" style={{ opacity: 0.7 }}>
+            <label>Per Serving</label>
+            <div style={{ padding: '10px 0', fontSize: 13, color: 'var(--accent-light)', fontWeight: 600 }}>
+              {round1(perSrv.cal)} kcal
             </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-              <div className="settings-field">
-                <label>Total Servings</label>
-                <input type="number" min="0.1" step="0.1" inputMode="decimal" value={servings} onChange={e => setServings(e.target.value)} />
-              </div>
-              <div className="settings-field" style={{ opacity: 0.7 }}>
-                <label>Per Serving</label>
-                <div style={{ padding: '10px 0', fontSize: 13, color: 'var(--accent-light)', fontWeight: 600 }}>
-                  {round1(perSrv.cal)} kcal
-                </div>
-              </div>
-            </div>
-
-            <div className="settings-field" style={{ marginBottom: 16 }}>
-              <label>Notes (optional)</label>
-              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Cooking instructions, tips…" />
-            </div>
-
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-              Ingredients
-            </div>
-
-            <IngredientEditor ingredients={ingredients} onChange={setIngredients} mode="edit" />
-
-            {ingredients.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Total (all servings)</div>
-                <MacroSummaryBar cal={totals.cal} p={totals.p} c={totals.c} f={totals.f} />
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Per serving</div>
-                <MacroSummaryBar cal={perSrv.cal} p={perSrv.p} c={perSrv.c} f={perSrv.f} />
-              </div>
-            )}
-
-            {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-
-            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-              <button type="button" onClick={onClose} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
-              <button className="btn-primary" type="submit" disabled={saving} style={{ flex: 1 }}>
-                {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Recipe'}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div className="settings-field" style={{ marginBottom: 16 }}>
+          <label>Notes (optional)</label>
+          <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Cooking instructions, tips…" />
+        </div>
+
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
+          Ingredients
+        </div>
+
+        <IngredientEditor ingredients={ingredients} onChange={setIngredients} mode="edit" />
+
+        {ingredients.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Total (all servings)</div>
+            <MacroSummaryBar cal={totals.cal} p={totals.p} c={totals.c} f={totals.f} />
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Per serving</div>
+            <MacroSummaryBar cal={perSrv.cal} p={perSrv.p} c={perSrv.c} f={perSrv.f} />
+          </div>
+        )}
+
+        {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button type="button" onClick={onClose} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
+          <button className="btn-primary" type="submit" disabled={saving} style={{ flex: 1 }}>
+            {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Recipe'}
+          </button>
+        </div>
+      </form>
+    </BottomSheet>
   );
 }
 
@@ -672,77 +643,69 @@ export function LogRecipeSheet({ recipe, onClose, onLogged }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div>
-            <h3>Log — {recipe.name}</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>{round1(recipe.total_servings)} servings total</p>
-          </div>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <MealTypeSelector value={mealType} onChange={setMealType} />
+    <BottomSheet
+      onClose={onClose}
+      title={<><h3>Log — {recipe.name}</h3><p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>{round1(recipe.total_servings)} servings total</p></>}
+    >
+      <MealTypeSelector value={mealType} onChange={setMealType} />
 
-          {/* Per-serving summary */}
-          <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Per serving</div>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              {[
-                { label: 'kcal', val: round1(recipe.cal_per_serving), color: '#6c63ff' },
-                { label: 'protein', val: `${round1(recipe.protein_per_serving)}g`, color: '#60a5fa' },
-                { label: 'carbs', val: `${round1(recipe.carbs_per_serving)}g`, color: '#fbbf24' },
-                { label: 'fat', val: `${round1(recipe.fat_per_serving)}g`, color: '#fb923c' },
-              ].map(m => (
-                <div key={m.label} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.val}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.label}</div>
-                </div>
-              ))}
+      {/* Per-serving summary */}
+      <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Per serving</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {[
+            { label: 'kcal', val: round1(recipe.cal_per_serving), color: '#6c63ff' },
+            { label: 'protein', val: `${round1(recipe.protein_per_serving)}g`, color: '#60a5fa' },
+            { label: 'carbs', val: `${round1(recipe.carbs_per_serving)}g`, color: '#fbbf24' },
+            { label: 'fat', val: `${round1(recipe.fat_per_serving)}g`, color: '#fb923c' },
+          ].map(m => (
+            <div key={m.label} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.val}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.label}</div>
             </div>
-          </div>
-
-          {/* Serving input */}
-          <div className="settings-field" style={{ marginBottom: 20 }}>
-            <label>How many servings?</label>
-            <input
-              type="number" min="0.1" step="0.1" inputMode="decimal"
-              value={servings}
-              onChange={e => setServings(e.target.value)}
-              style={{ fontSize: 20, fontWeight: 600, textAlign: 'center' }}
-            />
-          </div>
-
-          {/* Live total */}
-          {srv > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Total for {srv} serving{srv !== 1 ? 's' : ''}
-              </div>
-              <MacroSummaryBar cal={total.cal} p={total.p} c={total.c} f={total.f} />
-            </div>
-          )}
-
-          {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
-            This will log as a single entry in your food log
-          </p>
-
-          <button
-            onClick={handleLog}
-            disabled={logging || !srv}
-            style={{
-              width: '100%', background: 'var(--accent)', color: '#fff', border: 'none',
-              padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
-              fontWeight: 600, cursor: 'pointer', opacity: logging || !srv ? 0.5 : 1,
-            }}
-          >
-            {logging ? 'Logging…' : 'Log to Today'}
-          </button>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* Serving input */}
+      <div className="settings-field" style={{ marginBottom: 20 }}>
+        <label>How many servings?</label>
+        <input
+          type="number" min="0.1" step="0.1" inputMode="decimal"
+          value={servings}
+          onChange={e => setServings(e.target.value)}
+          style={{ fontSize: 20, fontWeight: 600, textAlign: 'center' }}
+        />
+      </div>
+
+      {/* Live total */}
+      {srv > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Total for {srv} serving{srv !== 1 ? 's' : ''}
+          </div>
+          <MacroSummaryBar cal={total.cal} p={total.p} c={total.c} f={total.f} />
+        </div>
+      )}
+
+      {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
+        This will log as a single entry in your food log
+      </p>
+
+      <button
+        onClick={handleLog}
+        disabled={logging || !srv}
+        style={{
+          width: '100%', background: 'var(--accent)', color: '#fff', border: 'none',
+          padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
+          fontWeight: 600, cursor: 'pointer', opacity: logging || !srv ? 0.5 : 1,
+        }}
+      >
+        {logging ? 'Logging…' : 'Log to Today'}
+      </button>
+    </BottomSheet>
   );
 }
 

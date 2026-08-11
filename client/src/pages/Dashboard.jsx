@@ -7,6 +7,7 @@ import {
 } from '../api';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 import SkeletonLoader from '../components/SkeletonLoader';
+import BottomSheet from '../components/BottomSheet';
 import { useAuth } from '../context/AuthContext';
 
 function invalidateDashboardAndFoodlog(date) {
@@ -116,75 +117,61 @@ function WeightModal({ log, unit, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>{log ? 'Edit Weight' : 'Log Weight'}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div className="settings-field" style={{ marginBottom: 24 }}>
-            <label>Weight</label>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <input
-                type="number" min="0" step="0.1" inputMode="decimal"
-                value={value}
-                onChange={e => setValue(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSave()}
-                placeholder="e.g. 75.0"
-                autoFocus
-                style={{ flex: 1 }}
-              />
-              <span style={{ color: 'var(--text-muted)', fontSize: 15, fontWeight: 600, flexShrink: 0, minWidth: 28 }}>{unit}</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button onClick={onClose} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '10px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
-            }}>Cancel</button>
-            <button onClick={handleSave} className="btn-primary" disabled={saving || !value}>
-              {saving ? 'Saving…' : log ? 'Update' : 'Save Weight'}
-            </button>
-          </div>
+    <BottomSheet onClose={onClose} title={log ? 'Edit Weight' : 'Log Weight'}>
+      <div className="settings-field" style={{ marginBottom: 24 }}>
+        <label>Weight</label>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <input
+            type="number" min="0" step="0.1" inputMode="decimal"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSave()}
+            placeholder="e.g. 75.0"
+            autoFocus
+            style={{ flex: 1 }}
+          />
+          <span style={{ color: 'var(--text-muted)', fontSize: 15, fontWeight: 600, flexShrink: 0, minWidth: 28 }}>{unit}</span>
         </div>
       </div>
-    </div>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <button onClick={onClose} style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+          padding: '10px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
+        }}>Cancel</button>
+        <button onClick={handleSave} className="btn-primary" disabled={saving || !value}>
+          {saving ? 'Saving…' : log ? 'Update' : 'Save Weight'}
+        </button>
+      </div>
+    </BottomSheet>
   );
 }
 
 function WeightDeleteConfirm({ log, unit, onConfirm, onCancel }) {
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Delete weight entry?</h3>
-          <button className="modal-close" onClick={onCancel}>✕</button>
+    <BottomSheet onClose={onCancel} title="Delete weight entry?">
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
         </div>
-        <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
-              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-            </svg>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-            Remove <strong style={{ color: 'var(--text)' }}>{round1(log.weight)} {unit}</strong> logged on{' '}
-            <strong style={{ color: 'var(--text)' }}>{shortDate(log.date)}</strong>?
-          </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <button onClick={onCancel} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '10px 20px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
-            }}>Keep it</button>
-            <button onClick={onConfirm} style={{
-              background: '#f87171', color: '#fff', border: 'none',
-              padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
-            }}>Delete</button>
-          </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+          Remove <strong style={{ color: 'var(--text)' }}>{round1(log.weight)} {unit}</strong> logged on{' '}
+          <strong style={{ color: 'var(--text)' }}>{shortDate(log.date)}</strong>?
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+          <button onClick={onCancel} style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+            padding: '10px 20px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
+          }}>Keep it</button>
+          <button onClick={onConfirm} style={{
+            background: '#f87171', color: '#fff', border: 'none',
+            padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
+          }}>Delete</button>
         </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 }
 
@@ -202,81 +189,73 @@ function WaterSheet({ metrics, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg>
-            Water Intake
-          </h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+    <BottomSheet
+      onClose={onClose}
+      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg> Water Intake</h3>}
+    >
+      {/* Glass count + mini tracker */}
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: 52, fontWeight: 800, color: '#60a5fa', lineHeight: 1 }}>{glasses}</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+          {glasses === 1 ? 'glass' : 'glasses'} · {ml} ml
         </div>
-        <div className="modal-body">
-          {/* Glass count + mini tracker */}
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 52, fontWeight: 800, color: '#60a5fa', lineHeight: 1 }}>{glasses}</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-              {glasses === 1 ? 'glass' : 'glasses'} · {ml} ml
-            </div>
-            <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 14 }}>
-              {Array.from({ length: 8 }, (_, i) => (
-                <div key={i} style={{
-                  width: 22, height: 9, borderRadius: 5,
-                  background: i < glasses ? '#60a5fa' : 'var(--surface2)',
-                  border: '1px solid var(--border)',
-                  transition: 'background 0.2s',
-                }} />
-              ))}
-            </div>
-          </div>
-
-          {/* +/- glass buttons */}
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
-            <button
-              onClick={() => setMl(prev => Math.max(0, prev - 250))}
-              disabled={ml === 0}
-              style={{
-                width: 56, height: 56, borderRadius: '50%', fontSize: 26, fontWeight: 700,
-                background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-                cursor: ml === 0 ? 'not-allowed' : 'pointer',
-                opacity: ml === 0 ? 0.35 : 1, fontFamily: 'inherit',
-              }}
-            >−</button>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)', minWidth: 64, textAlign: 'center' }}>
-              1 glass = 250 ml
-            </span>
-            <button
-              onClick={() => setMl(prev => prev + 250)}
-              style={{
-                width: 56, height: 56, borderRadius: '50%', fontSize: 26, fontWeight: 700,
-                background: 'var(--accent)', border: 'none', color: '#fff',
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >+</button>
-          </div>
-
-          {/* Manual ml */}
-          <div className="settings-field" style={{ marginBottom: 20 }}>
-            <label>Or enter exact ml</label>
-            <input
-              type="number" min="0" step="50"
-              value={ml}
-              onChange={e => setMl(Math.max(0, parseInt(e.target.value) || 0))}
-            />
-          </div>
-
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
-            }}>Cancel</button>
-            <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ flex: 1 }}>
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
+        <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 14 }}>
+          {Array.from({ length: 8 }, (_, i) => (
+            <div key={i} style={{
+              width: 22, height: 9, borderRadius: 5,
+              background: i < glasses ? '#60a5fa' : 'var(--surface2)',
+              border: '1px solid var(--border)',
+              transition: 'background 0.2s',
+            }} />
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* +/- glass buttons */}
+      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+        <button
+          onClick={() => setMl(prev => Math.max(0, prev - 250))}
+          disabled={ml === 0}
+          style={{
+            width: 56, height: 56, borderRadius: '50%', fontSize: 26, fontWeight: 700,
+            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+            cursor: ml === 0 ? 'not-allowed' : 'pointer',
+            opacity: ml === 0 ? 0.35 : 1, fontFamily: 'inherit',
+          }}
+        >−</button>
+        <span style={{ fontSize: 13, color: 'var(--text-muted)', minWidth: 64, textAlign: 'center' }}>
+          1 glass = 250 ml
+        </span>
+        <button
+          onClick={() => setMl(prev => prev + 250)}
+          style={{
+            width: 56, height: 56, borderRadius: '50%', fontSize: 26, fontWeight: 700,
+            background: 'var(--accent)', border: 'none', color: '#fff',
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}
+        >+</button>
+      </div>
+
+      {/* Manual ml */}
+      <div className="settings-field" style={{ marginBottom: 20 }}>
+        <label>Or enter exact ml</label>
+        <input
+          type="number" min="0" step="50"
+          value={ml}
+          onChange={e => setMl(Math.max(0, parseInt(e.target.value) || 0))}
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={onClose} style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+          padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
+        }}>Cancel</button>
+        <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ flex: 1 }}>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </BottomSheet>
   );
 }
 
@@ -292,59 +271,51 @@ function StepsSheet({ metrics, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg>
-            Steps
-          </h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div className="settings-field" style={{ marginBottom: 16 }}>
-            <label>Step count</label>
-            <input
-              type="number" min="0" step="100"
-              value={steps}
-              onChange={e => setSteps(e.target.value)}
-              placeholder="e.g. 8000"
-              autoFocus
-              style={{ fontSize: 20, textAlign: 'center', fontWeight: 700 }}
-            />
-          </div>
+    <BottomSheet
+      onClose={onClose}
+      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg> Steps</h3>}
+    >
+      <div className="settings-field" style={{ marginBottom: 16 }}>
+        <label>Step count</label>
+        <input
+          type="number" min="0" step="100"
+          value={steps}
+          onChange={e => setSteps(e.target.value)}
+          placeholder="e.g. 8000"
+          autoFocus
+          style={{ fontSize: 20, textAlign: 'center', fontWeight: 700 }}
+        />
+      </div>
 
-          {/* Progress toward 10k */}
-          {parsed > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
-                <span>{parsed.toLocaleString()} steps</span>
-                <span>Goal: 10,000</span>
-              </div>
-              <div className="progress-wrap">
-                <div className="progress-bar" style={{ width: `${Math.min(parsed / 10000 * 100, 100)}%`, background: '#34d399' }} />
-              </div>
-              {parsed >= 10000 && (
-                <div style={{ fontSize: 12, color: '#34d399', fontWeight: 600, marginTop: 6, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#34d399" stroke="#34d399" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
-                  Goal reached!
-                </div>
-              )}
+      {/* Progress toward 10k */}
+      {parsed > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
+            <span>{parsed.toLocaleString()} steps</span>
+            <span>Goal: 10,000</span>
+          </div>
+          <div className="progress-wrap">
+            <div className="progress-bar" style={{ width: `${Math.min(parsed / 10000 * 100, 100)}%`, background: '#34d399' }} />
+          </div>
+          {parsed >= 10000 && (
+            <div style={{ fontSize: 12, color: '#34d399', fontWeight: 600, marginTop: 6, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#34d399" stroke="#34d399" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+              Goal reached!
             </div>
           )}
-
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
-            }}>Cancel</button>
-            <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ flex: 1 }}>
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
         </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={onClose} style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+          padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
+        }}>Cancel</button>
+        <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ flex: 1 }}>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
       </div>
-    </div>
+    </BottomSheet>
   );
 }
 
@@ -360,58 +331,50 @@ function SleepSheet({ metrics, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            Sleep
-          </h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
-            Quick Select
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-            {PRESETS.map(h => (
-              <button
-                key={h}
-                onClick={() => setHours(h)}
-                style={{
-                  padding: '8px 16px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-                  cursor: 'pointer', transition: 'all 0.15s',
-                  background: hours === h ? 'var(--accent)' : 'var(--surface2)',
-                  border: `1px solid ${hours === h ? 'var(--accent)' : 'var(--border)'}`,
-                  color: hours === h ? '#fff' : 'var(--text)',
-                }}
-              >{h}h</button>
-            ))}
-          </div>
-
-          <div className="settings-field" style={{ marginBottom: 20 }}>
-            <label>Hours slept</label>
-            <input
-              type="number" min="0" max="24" step="0.1" inputMode="decimal"
-              value={hours}
-              onChange={e => setHours(e.target.value)}
-              placeholder="e.g. 7.5"
-              style={{ fontSize: 20, textAlign: 'center', fontWeight: 700 }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
-            }}>Cancel</button>
-            <button onClick={handleSave} disabled={saving || !hours} className="btn-primary" style={{ flex: 1 }}>
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        </div>
+    <BottomSheet
+      onClose={onClose}
+      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Sleep</h3>}
+    >
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
+        Quick Select
       </div>
-    </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+        {PRESETS.map(h => (
+          <button
+            key={h}
+            onClick={() => setHours(h)}
+            style={{
+              padding: '8px 16px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+              cursor: 'pointer', transition: 'all 0.15s',
+              background: hours === h ? 'var(--accent)' : 'var(--surface2)',
+              border: `1px solid ${hours === h ? 'var(--accent)' : 'var(--border)'}`,
+              color: hours === h ? '#fff' : 'var(--text)',
+            }}
+          >{h}h</button>
+        ))}
+      </div>
+
+      <div className="settings-field" style={{ marginBottom: 20 }}>
+        <label>Hours slept</label>
+        <input
+          type="number" min="0" max="24" step="0.1" inputMode="decimal"
+          value={hours}
+          onChange={e => setHours(e.target.value)}
+          placeholder="e.g. 7.5"
+          style={{ fontSize: 20, textAlign: 'center', fontWeight: 700 }}
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={onClose} style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+          padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
+        }}>Cancel</button>
+        <button onClick={handleSave} disabled={saving || !hours} className="btn-primary" style={{ flex: 1 }}>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </BottomSheet>
   );
 }
 

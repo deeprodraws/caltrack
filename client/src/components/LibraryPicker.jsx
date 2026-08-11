@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   getMealTemplates, getMealTemplate, deleteMealTemplate,
   getRecipes, getRecipe, deleteRecipe,
@@ -9,13 +9,12 @@ import {
   LogMealSheet, LogRecipeSheet, DeleteConfirm, MEALS_CACHE_TTL,
 } from '../pages/Meals';
 import { FoodModal } from '../pages/MyFoods';
+import BottomSheet from './BottomSheet';
 import SkeletonLoader from './SkeletonLoader';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
 const SAVED_FOODS_CACHE_TTL = 300000; // 5 minutes
-const SHEET_COLLAPSED_VH = 60;
-const SHEET_EXPANDED_VH = 88;
 
 const MEAL_TYPES = [
   { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
@@ -151,72 +150,64 @@ function LogFoodSheet({ food, onClose, onLogged }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Log — {food.name}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <MiniMealTypeSelector value={mealType} onChange={setMealType} />
+    <BottomSheet onClose={onClose} title={`Log — ${food.name}`}>
+      <MiniMealTypeSelector value={mealType} onChange={setMealType} />
 
-          {isPortioned ? (
-            <div className="settings-field" style={{ marginBottom: 20 }}>
-              <label>Portion</label>
-              <select
-                value={portionGrams}
-                onChange={e => setPortionGrams(e.target.value === 'custom' ? 'custom' : Number(e.target.value))}
-              >
-                {portionOptions.map(opt => (
-                  <option key={opt.label} value={opt.weight_grams}>{opt.label}</option>
-                ))}
-                <option value="custom">Custom (g)</option>
-              </select>
-              {portionGrams === 'custom' && (
-                <input
-                  type="number" min="0" step="0.1" inputMode="decimal" placeholder="grams"
-                  value={customGrams} onChange={e => setCustomGrams(e.target.value)}
-                  style={{ marginTop: 6 }}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="settings-field" style={{ marginBottom: 20 }}>
-              <label>Servings</label>
-              <input
-                type="number" min="0.1" step="0.1" inputMode="decimal"
-                value={servings} onChange={e => setServings(e.target.value)}
-                style={{ fontSize: 18, fontWeight: 600, textAlign: 'center' }}
-              />
-            </div>
-          )}
-
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Totals</div>
-            <div style={{ background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 10, padding: '10px 16px', display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13 }}>
-              <span style={{ color: '#6c63ff', fontWeight: 700 }}>{round1(macros.calories)} kcal</span>
-              <span style={{ color: '#60a5fa' }}>{round1(macros.protein)}g P</span>
-              <span style={{ color: '#fbbf24' }}>{round1(macros.carbs)}g C</span>
-              <span style={{ color: '#fb923c' }}>{round1(macros.fat)}g F</span>
-            </div>
-          </div>
-
-          {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-
-          <button
-            onClick={handleLog}
-            disabled={logging}
-            style={{
-              width: '100%', background: 'var(--accent)', color: '#fff', border: 'none',
-              padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
-              fontWeight: 600, cursor: 'pointer', opacity: logging ? 0.5 : 1,
-            }}
+      {isPortioned ? (
+        <div className="settings-field" style={{ marginBottom: 20 }}>
+          <label>Portion</label>
+          <select
+            value={portionGrams}
+            onChange={e => setPortionGrams(e.target.value === 'custom' ? 'custom' : Number(e.target.value))}
           >
-            {logging ? 'Logging…' : 'Log to Today'}
-          </button>
+            {portionOptions.map(opt => (
+              <option key={opt.label} value={opt.weight_grams}>{opt.label}</option>
+            ))}
+            <option value="custom">Custom (g)</option>
+          </select>
+          {portionGrams === 'custom' && (
+            <input
+              type="number" min="0" step="0.1" inputMode="decimal" placeholder="grams"
+              value={customGrams} onChange={e => setCustomGrams(e.target.value)}
+              style={{ marginTop: 6 }}
+            />
+          )}
+        </div>
+      ) : (
+        <div className="settings-field" style={{ marginBottom: 20 }}>
+          <label>Servings</label>
+          <input
+            type="number" min="0.1" step="0.1" inputMode="decimal"
+            value={servings} onChange={e => setServings(e.target.value)}
+            style={{ fontSize: 18, fontWeight: 600, textAlign: 'center' }}
+          />
+        </div>
+      )}
+
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Totals</div>
+        <div style={{ background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 10, padding: '10px 16px', display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13 }}>
+          <span style={{ color: '#6c63ff', fontWeight: 700 }}>{round1(macros.calories)} kcal</span>
+          <span style={{ color: '#60a5fa' }}>{round1(macros.protein)}g P</span>
+          <span style={{ color: '#fbbf24' }}>{round1(macros.carbs)}g C</span>
+          <span style={{ color: '#fb923c' }}>{round1(macros.fat)}g F</span>
         </div>
       </div>
-    </div>
+
+      {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+
+      <button
+        onClick={handleLog}
+        disabled={logging}
+        style={{
+          width: '100%', background: 'var(--accent)', color: '#fff', border: 'none',
+          padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
+          fontWeight: 600, cursor: 'pointer', opacity: logging ? 0.5 : 1,
+        }}
+      >
+        {logging ? 'Logging…' : 'Log to Today'}
+      </button>
+    </BottomSheet>
   );
 }
 
@@ -235,10 +226,6 @@ export default function LibraryPicker({ onClose, onLogged }) {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
-
-  const [sheetVh, setSheetVh] = useState(SHEET_COLLAPSED_VH);
-  const [dragging, setDragging] = useState(false);
-  const dragRef = useRef(null);
 
   useEffect(() => {
     const cachedT = getCached('meals-templates', MEALS_CACHE_TTL);
@@ -265,35 +252,6 @@ export default function LibraryPicker({ onClose, onLogged }) {
       if (!cachedF) setCached('saved-foods', f);
     });
   }, []);
-
-  // ── Drag handle: live-follow while dragging, snap to a preset on release ──────
-  function handleHandleTouchStart(e) {
-    const t = e.touches[0];
-    dragRef.current = { startY: t.clientY, moved: false };
-  }
-  function handleHandleTouchMove(e) {
-    const d = dragRef.current;
-    if (!d) return;
-    const t = e.touches[0];
-    const dy = t.clientY - d.startY;
-    if (Math.abs(dy) > 6) d.moved = true;
-    const dyVh = (dy / window.innerHeight) * 100;
-    setDragging(true);
-    setSheetVh(prev => Math.max(SHEET_COLLAPSED_VH - 15, Math.min(SHEET_EXPANDED_VH + 4, prev - dyVh)));
-    d.startY = t.clientY; // incremental, so repeated moves keep tracking the finger 1:1
-  }
-  function handleHandleTouchEnd() {
-    const d = dragRef.current;
-    dragRef.current = null;
-    setDragging(false);
-    if (!d) return;
-    const mid = (SHEET_COLLAPSED_VH + SHEET_EXPANDED_VH) / 2;
-    if (!d.moved) {
-      setSheetVh(prev => (prev >= mid ? SHEET_COLLAPSED_VH : SHEET_EXPANDED_VH));
-    } else {
-      setSheetVh(prev => (prev >= mid ? SHEET_EXPANDED_VH : SHEET_COLLAPSED_VH));
-    }
-  }
 
   async function openLogMeal(tmpl) {
     const full = await getMealTemplate(tmpl.id);
@@ -353,139 +311,104 @@ export default function LibraryPicker({ onClose, onLogged }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={() => { if (!modal) onClose(); }}>
-      <div style={{ position: 'relative', width: '100%', maxWidth: 520 }}>
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          style={{
-            position: 'absolute', top: -55, right: 16, zIndex: 5,
-            width: 45, height: 45, borderRadius: '50%',
-            background: 'var(--surface2)', border: '1px solid var(--border)',
-            color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.4)', cursor: 'pointer',
-          }}
-        >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-
-        <div
-          className="modal-box"
-          onClick={e => e.stopPropagation()}
-          style={{
-            height: `${sheetVh}vh`,
-            transition: dragging ? 'none' : 'height 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-          }}
-        >
-          <div style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 2, borderBottom: '1px solid var(--border)' }}>
-            <div
-              onTouchStart={handleHandleTouchStart}
-              onTouchMove={handleHandleTouchMove}
-              onTouchEnd={handleHandleTouchEnd}
-              style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 8px', touchAction: 'none', cursor: 'grab' }}
-            >
-              <div style={{ width: 40, height: 5, borderRadius: 99, background: 'var(--border)' }} />
-            </div>
-            <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 14px', padding: '0 20px' }}>Add from Library</h3>
-          </div>
-
-          <div className="modal-body">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10, flexWrap: 'nowrap' }}>
-              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', minWidth: 0, overflowX: 'auto' }}>
-                {TABS.map(t => (
-                  <button
-                    key={t.key}
-                    onClick={() => setTab(t.key)}
-                    style={{
-                      padding: '8px 14px', background: 'transparent', border: 'none',
-                      borderBottom: `2px solid ${tab === t.key ? 'var(--accent)' : 'transparent'}`,
-                      color: tab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
-                      fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                      marginBottom: -1, transition: 'all 0.15s', flexShrink: 0, whiteSpace: 'nowrap',
-                    }}
-                  >{t.label}</button>
-                ))}
-              </div>
-              <button
-                className="btn-primary"
-                type="button"
-                style={{ flexShrink: 0 }}
-                onClick={() => setModal(
-                  tab === 'templates' ? { type: 'createTemplate' } :
-                  tab === 'recipes'   ? { type: 'createRecipe' } :
-                                        { type: 'createFood' }
-                )}
-                style={{ flexShrink: 0 }}
-              >
-                + {tab === 'templates' ? 'Meal' : tab === 'recipes' ? 'Recipe' : 'Food'}
-              </button>
-            </div>
-
-            {loading ? (
-              <SkeletonLoader count={3} height={70} />
-            ) : tab === 'templates' ? (
-              templates.length === 0 ? (
-                <div className="empty-state">
-                  No saved meals yet.<br />
-                  Create one to save a group of ingredients you eat regularly.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {templates.map(t => (
-                    <TemplateCard
-                      key={t.id}
-                      tmpl={t}
-                      onLog={() => openLogMeal(t)}
-                      onEdit={() => getMealTemplate(t.id).then(full => setModal({ type: 'editTemplate', template: full }))}
-                      onDelete={() => setModal({ type: 'deleteTemplate', id: t.id, name: t.name })}
-                    />
-                  ))}
-                </div>
-              )
-            ) : tab === 'recipes' ? (
-              recipes.length === 0 ? (
-                <div className="empty-state">
-                  No recipes yet.<br />
-                  Create one to track meals with a yield and log by serving count.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {recipes.map(r => (
-                    <RecipeCard
-                      key={r.id}
-                      recipe={r}
-                      onLog={() => openLogRecipe(r)}
-                      onEdit={() => getRecipe(r.id).then(full => setModal({ type: 'editRecipe', recipe: full }))}
-                      onDelete={() => setModal({ type: 'deleteRecipe', id: r.id, name: r.name })}
-                    />
-                  ))}
-                </div>
-              )
-            ) : (
-              foods.length === 0 ? (
-                <div className="empty-state">
-                  No saved foods yet.<br />
-                  Add one to reuse it any time you log.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {foods.map(f => (
-                    <SavedFoodCard
-                      key={f.id}
-                      food={f}
-                      onLog={() => setModal({ type: 'logFood', food: f })}
-                      onEdit={() => setModal({ type: 'editFood', food: f })}
-                      onDelete={() => setModal({ type: 'deleteFood', id: f.id, name: f.name })}
-                    />
-                  ))}
-                </div>
-              )
-            )}
-          </div>
+    <>
+    <BottomSheet
+      onClose={onClose}
+      onBackdropClick={() => { if (!modal) onClose(); }}
+      title="Add from Library"
+      expandable
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10, flexWrap: 'nowrap' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', minWidth: 0, overflowX: 'auto' }}>
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                padding: '8px 14px', background: 'transparent', border: 'none',
+                borderBottom: `2px solid ${tab === t.key ? 'var(--accent)' : 'transparent'}`,
+                color: tab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
+                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                marginBottom: -1, transition: 'all 0.15s', flexShrink: 0, whiteSpace: 'nowrap',
+              }}
+            >{t.label}</button>
+          ))}
         </div>
+        <button
+          className="btn-primary"
+          type="button"
+          style={{ flexShrink: 0 }}
+          onClick={() => setModal(
+            tab === 'templates' ? { type: 'createTemplate' } :
+            tab === 'recipes'   ? { type: 'createRecipe' } :
+                                  { type: 'createFood' }
+          )}
+        >
+          + {tab === 'templates' ? 'Meal' : tab === 'recipes' ? 'Recipe' : 'Food'}
+        </button>
       </div>
+
+      {loading ? (
+        <SkeletonLoader count={3} height={70} />
+      ) : tab === 'templates' ? (
+        templates.length === 0 ? (
+          <div className="empty-state">
+            No saved meals yet.<br />
+            Create one to save a group of ingredients you eat regularly.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {templates.map(t => (
+              <TemplateCard
+                key={t.id}
+                tmpl={t}
+                onLog={() => openLogMeal(t)}
+                onEdit={() => getMealTemplate(t.id).then(full => setModal({ type: 'editTemplate', template: full }))}
+                onDelete={() => setModal({ type: 'deleteTemplate', id: t.id, name: t.name })}
+              />
+            ))}
+          </div>
+        )
+      ) : tab === 'recipes' ? (
+        recipes.length === 0 ? (
+          <div className="empty-state">
+            No recipes yet.<br />
+            Create one to track meals with a yield and log by serving count.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {recipes.map(r => (
+              <RecipeCard
+                key={r.id}
+                recipe={r}
+                onLog={() => openLogRecipe(r)}
+                onEdit={() => getRecipe(r.id).then(full => setModal({ type: 'editRecipe', recipe: full }))}
+                onDelete={() => setModal({ type: 'deleteRecipe', id: r.id, name: r.name })}
+              />
+            ))}
+          </div>
+        )
+      ) : (
+        foods.length === 0 ? (
+          <div className="empty-state">
+            No saved foods yet.<br />
+            Add one to reuse it any time you log.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {foods.map(f => (
+              <SavedFoodCard
+                key={f.id}
+                food={f}
+                onLog={() => setModal({ type: 'logFood', food: f })}
+                onEdit={() => setModal({ type: 'editFood', food: f })}
+                onDelete={() => setModal({ type: 'deleteFood', id: f.id, name: f.name })}
+              />
+            ))}
+          </div>
+        )
+      )}
+    </BottomSheet>
 
       {(modal?.type === 'createTemplate' || modal?.type === 'editTemplate') && (
         <TemplateEditorSheet
@@ -541,6 +464,6 @@ export default function LibraryPicker({ onClose, onLogged }) {
           onCancel={() => setModal(null)}
         />
       )}
-    </div>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import BarcodeScanner from '../components/BarcodeScanner';
 import SkeletonLoader from '../components/SkeletonLoader';
 import Collapse from '../components/Collapse';
 import LibraryPicker from '../components/LibraryPicker';
+import BottomSheet from '../components/BottomSheet';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 
@@ -179,37 +180,29 @@ function EditModal({ entry, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Edit Entry</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+    <BottomSheet onClose={onClose} title="Edit Entry">
+      <form onSubmit={handleSubmit}>
+        <div className="settings-field" style={{ marginBottom: 14 }}>
+          <label>Food Name</label>
+          <input value={form.food_name} onChange={e => setForm(f => ({ ...f, food_name: e.target.value }))} required />
         </div>
-        <div className="modal-body">
-          <form onSubmit={handleSubmit}>
-            <div className="settings-field" style={{ marginBottom: 14 }}>
-              <label>Food Name</label>
-              <input value={form.food_name} onChange={e => setForm(f => ({ ...f, food_name: e.target.value }))} required />
+        <div className="modal-macros">
+          {['calories', 'protein', 'carbs', 'fat'].map(k => (
+            <div key={k} className="settings-field">
+              <label>{k.charAt(0).toUpperCase() + k.slice(1)}{k !== 'calories' ? ' (g)' : ' (kcal)'}</label>
+              <input type="number" min="0" step="0.1" inputMode="decimal" value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} />
             </div>
-            <div className="modal-macros">
-              {['calories', 'protein', 'carbs', 'fat'].map(k => (
-                <div key={k} className="settings-field">
-                  <label>{k.charAt(0).toUpperCase() + k.slice(1)}{k !== 'calories' ? ' (g)' : ' (kcal)'}</label>
-                  <input type="number" min="0" step="0.1" inputMode="decimal" value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} />
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4 }}>
-              <button type="button" onClick={onClose} style={{
-                background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-                padding: '10px 18px', borderRadius: 8, fontSize: 14,
-              }}>Cancel</button>
-              <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</button>
-            </div>
-          </form>
+          ))}
         </div>
-      </div>
-    </div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4 }}>
+          <button type="button" onClick={onClose} style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+            padding: '10px 18px', borderRadius: 8, fontSize: 14,
+          }}>Cancel</button>
+          <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</button>
+        </div>
+      </form>
+    </BottomSheet>
   );
 }
 
@@ -291,35 +284,29 @@ function TemplateEntryRow({ entry, expanded, onToggle, onDelete }) {
 // ── Delete confirmation ────────────────────────────────────────────────────────
 function DeleteConfirm({ entry, onConfirm, onCancel }) {
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Delete entry?</h3>
-          <button className="modal-close" onClick={onCancel}>✕</button>
+    <BottomSheet onClose={onCancel} title="Delete entry?">
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
         </div>
-        <div className="modal-body" style={{ textAlign: 'center' }}>
-          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
-              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-            </svg>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-            Remove <strong style={{ color: 'var(--text)' }}>{entry.food_name}</strong> from your log?
-          </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <button onClick={onCancel} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-              padding: '10px 20px', borderRadius: 8, fontSize: 14,
-            }}>Keep it</button>
-            <button onClick={onConfirm} style={{
-              background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
-              borderRadius: 8, fontSize: 14, fontWeight: 600,
-            }}>Delete</button>
-          </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+          Remove <strong style={{ color: 'var(--text)' }}>{entry.food_name}</strong> from your log?
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+          <button onClick={onCancel} style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
+            padding: '10px 20px', borderRadius: 8, fontSize: 14,
+          }}>Keep it</button>
+          <button onClick={onConfirm} style={{
+            background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
+            borderRadius: 8, fontSize: 14, fontWeight: 600,
+          }}>Delete</button>
         </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 }
 

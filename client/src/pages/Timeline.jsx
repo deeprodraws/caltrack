@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getTimeline, saveReflection, searchTimeline, getOnThisDay } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
 import Collapse from '../components/Collapse';
+import BottomSheet from '../components/BottomSheet';
 import { getCached, setCached } from '../utils/cache';
 
 const TIMELINE_CACHE_TTL = 120000; // 2 minutes
@@ -728,45 +729,37 @@ function FilterSheet({ activeTypes, onApply, onClose }) {
   ];
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Filter Timeline</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 12 }}>
-            Show Only
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-            {TYPE_LABELS.map(({ key, label }) => {
-              const active = types.has(key);
-              return (
-                <button
-                  key={key}
-                  onClick={() => toggleType(key)}
-                  style={{
-                    padding: '8px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600,
-                    border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
-                    background:   active ? 'var(--accent)'   : 'var(--surface2)',
-                    borderColor:  active ? 'var(--accent)'   : 'var(--border)',
-                    color:        active ? '#fff'            : 'var(--text-muted)',
-                  }}
-                >{label}</button>
-              );
-            })}
-          </div>
-
-          <button
-            className="btn-primary"
-            onClick={() => { onApply(types); onClose(); }}
-            style={{ width: '100%', padding: '12px', fontSize: 15, borderRadius: 10 }}
-          >
-            Apply Filters
-          </button>
-        </div>
+    <BottomSheet onClose={onClose} title="Filter Timeline">
+      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 12 }}>
+        Show Only
       </div>
-    </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+        {TYPE_LABELS.map(({ key, label }) => {
+          const active = types.has(key);
+          return (
+            <button
+              key={key}
+              onClick={() => toggleType(key)}
+              style={{
+                padding: '8px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600,
+                border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
+                background:   active ? 'var(--accent)'   : 'var(--surface2)',
+                borderColor:  active ? 'var(--accent)'   : 'var(--border)',
+                color:        active ? '#fff'            : 'var(--text-muted)',
+              }}
+            >{label}</button>
+          );
+        })}
+      </div>
+
+      <button
+        className="btn-primary"
+        onClick={() => { onApply(types); onClose(); }}
+        style={{ width: '100%', padding: '12px', fontSize: 15, borderRadius: 10 }}
+      >
+        Apply Filters
+      </button>
+    </BottomSheet>
   );
 }
 

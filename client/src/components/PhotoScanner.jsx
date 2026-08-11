@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { scanFood } from '../api';
+import BottomSheet from './BottomSheet';
 
 const CONFIDENCE_COLOR = { high: '#34d399', medium: '#fbbf24', low: '#f87171' };
 const CONFIDENCE_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' };
@@ -94,23 +95,21 @@ export default function PhotoScanner({ date, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div>
-            <h3>
-              {phase === 'capture' && '📷 Scan Food Photo'}
-              {phase === 'scanning' && '🔍 Analyzing…'}
-              {phase === 'review' && '✅ Review AI Results'}
-              {phase === 'error' && '⚠️ Scan Failed'}
-            </h3>
-            {phase === 'capture' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Take a photo or upload an image</p>}
-            {phase === 'review' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Edit values before saving</p>}
-          </div>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-
-        <div className="modal-body">
+    <BottomSheet
+      onClose={onClose}
+      title={
+        <>
+          <h3>
+            {phase === 'capture' && '📷 Scan Food Photo'}
+            {phase === 'scanning' && '🔍 Analyzing…'}
+            {phase === 'review' && '✅ Review AI Results'}
+            {phase === 'error' && '⚠️ Scan Failed'}
+          </h3>
+          {phase === 'capture' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Take a photo or upload an image</p>}
+          {phase === 'review' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Edit values before saving</p>}
+        </>
+      }
+    >
 
           {/* ── Capture phase ─────────────────────────────────────────────── */}
           {phase === 'capture' && (
@@ -308,9 +307,7 @@ export default function PhotoScanner({ date, onSave, onClose }) {
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 }
 

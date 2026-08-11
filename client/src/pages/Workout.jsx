@@ -15,6 +15,7 @@ import {
   getGoals,
 } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
+import BottomSheet from '../components/BottomSheet';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 import { getToken } from '../utils/auth';
 
@@ -168,8 +169,6 @@ function ExerciseSearchSheet({ onAdd, onClose }) {
   const [newMuscle, setNewMuscle] = useState('');
   const [newEquip, setNewEquip] = useState('');
   const [creating, setCreating] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const dragRef = useRef({ startY: 0, dragging: false });
 
   useEffect(() => { searchExercises('').then(setResults); }, []);
 
@@ -189,101 +188,69 @@ function ExerciseSearchSheet({ onAdd, onClose }) {
     setCreating(false);
   }
 
-  function handleHandlePointerDown(e) {
-    dragRef.current = { startY: e.clientY, dragging: true };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }
-  function handleHandlePointerMove(e) {
-    if (!dragRef.current.dragging) return;
-    const delta = dragRef.current.startY - e.clientY; // positive = dragged up
-    if (delta > 40) setExpanded(true);
-    else if (delta < -40) setExpanded(false);
-  }
-  function handleHandlePointerUp() {
-    dragRef.current.dragging = false;
-  }
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()}
-        style={{ maxHeight: expanded ? '92vh' : '65vh', transition: 'max-height 0.25s ease' }}>
-        <div
-          onPointerDown={handleHandlePointerDown}
-          onPointerMove={handleHandlePointerMove}
-          onPointerUp={handleHandlePointerUp}
-          onClick={() => setExpanded(e => !e)}
-          style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 2px', cursor: 'grab', touchAction: 'none' }}
-        >
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
-        </div>
-        <div className="modal-header">
-          <h3>Add Exercise</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body" style={{ paddingTop: 0 }}>
-          <input autoFocus value={query} onChange={e => setQuery(e.target.value)}
-            placeholder="Search exercises…"
-            style={{ width: '100%', padding: '10px 14px', borderRadius: 8, marginBottom: 10,
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }}
-          />
-          <div style={{ overflowY: 'auto', maxHeight: expanded ? 560 : 260, marginBottom: 8, transition: 'max-height 0.25s ease' }}>
-            {results.map(ex => (
-              <div key={ex.id} onClick={() => onAdd(ex.name)}
-                style={{ padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{ex.name}</div>
-                  {(ex.muscle_group || ex.equipment) && (
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      {[ex.muscle_group, ex.equipment].filter(Boolean).join(' · ')}
-                    </div>
-                  )}
+    <BottomSheet onClose={onClose} title="Add Exercise" expandable>
+      <input autoFocus value={query} onChange={e => setQuery(e.target.value)}
+        placeholder="Search exercises…"
+        style={{ width: '100%', padding: '10px 14px', borderRadius: 8, marginBottom: 10,
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }}
+      />
+      <div style={{ marginBottom: 8 }}>
+        {results.map(ex => (
+          <div key={ex.id} onClick={() => onAdd(ex.name)}
+            style={{ padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>{ex.name}</div>
+              {(ex.muscle_group || ex.equipment) && (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {[ex.muscle_group, ex.equipment].filter(Boolean).join(' · ')}
                 </div>
-                <span style={{ color: 'var(--accent-light)', fontSize: 20, lineHeight: 1 }}>+</span>
-              </div>
-            ))}
+              )}
+            </div>
+            <span style={{ color: 'var(--accent-light)', fontSize: 20, lineHeight: 1 }}>+</span>
           </div>
-          {!showCreate ? (
-            <button onClick={() => setShowCreate(true)}
-              style={{ width: '100%', padding: '10px', borderRadius: 8, background: 'transparent',
-                border: '1px dashed var(--border)', color: 'var(--text-muted)', fontSize: 13,
-                cursor: 'pointer', fontFamily: 'inherit' }}>
-              + Create new exercise
-            </button>
-          ) : (
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-              <input value={newName} onChange={e => setNewName(e.target.value)}
-                placeholder="Exercise name" required autoFocus
-                style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }}
-              />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <input value={newMuscle} onChange={e => setNewMuscle(e.target.value)}
-                  placeholder="Muscle group"
-                  style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
-                />
-                <input value={newEquip} onChange={e => setNewEquip(e.target.value)}
-                  placeholder="Equipment"
-                  style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button type="button" onClick={() => setShowCreate(false)}
-                  style={{ flex: 1, padding: '9px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  Cancel
-                </button>
-                <button type="submit" disabled={creating}
-                  style={{ flex: 2, padding: '9px', borderRadius: 8, background: 'var(--accent)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {creating ? 'Creating…' : 'Create & Add'}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
+        ))}
       </div>
-    </div>
+      {!showCreate ? (
+        <button onClick={() => setShowCreate(true)}
+          style={{ width: '100%', padding: '10px', borderRadius: 8, background: 'transparent',
+            border: '1px dashed var(--border)', color: 'var(--text-muted)', fontSize: 13,
+            cursor: 'pointer', fontFamily: 'inherit' }}>
+          + Create new exercise
+        </button>
+      ) : (
+        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+          <input value={newName} onChange={e => setNewName(e.target.value)}
+            placeholder="Exercise name" required autoFocus
+            style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <input value={newMuscle} onChange={e => setNewMuscle(e.target.value)}
+              placeholder="Muscle group"
+              style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
+            />
+            <input value={newEquip} onChange={e => setNewEquip(e.target.value)}
+              placeholder="Equipment"
+              style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" onClick={() => setShowCreate(false)}
+              style={{ flex: 1, padding: '9px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Cancel
+            </button>
+            <button type="submit" disabled={creating}
+              style={{ flex: 2, padding: '9px', borderRadius: 8, background: 'var(--accent)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+              {creating ? 'Creating…' : 'Create & Add'}
+            </button>
+          </div>
+        </form>
+      )}
+    </BottomSheet>
   );
 }
 
@@ -314,14 +281,8 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
   const ttStyle = { background: '#1a1d2e', border: '1px solid #2e3250', borderRadius: 8, fontSize: 12 };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
-        <div className="modal-header">
-          <h3>{exerciseName}</h3>
-          <button className="modal-close" onClick={onClose} style={{ width: 30, minWidth: 30, height: 30, fontSize: 13 }}>✕</button>
-        </div>
-        <div className="modal-body">
-          {loading ? (
+    <BottomSheet onClose={onClose} title={exerciseName}>
+      {loading ? (
             <div className="empty-state">Loading…</div>
           ) : history.length < 2 ? (
             <div className="empty-state" style={{ position: 'relative', marginBottom: 16, overflow: 'hidden', borderRadius: 10 }}>
@@ -400,9 +361,7 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
               ))}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 }
 
@@ -483,30 +442,30 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
   }, []);
 
   return (
-    <div className="modal-overlay" onClick={mode === 'view' ? onClose : undefined}>
-      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
-        <div className="modal-header">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+    <BottomSheet
+      onClose={onClose}
+      onBackdropClick={mode === 'view' ? onClose : () => {}}
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 7, margin: 0 }}>
             {mode === 'finish' && <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>}
             {mode === 'finish' ? 'Workout Complete' : session.name}
           </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {mode === 'view' && (
-              <button onClick={() => setEditing(e => !e)}
-                aria-label="Edit workout"
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: editing ? 'var(--accent)' : 'var(--surface2)',
-                  border: 'none', color: editing ? '#fff' : 'var(--text-muted)', cursor: 'pointer',
-                }}>
-                <EditIcon size={15} />
-              </button>
-            )}
-            <button className="modal-close" onClick={onClose}>✕</button>
-          </div>
+          {mode === 'view' && (
+            <button onClick={() => setEditing(e => !e)}
+              aria-label="Edit workout"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 36, height: 36, borderRadius: '50%',
+                background: editing ? 'var(--accent)' : 'var(--surface2)',
+                border: 'none', color: editing ? '#fff' : 'var(--text-muted)', cursor: 'pointer',
+              }}>
+              <EditIcon size={15} />
+            </button>
+          )}
         </div>
-        <div className="modal-body">
+      }
+    >
           <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
             {[{ label: 'Duration', val: duration }, { label: 'Sets', val: totalSets }, { label: 'Volume', val: `${Math.round(totalVol).toLocaleString()} lbs` }].map(({ label, val }) => (
               <div key={label} style={{ flex: 1, textAlign: 'center', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 6px' }}>
@@ -631,9 +590,7 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
               )}
             </>
           )}
-        </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 }
 
@@ -674,13 +631,7 @@ function TemplateEditorSheet({ template, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
-        <div className="modal-header">
-          <h3>{template ? 'Edit Template' : 'New Template'}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
+    <BottomSheet onClose={onClose} title={template ? 'Edit Template' : 'New Template'}>
           <form onSubmit={handleSave}>
             <div className="settings-field" style={{ marginBottom: 16 }}>
               <label>Template Name</label>
@@ -741,9 +692,7 @@ function TemplateEditorSheet({ template, onSave, onClose }) {
               {saving ? 'Saving…' : template ? 'Save Changes' : 'Create Template'}
             </button>
           </form>
-        </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 }
 
