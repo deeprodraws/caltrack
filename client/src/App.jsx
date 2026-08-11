@@ -10,11 +10,14 @@ import Dashboard from './pages/Dashboard';
 import FoodLog from './pages/FoodLog';
 import Library from './pages/Library';
 import Settings from './pages/Settings';
+// Eager — these three are one swipe away from Home at all times, so lazy-loading
+// them meant the first swipe to each had to wait on a network fetch before
+// anything could render. Workout stays lazy since it's not part of the swipe set.
+import Physique from './pages/Physique';
+import Timeline from './pages/Timeline';
+import Stats from './pages/Stats';
 
 const Workout = lazy(() => import('./pages/Workout'));
-const Physique = lazy(() => import('./pages/Physique'));
-const Timeline = lazy(() => import('./pages/Timeline'));
-const Stats = lazy(() => import('./pages/Stats'));
 
 const IconDashboard = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
