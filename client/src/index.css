@@ -532,6 +532,15 @@ input, select {
 
 /* ── Modals / Bottom Sheets ───────────────────────────────────────────────────  */
 /* Mobile-first: anchored to bottom as a sheet. Desktop: centered dialog.        */
+@keyframes sheetOverlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -540,6 +549,7 @@ input, select {
   align-items: flex-end;
   justify-content: center;
   z-index: 1000;
+  animation: sheetOverlayFadeIn 0.2s ease;
 }
 
 .modal-box {
@@ -554,6 +564,7 @@ input, select {
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
+  animation: sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-header {
