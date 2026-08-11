@@ -988,8 +988,13 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
           position: 'fixed', bottom: 'calc(var(--bottom-nav-h) + 16px)', left: '50%', transform: 'translateX(-50%)',
           background: 'var(--green)', color: '#000', fontWeight: 600, fontSize: 14,
           padding: '10px 20px', borderRadius: 99, zIndex: 2000, whiteSpace: 'nowrap',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-        }}>{toast}</div>
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: 7,
+        }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20,6 9,17 4,12"/>
+          </svg>
+          {toast}
+        </div>
       )}
 
       {/* ── Modals ── */}
@@ -1004,7 +1009,7 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
         <LogMealSheet
           template={modal.template}
           onClose={() => setModal(null)}
-          onLogged={() => { setModal(null); showToast('✓ Logged to today!'); }}
+          onLogged={() => { setModal(null); showToast('Logged to today!'); }}
         />
       )}
       {(modal?.type === 'createRecipe' || modal?.type === 'editRecipe') && (
@@ -1018,7 +1023,7 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
         <LogRecipeSheet
           recipe={modal.recipe}
           onClose={() => setModal(null)}
-          onLogged={() => { setModal(null); showToast('✓ Logged to today!'); }}
+          onLogged={() => { setModal(null); showToast('Logged to today!'); }}
         />
       )}
       {modal?.type === 'deleteTemplate' && (

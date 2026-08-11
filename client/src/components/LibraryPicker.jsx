@@ -10,6 +10,7 @@ import {
 } from '../pages/Meals';
 import { FoodModal } from '../pages/MyFoods';
 import BottomSheet from './BottomSheet';
+import MealTypeIcon from './MealTypeIcon';
 import SkeletonLoader from './SkeletonLoader';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
@@ -17,10 +18,10 @@ import { getCached, setCached, invalidateCache } from '../utils/cache';
 const SAVED_FOODS_CACHE_TTL = 300000; // 5 minutes
 
 const MEAL_TYPES = [
-  { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
-  { value: 'lunch',     label: 'Lunch',     emoji: '☀️' },
-  { value: 'dinner',    label: 'Dinner',    emoji: '🌙' },
-  { value: 'snacks',    label: 'Snacks',    emoji: '🍎' },
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'lunch',     label: 'Lunch' },
+  { value: 'dinner',    label: 'Dinner' },
+  { value: 'snacks',    label: 'Snacks' },
 ];
 const MEAL_TYPE_COLORS = { breakfast: '#fbbf24', lunch: '#34d399', dinner: '#6c63ff', snacks: '#fb923c' };
 
@@ -46,13 +47,14 @@ function MiniMealTypeSelector({ value, onChange }) {
             type="button"
             onClick={() => onChange(mt.value)}
             style={{
+              display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 14px', borderRadius: 99, fontFamily: 'inherit',
               border: `1px solid ${value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'var(--border)'}`,
               background: value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'transparent',
               color: value === mt.value ? (mt.value === 'breakfast' || mt.value === 'snacks' ? '#000' : '#fff') : 'var(--text-muted)',
               fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
             }}
-          >{mt.emoji} {mt.label}</button>
+          ><MealTypeIcon type={mt.value} /> {mt.label}</button>
         ))}
       </div>
     </div>

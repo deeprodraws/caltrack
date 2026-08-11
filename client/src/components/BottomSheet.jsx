@@ -88,9 +88,13 @@ export default function BottomSheet({
   const dismissTransition = dragging
     ? 'none'
     : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, height 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+  // Backdrop dims 0.65 alpha at rest — fade it back toward 0 at the same rate the sheet fades.
+  const backdropStyle = closeProgress > 0
+    ? { background: `rgba(0, 0, 0, ${0.65 * (1 - closeProgress)})`, transition: dragging ? 'none' : 'background 0.25s ease' }
+    : undefined;
 
   return (
-    <div className="modal-overlay" onClick={onBackdropClick || onClose}>
+    <div className="modal-overlay" onClick={onBackdropClick || onClose} style={backdropStyle}>
       <div style={{ position: 'relative', width: '100%', maxWidth }} onClick={e => e.stopPropagation()}>
         {/* Floating close button — moves and fades together with the sheet while it's being dismissed */}
         <button

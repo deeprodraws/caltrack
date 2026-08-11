@@ -501,16 +501,15 @@ export default function Dashboard() {
   return (
     <div>
       {/* ── Section 1: Greeting ──────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
-        <div>
-          <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', lineHeight: 1.15, marginBottom: 5 }}>
-            {getGreeting(user?.display_name)}
-          </div>
-          <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-            {todayLongDate()}
-          </div>
+      <div style={{ position: 'relative', marginBottom: 24 }}>
+        <div className="centered-page-title" style={{ fontSize: 30, lineHeight: 1.15, marginBottom: 5 }}>
+          {getGreeting(user?.display_name)}
+        </div>
+        <div className="centered-page-subtitle">
+          {todayLongDate()}
         </div>
         <Link to="/settings" style={{
+          position: 'absolute', top: 0, right: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           width: 36, height: 36, borderRadius: 10, flexShrink: 0,
           background: 'var(--surface2)', border: '1px solid var(--border)',
@@ -711,8 +710,12 @@ export default function Dashboard() {
         <div className="entry-list">
           {entries.slice(0, 5).map(e => (
             <div key={e.id} className="entry-row">
-              <span className="entry-name">
-                {e.entry_type && e.entry_type !== 'single' && <span aria-hidden="true">🍽️ </span>}
+              <span className="entry-name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {e.entry_type && e.entry_type !== 'single' && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <ellipse cx="12" cy="7" rx="8" ry="3"/><path d="M4 7v10c0 1.66 3.58 3 8 3s8-1.34 8-3V7"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>
+                  </svg>
+                )}
                 {e.entry_type && e.entry_type !== 'single' ? (e.source_name || e.food_name) : e.food_name}
               </span>
               <div className="entry-macros">

@@ -3,6 +3,7 @@ import { getTimeline, saveReflection, searchTimeline, getOnThisDay } from '../ap
 import SkeletonLoader from '../components/SkeletonLoader';
 import Collapse from '../components/Collapse';
 import BottomSheet from '../components/BottomSheet';
+import MealTypeIcon from '../components/MealTypeIcon';
 import { getCached, setCached } from '../utils/cache';
 
 const TIMELINE_CACHE_TTL = 120000; // 2 minutes
@@ -16,7 +17,6 @@ const CHIP = {
   teal:   { bg: 'rgba(45,212,191,0.18)',  color: '#2dd4bf' },
 };
 
-const MEAL_EMOJI = { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snacks: '🍎' };
 const MEAL_LABEL = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snacks: 'Snacks' };
 const MEAL_ORDER = ['breakfast', 'lunch', 'dinner', 'snacks'];
 
@@ -144,24 +144,140 @@ function entryDisplayName(e) {
   return e.entry_type && e.entry_type !== 'single' ? (e.source_name || e.food_name) : e.food_name;
 }
 
+// ── Small line icons (stand-ins for the achievement-chip / stat-row emoji) ────
+
+function IconTrophy({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+      <path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+    </svg>
+  );
+}
+function IconFlame({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+    </svg>
+  );
+}
+function IconMeat({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M16 16c4-4 4-8 2-10-2-2-6-2-10 2-1.5 1.5-2.5 3-3 4.5C3.5 15 2 17 2 19c0 1.5 1.5 3 3 3 2 0 4-1.5 6.5-4 1.5-.5 3-1.5 4.5-3z"/>
+      <path d="M15 9l-6 6"/>
+    </svg>
+  );
+}
+function IconCheckCircle({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="9"/><polyline points="8,12 11,15 16,9"/>
+    </svg>
+  );
+}
+function IconMoon({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  );
+}
+function IconShoe({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <ellipse cx="8" cy="7" rx="2.5" ry="3.5" transform="rotate(-15 8 7)"/>
+      <ellipse cx="16" cy="16" rx="2.5" ry="3.5" transform="rotate(15 16 16)"/>
+    </svg>
+  );
+}
+function IconDroplet({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M12 2.5s7 7.02 7 11.5a7 7 0 1 1-14 0c0-4.48 7-11.5 7-11.5z"/>
+    </svg>
+  );
+}
+function IconDumbbell({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="2" y="10" width="2.5" height="4" rx="0.5"/><rect x="19.5" y="10" width="2.5" height="4" rx="0.5"/>
+      <rect x="4.5" y="7.5" width="3" height="9" rx="0.5"/><rect x="16.5" y="7.5" width="3" height="9" rx="0.5"/>
+      <line x1="7.5" y1="12" x2="16.5" y2="12"/>
+    </svg>
+  );
+}
+function IconStack({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <ellipse cx="12" cy="7" rx="8" ry="3"/><path d="M4 7v10c0 1.66 3.58 3 8 3s8-1.34 8-3V7"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>
+    </svg>
+  );
+}
+function IconCalendarClock({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/><path d="M12 14v3l2 1"/>
+    </svg>
+  );
+}
+function IconScale({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8a4 4 0 0 0-4 4"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+  );
+}
+function IconCamera({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+    </svg>
+  );
+}
+function IconSearch({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  );
+}
+function IconX({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  );
+}
+function IconEdit({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  );
+}
+
 function buildChips(day, streak) {
   const chips = [];
   if (day.prs_achieved?.length > 0) {
     chips.push(day.prs_achieved.length > 1
-      ? { emoji: '🏆', label: `${day.prs_achieved.length} PRs`, c: CHIP.gold }
-      : { emoji: '🏆', label: `${day.prs_achieved[0].exercise_name} PR`, c: CHIP.gold });
+      ? { icon: <IconTrophy />, label: `${day.prs_achieved.length} PRs`, c: CHIP.gold }
+      : { icon: <IconTrophy />, label: `${day.prs_achieved[0].exercise_name} PR`, c: CHIP.gold });
   }
-  if (streak >= 3) chips.push({ emoji: '🔥', label: `${streak}-Day Streak`, c: CHIP.gold });
-  if (day.food?.protein_hit) chips.push({ emoji: '🥩', label: 'Protein Goal', c: CHIP.green });
-  if (day.food?.calories_hit) chips.push({ emoji: '✅', label: 'Calories', c: CHIP.green });
-  if (day.metrics?.sleep_hours >= 7) chips.push({ emoji: '🌙', label: `${round1(day.metrics.sleep_hours)}h`, c: CHIP.purple });
-  if (day.metrics?.steps >= 10000) chips.push({ emoji: '👟', label: '10K Steps', c: CHIP.teal });
+  if (streak >= 3) chips.push({ icon: <IconFlame />, label: `${streak}-Day Streak`, c: CHIP.gold });
+  if (day.food?.protein_hit) chips.push({ icon: <IconMeat />, label: 'Protein Goal', c: CHIP.green });
+  if (day.food?.calories_hit) chips.push({ icon: <IconCheckCircle />, label: 'Calories', c: CHIP.green });
+  if (day.metrics?.sleep_hours >= 7) chips.push({ icon: <IconMoon />, label: `${round1(day.metrics.sleep_hours)}h`, c: CHIP.purple });
+  if (day.metrics?.steps >= 10000) chips.push({ icon: <IconShoe />, label: '10K Steps', c: CHIP.teal });
   return chips;
 }
 
 // ── Small building blocks ────────────────────────────────────────────────────
 
-function Chip({ emoji, label, c }) {
+function Chip({ icon, label, c }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -170,7 +286,7 @@ function Chip({ emoji, label, c }) {
       background: c.bg, color: c.color, whiteSpace: 'nowrap',
       overflow: 'hidden', textOverflow: 'ellipsis',
     }}>
-      {emoji} {label}
+      {icon} {label}
     </span>
   );
 }
@@ -282,9 +398,10 @@ function LightboxOverlay({ photos, startIndex, onClose }) {
         style={{
           position: 'absolute', top: 16, right: 16,
           background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
-          width: 44, height: 44, borderRadius: '50%', fontSize: 20, cursor: 'pointer',
+          width: 44, height: 44, borderRadius: '50%', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
-      >✕</button>
+      ><IconX size={20} /></button>
       {n > 1 && (
         <>
           <button
@@ -368,8 +485,8 @@ function ReflectionSection({ day, onSave }) {
         <SectionLabel>Reflection</SectionLabel>
         {day.reflection && (
           <button onClick={() => setEditing(true)}
-            style={{ background: 'none', border: 'none', color: 'var(--accent-light)', fontSize: 12, cursor: 'pointer', padding: 0 }}>
-            ✎ Edit
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', color: 'var(--accent-light)', fontSize: 12, cursor: 'pointer', padding: 0 }}>
+            <IconEdit size={11} /> Edit
           </button>
         )}
       </div>
@@ -397,13 +514,13 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
   const mealGroups = day.food ? groupEntriesByMealType(day.food.entries) : [];
 
   return (
-    <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 22 }}>
       {/* MACROS */}
       {(day.food || day.metrics) && (
         <div>
           <SectionLabel>Macros</SectionLabel>
           {day.food && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: day.metrics ? 12 : 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: day.metrics ? 16 : 0 }}>
               {[
                 { label: 'Calories', val: day.food.total_calories, goal: goals.calories, unit: '', overRed: true },
                 { label: 'Protein',  val: day.food.total_protein,  goal: goals.protein,  unit: 'g' },
@@ -411,7 +528,7 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
                 { label: 'Fat',      val: day.food.total_fat,      goal: goals.fat,      unit: 'g' },
               ].map(row => (
                 <div key={row.label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: 'var(--text-muted)' }}>{row.label}</span>
                     <span style={{ fontWeight: 600 }}>{row.val}{row.unit} / {row.goal}{row.unit}</span>
                   </div>
@@ -421,10 +538,22 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
             </div>
           )}
           {day.metrics && (
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--text-muted)' }}>
-              {day.metrics.water_ml > 0 && <span>💧 {glasses} glasses ({day.metrics.water_ml}ml)</span>}
-              {day.metrics.sleep_hours > 0 && <span>🌙 {sleepH}h {sleepM}m</span>}
-              {day.metrics.steps > 0 && <span>👟 {day.metrics.steps.toLocaleString()}</span>}
+            <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 14, color: 'var(--text-muted)' }}>
+              {day.metrics.water_ml > 0 && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <IconDroplet /> {glasses} glasses ({day.metrics.water_ml}ml)
+                </span>
+              )}
+              {day.metrics.sleep_hours > 0 && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <IconMoon /> {sleepH}h {sleepM}m
+                </span>
+              )}
+              {day.metrics.steps > 0 && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <IconShoe /> {day.metrics.steps.toLocaleString()}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -434,19 +563,20 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
       {mealGroups.length > 0 && (
         <div>
           <SectionLabel>Meals</SectionLabel>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {mealGroups.map(([type, entries]) => (
               <div key={type}>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 5 }}>
-                  {MEAL_EMOJI[type]} {MEAL_LABEL[type]}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
+                  <MealTypeIcon type={type} /> {MEAL_LABEL[type]}
                 </div>
                 {entries.map(e => (
-                  <div key={e.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontSize: 13, marginBottom: 3 }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: 11, width: 62, flexShrink: 0 }}>
+                  <div key={e.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontSize: 14, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 12, width: 62, flexShrink: 0 }}>
                       {formatTime(e.created_at) || ''}
                     </span>
-                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {e.entry_type && e.entry_type !== 'single' ? '🍽️ ' : ''}{highlight(entryDisplayName(e), highlightQuery)}
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      {e.entry_type && e.entry_type !== 'single' && <IconStack size={11} />}
+                      {highlight(entryDisplayName(e), highlightQuery)}
                     </span>
                     <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{Math.round(e.calories)} cal</span>
                   </div>
@@ -461,14 +591,14 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
       {day.workouts.length > 0 && (
         <div>
           <SectionLabel>Workout</SectionLabel>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {day.workouts.map(w => (
               <div key={w.id}>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 7 }}>
                   {w.name}{w.duration_minutes != null ? ` — ${fmtMinutes(w.duration_minutes)}` : ''}
                 </div>
                 {(w.exercises || []).map((ex, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13, marginBottom: 3 }}>
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 14, marginBottom: 4 }}>
                     <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {highlight(ex.exercise_name, highlightQuery)}
                     </span>
@@ -478,7 +608,7 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
                   </div>
                 ))}
                 {w.notes && (
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>
                     {w.notes}
                   </div>
                 )}
@@ -494,7 +624,7 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
           <SectionLabel>Photos</SectionLabel>
           <PhotoStrip physique={day.physique} onPhotoClick={onPhotoClick} />
           {day.physique.body_fat && (
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-light)' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-light)' }}>
               Body Fat: {day.physique.body_fat}%
             </div>
           )}
@@ -504,12 +634,13 @@ function ExpandedContent({ day, goals, onPhotoClick, onSaveReflection, highlight
       {/* PRs */}
       {day.prs_achieved?.length > 0 && (
         <div>
-          <SectionLabel>Personal Records 🏆</SectionLabel>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <SectionLabel><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><IconTrophy size={11} /> Personal Records</span></SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {day.prs_achieved.map((pr, i) => (
-              <div key={i} style={{ fontSize: 13 }}>
-                🏆 <strong>{pr.exercise_name}</strong> — {round1(pr.weight)} lb × {pr.reps}
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 20 }}>
+              <div key={i} style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <IconTrophy />
+                <strong>{pr.exercise_name}</strong> — {round1(pr.weight)} lb × {pr.reps}
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', width: '100%', marginLeft: 18 }}>
                   est. 1RM: {round1(pr.estimated_1rm)} lb
                 </div>
               </div>
@@ -578,26 +709,36 @@ function DayCard({ day, todayStr, streak, highlightQuery, goals, expanded, onTog
       {/* Achievement chips */}
       {chips.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-          {chips.map((c, i) => <Chip key={i} emoji={c.emoji} label={c.label} c={c.c} />)}
+          {chips.map((c, i) => <Chip key={i} icon={c.icon} label={c.label} c={c.c} />)}
         </div>
       )}
 
-      {/* Meals preview */}
-      {previewMeals.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 10px', fontSize: 13, color: 'var(--text)', marginTop: 10 }}>
-          {previewMeals.map((e, i) => (
-            <span key={e.id ?? i} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>
-              {MEAL_EMOJI[MEAL_ORDER.includes(e.meal_type) ? e.meal_type : 'snacks']} {highlight(entryDisplayName(e), highlightQuery)}
-            </span>
-          ))}
-          {extraMealCount > 0 && <span style={{ color: 'var(--text-muted)' }}>+ {extraMealCount} more</span>}
-        </div>
-      )}
+      {/* Quick preview (collapsed only — expanded view has the full detail already) */}
+      {!expanded && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+          {previewMeals.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 10px', fontSize: 13, color: 'var(--text)' }}>
+              {previewMeals.map((e, i) => (
+                <span key={e.id ?? i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>
+                  <MealTypeIcon type={MEAL_ORDER.includes(e.meal_type) ? e.meal_type : 'snacks'} size={12} />
+                  {highlight(entryDisplayName(e), highlightQuery)}
+                </span>
+              ))}
+              {extraMealCount > 0 && <span style={{ color: 'var(--text-muted)' }}>+ {extraMealCount} more</span>}
+            </div>
+          )}
 
-      {/* Workout preview */}
-      {day.workouts.length > 0 && (
-        <div style={{ fontSize: 13, marginTop: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-          🏋️ {highlight(day.workouts.map(w => w.name).join(', '), highlightQuery)}
+          {day.workouts.length > 0 && (
+            <div style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <IconDumbbell /> {highlight(day.workouts.map(w => w.name).join(', '), highlightQuery)}
+            </div>
+          )}
+
+          {day.metrics?.sleep_hours > 0 && (
+            <div style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
+              <IconMoon /> {Math.floor(day.metrics.sleep_hours)}h {Math.round((day.metrics.sleep_hours - Math.floor(day.metrics.sleep_hours)) * 60)}m sleep
+            </div>
+          )}
         </div>
       )}
 
@@ -630,27 +771,27 @@ function OnThisDayCard({ data, onView }) {
       border: '1px solid rgba(108,99,255,0.25)',
       borderRadius: 12, padding: '14px 16px', marginBottom: 16,
     }}>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.7px', textTransform: 'uppercase', color: 'var(--accent-light)', marginBottom: 4 }}>
-        📅 One Year Ago Today
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, letterSpacing: '0.7px', textTransform: 'uppercase', color: 'var(--accent-light)', marginBottom: 4 }}>
+        <IconCalendarClock /> One Year Ago Today
       </div>
       <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>
         {formatFullDate(data.date)}
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px', fontSize: 13, marginBottom: data.workouts.length || data.has_photo ? 6 : 0 }}>
-        {data.weight && <span>⚖️ {data.weight.weight} {data.weight.unit}</span>}
-        {data.protein != null && <span>🔥 {data.protein}g protein</span>}
+        {data.weight && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><IconScale /> {data.weight.weight} {data.weight.unit}</span>}
+        {data.protein != null && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><IconFlame /> {data.protein}g protein</span>}
       </div>
 
       {data.workouts.length > 0 && (
-        <div style={{ fontSize: 13, marginBottom: 6 }}>
-          🏋️ {data.workouts.map(w => w.name).join(', ')}
+        <div style={{ fontSize: 13, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <IconDumbbell /> {data.workouts.map(w => w.name).join(', ')}
           {data.workouts[0].exercises?.length > 0 && ` · ${data.workouts[0].exercises.slice(0, 3).join(', ')}`}
         </div>
       )}
 
       {data.has_photo && (
-        <div style={{ fontSize: 13, marginBottom: 6 }}>📸 Progress photo available</div>
+        <div style={{ fontSize: 13, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><IconCamera /> Progress photo available</div>
       )}
 
       {data.reflection && (
@@ -676,8 +817,8 @@ function SearchBar({ value, onChange, searching }) {
     <div style={{
       position: 'relative', marginBottom: 16,
     }}>
-      <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 14 }}>
-        🔍
+      <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', display: 'flex' }}>
+        <IconSearch />
       </span>
       <input
         value={value}
@@ -690,8 +831,10 @@ function SearchBar({ value, onChange, searching }) {
         }}
       />
       {searching && (
-        <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'var(--text-muted)' }}>
-          ⏳
+        <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', display: 'flex', color: 'var(--text-muted)' }}>
+          <svg className="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M12 2a10 10 0 0 1 10 10"/>
+          </svg>
         </span>
       )}
       {!searching && value && (
@@ -971,25 +1114,21 @@ export default function Timeline() {
   return (
     <div>
       {/* ── Page header ── */}
-      <div style={{
-        display: 'flex', alignItems: 'flex-start',
-        justifyContent: 'space-between', marginBottom: 8,
-      }}>
-        <div>
-          <h1 className="page-title" style={{ marginBottom: 2 }}>Life Timeline</h1>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Your fitness journey, day by day
-          </p>
-        </div>
+      <div style={{ position: 'relative', marginBottom: 16 }}>
+        <h1 className="centered-page-title">Life Timeline</h1>
+        <p className="centered-page-subtitle">
+          Your fitness journey, day by day
+        </p>
         <button
           onClick={() => setFilterOpen(true)}
           style={{
+            position: 'absolute', top: 0, right: 0,
             background: isFiltered ? 'var(--accent)' : 'var(--surface2)',
             border: `1px solid ${isFiltered ? 'var(--accent)' : 'var(--border)'}`,
             color: isFiltered ? '#fff' : 'var(--text-muted)',
             borderRadius: 10, width: 40, height: 40,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, marginTop: 2, cursor: 'pointer',
+            flexShrink: 0, cursor: 'pointer',
             transition: 'all 0.15s',
           }}
           aria-label="Filter"
@@ -1048,7 +1187,7 @@ export default function Timeline() {
       )}
 
       {/* ── Day cards + month dividers ── */}
-      <div className="timeline-list" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="timeline-list" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {renderList.map(item =>
           item.type === 'divider'
             ? <MonthDivider key={item.key} label={item.label} />

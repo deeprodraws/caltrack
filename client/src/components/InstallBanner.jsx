@@ -17,8 +17,11 @@ export default function InstallBanner({ onInstall, onDismiss }) {
         boxShadow: '0 -6px 24px rgba(0,0,0,0.35)',
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
-        <div style={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.4 }}>
-          📲 Add CalTrack to your home screen for the full app experience.
+        <div style={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <rect x="7" y="2" width="10" height="20" rx="2"/><line x1="7" y1="18" x2="17" y2="18"/><path d="M12 12v3M10.5 13.5L12 15l1.5-1.5"/>
+          </svg>
+          Add CalTrack to your home screen for the full app experience.
         </div>
         <button
           onClick={onInstall}

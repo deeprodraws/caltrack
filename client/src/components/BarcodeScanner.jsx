@@ -16,6 +16,37 @@ const BARCODE_FORMATS = [
   Html5QrcodeSupportedFormats.QR_CODE,
 ];
 
+function IconCamera({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+    </svg>
+  );
+}
+function IconCheckCircle({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="9"/><polyline points="8,12 11,15 16,9"/>
+    </svg>
+  );
+}
+function IconWarning({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  );
+}
+function IconBox({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      <polyline points="3.27,6.96 12,12.01 20.73,6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+    </svg>
+  );
+}
+
 function NutritionInput({ label, value, onChange, color, unit = 'g' }) {
   return (
     <div style={{ flex: 1 }}>
@@ -207,11 +238,11 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
       onClose={onClose}
       title={
         <>
-          <h3>
-            {phase === 'scanning' && '📷 Scan Barcode'}
-            {phase === 'found' && '✅ Product Found'}
-            {phase === 'notfound' && '⚠️ Not Found'}
-            {phase === 'error' && '❌ Error'}
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            {phase === 'scanning' && <><IconCamera size={16} /> Scan Barcode</>}
+            {phase === 'found' && <><IconCheckCircle size={16} /> Product Found</>}
+            {phase === 'notfound' && <><IconWarning size={16} /> Not Found</>}
+            {phase === 'error' && <><IconWarning size={16} /> Error</>}
           </h3>
           {phase === 'scanning' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Aim at barcode · whole frame is scanned</p>}
           {phase === 'found' && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>Edit values before saving</p>}
@@ -339,7 +370,7 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
           {/* Product not found */}
           {phase === 'notfound' && (
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>📦</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--text-muted)' }}><IconBox /></div>
               <div style={{ fontWeight: 600, marginBottom: 6 }}>Product Not Found</div>
               <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 20 }}>
                 Barcode <strong style={{ color: 'var(--text)' }}>{barcode}</strong> isn't in the Open Food Facts database.
@@ -371,7 +402,7 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
           {/* Error */}
           {phase === 'error' && (
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: '#f87171' }}><IconWarning size={32} /></div>
               <div style={{
                 background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)',
                 borderRadius: 10, padding: '14px 18px', marginBottom: 20, textAlign: 'left',

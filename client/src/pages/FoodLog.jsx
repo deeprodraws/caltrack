@@ -6,6 +6,7 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import Collapse from '../components/Collapse';
 import LibraryPicker from '../components/LibraryPicker';
 import BottomSheet from '../components/BottomSheet';
+import MealTypeIcon from '../components/MealTypeIcon';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 
@@ -40,13 +41,34 @@ function round1(value) {
   return Math.round((Number(value) || 0) * 10) / 10;
 }
 
+function entryTimelineName(e) {
+  return e.entry_type && e.entry_type !== 'single' ? (e.source_name || e.food_name) : e.food_name;
+}
+
+function IconExpand() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+      <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+    </svg>
+  );
+}
+
+function IconStack({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <ellipse cx="12" cy="7" rx="8" ry="3"/><path d="M4 7v10c0 1.66 3.58 3 8 3s8-1.34 8-3V7"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>
+    </svg>
+  );
+}
+
 const emptyForm = { food_name: '', calories: '', protein: '', carbs: '', fat: '', servings: '1', meal_type: 'breakfast' };
 
 const MEAL_SECTIONS = [
-  { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
-  { value: 'lunch',     label: 'Lunch',     emoji: '☀️' },
-  { value: 'dinner',    label: 'Dinner',    emoji: '🌙' },
-  { value: 'snacks',    label: 'Snacks',    emoji: '🍎' },
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'lunch',     label: 'Lunch' },
+  { value: 'dinner',    label: 'Dinner' },
+  { value: 'snacks',    label: 'Snacks' },
 ];
 
 const MEAL_TYPE_COLORS = {
@@ -67,13 +89,14 @@ function MealTypeSelector({ value, onChange }) {
             type="button"
             onClick={() => onChange(mt.value)}
             style={{
+              display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 14px', borderRadius: 99, fontFamily: 'inherit',
               border: `1px solid ${value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'var(--border)'}`,
               background: value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'transparent',
               color: value === mt.value ? (mt.value === 'breakfast' || mt.value === 'snacks' ? '#000' : '#fff') : 'var(--text-muted)',
               fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
             }}
-          >{mt.emoji} {mt.label}</button>
+          ><MealTypeIcon type={mt.value} /> {mt.label}</button>
         ))}
       </div>
     </div>
@@ -220,7 +243,7 @@ function TemplateEntryRow({ entry, expanded, onToggle, onDelete }) {
             fontWeight: 500, fontSize: 14, display: 'flex', alignItems: 'center', gap: 6,
             minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
-            <span aria-hidden="true">🍽️</span>
+            <IconStack />
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {entry.source_name || entry.food_name}
             </span>
@@ -326,7 +349,9 @@ export default function FoodLog() {
   const [showScanner, setShowScanner] = useState(false);
   const [showBarcode, setShowBarcode] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showDayEntries, setShowDayEntries] = useState(false);
   const [expandedEntryId, setExpandedEntryId] = useState(null);
+  const stripRef = useRef(null);
 
   useEffect(() => {
     const cacheKey = 'foodlog-' + date;
@@ -344,6 +369,11 @@ export default function FoodLog() {
       setCached(cacheKey, e);
     });
   }, [date]);
+
+  // Land on the most recent entry by default — scroll left to see earlier in the day.
+  useEffect(() => {
+    if (stripRef.current) stripRef.current.scrollLeft = stripRef.current.scrollWidth;
+  }, [entries, date]);
 
   function shiftDate(days) {
     const d = new Date(date + 'T12:00:00');
@@ -515,12 +545,8 @@ export default function FoodLog() {
   const totalCarbs = sum(entries, 'carbs');
   const totalFat = sum(entries, 'fat');
 
-  const mealGroups = MEAL_SECTIONS
-    .map(section => ({
-      ...section,
-      items: entries.filter(e => (e.meal_type || 'snacks') === section.value),
-    }))
-    .filter(g => g.items.length > 0);
+  // Chronological, not grouped by meal type — the horizontal strip is a timeline, not sections.
+  const sortedEntries = [...entries].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   return (
     <div>
@@ -691,7 +717,7 @@ export default function FoodLog() {
         </div>
       </form>
 
-      {/* ── Entry list ── */}
+      {/* ── Entry timeline ── */}
       {loading ? (
         <SkeletonLoader count={4} height={64} />
       ) : entries.length === 0 ? (
@@ -700,69 +726,53 @@ export default function FoodLog() {
         <>
           <div className="section-header">
             <span className="section-title">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              {round1(totalCals)} kcal · {round1(totalProtein)}g P · {round1(totalCarbs)}g C · {round1(totalFat)}g F
-            </span>
+            <button
+              onClick={() => setShowDayEntries(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface2)',
+                border: '1px solid var(--border)', color: 'var(--accent-light)', padding: '6px 12px',
+                borderRadius: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              <IconExpand /> Expand
+            </button>
           </div>
 
-          {mealGroups.map(group => (
-            <div key={group.value} style={{ marginBottom: 18 }}>
-              <div className="section-header" style={{ marginBottom: 8 }}>
-                <span className="section-title">{group.emoji} {group.label}</span>
-                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                  {round1(sum(group.items, 'calories'))} cal
-                </span>
+          <div
+            ref={stripRef}
+            style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 20 }}
+          >
+            {sortedEntries.map(e => (
+              <div
+                key={e.id}
+                onClick={() => setEditEntry(e)}
+                style={{
+                  flexShrink: 0, width: 140, cursor: 'pointer',
+                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10,
+                  padding: '12px 14px', transition: 'border-color 0.15s',
+                }}
+                onMouseEnter={ev => ev.currentTarget.style.borderColor = 'var(--accent)'}
+                onMouseLeave={ev => ev.currentTarget.style.borderColor = 'var(--border)'}
+              >
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600,
+                  overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
+                  WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', minHeight: 34, marginBottom: 8,
+                }}>
+                  <MealTypeIcon type={e.meal_type || 'snacks'} size={12} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{entryTimelineName(e)}</span>
+                </div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: '#6c63ff' }}>
+                  {round1(e.calories)}<span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 2 }}>kcal</span>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>
+                  {round1(e.protein)}P · {round1(e.carbs)}C · {round1(e.fat)}F
+                </div>
               </div>
-              <div className="entry-list">
-                {group.items.map(e => (
-                  e.entry_type && e.entry_type !== 'single' ? (
-                    <TemplateEntryRow
-                      key={e.id}
-                      entry={e}
-                      expanded={expandedEntryId === e.id}
-                      onToggle={() => setExpandedEntryId(prev => prev === e.id ? null : e.id)}
-                      onDelete={() => setDeleteTarget(e)}
-                    />
-                  ) : (
-                    <div key={e.id} className="entry-row">
-                      <span className="entry-name">{e.food_name}</span>
-                      <div className="entry-macros">
-                        <div className="entry-macro">
-                          <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
-                          <div className="lbl">kcal</div>
-                        </div>
-                        <div className="entry-macro">
-                          <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
-                          <div className="lbl">protein</div>
-                        </div>
-                        <div className="entry-macro">
-                          <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
-                          <div className="lbl">carbs</div>
-                        </div>
-                        <div className="entry-macro">
-                          <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
-                          <div className="lbl">fat</div>
-                        </div>
-                      </div>
-                      <button className="btn-icon" title="Edit" onClick={() => setEditEntry(e)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </button>
-                      <button className="btn-delete" title="Delete" onClick={() => setDeleteTarget(e)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                      </button>
-                    </div>
-                  )
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
-          <div className="card" style={{ marginTop: 20 }}>
+          <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 600, fontSize: 14 }}>Daily Total</span>
               <div className="daily-totals">
@@ -781,6 +791,57 @@ export default function FoodLog() {
             </div>
           </div>
         </>
+      )}
+
+      {showDayEntries && (
+        <BottomSheet onClose={() => setShowDayEntries(false)} title={`${formatDate(date)} — Everything Eaten`}>
+          <div className="entry-list" style={{ gap: 16 }}>
+            {sortedEntries.map(e => (
+              e.entry_type && e.entry_type !== 'single' ? (
+                <TemplateEntryRow
+                  key={e.id}
+                  entry={e}
+                  expanded={expandedEntryId === e.id}
+                  onToggle={() => setExpandedEntryId(prev => prev === e.id ? null : e.id)}
+                  onDelete={() => setDeleteTarget(e)}
+                />
+              ) : (
+                <div key={e.id} className="entry-row">
+                  <span className="entry-name">{e.food_name}</span>
+                  <div className="entry-macros">
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
+                      <div className="lbl">kcal</div>
+                    </div>
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
+                      <div className="lbl">protein</div>
+                    </div>
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
+                      <div className="lbl">carbs</div>
+                    </div>
+                    <div className="entry-macro">
+                      <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
+                      <div className="lbl">fat</div>
+                    </div>
+                  </div>
+                  <button className="btn-icon" title="Edit" onClick={() => setEditEntry(e)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button className="btn-delete" title="Delete" onClick={() => setDeleteTarget(e)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              )
+            ))}
+          </div>
+        </BottomSheet>
       )}
 
       {editEntry && <EditModal entry={editEntry} onSave={handleEditSaved} onClose={() => setEditEntry(null)} />}

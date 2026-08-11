@@ -160,7 +160,7 @@ export default function Stats() {
 
   return (
     <div>
-      <div className="page-title">Statistics</div>
+      <div className="centered-page-title" style={{ marginBottom: 24 }}>Statistics</div>
 
       {/* Period toggle */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>

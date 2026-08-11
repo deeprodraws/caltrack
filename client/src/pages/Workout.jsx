@@ -28,6 +28,31 @@ async function fetchJson(path) {
   return res.json();
 }
 
+// ── Small inline icons (stand-ins for the ⚙ ✓ ✕ ✎ symbols used throughout) ────
+
+function IconGear({ size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  );
+}
+function IconCheck({ size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <polyline points="20,6 9,17 4,12"/>
+    </svg>
+  );
+}
+function IconXSmall({ size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  );
+}
+
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
 function todayStr() {
@@ -129,8 +154,8 @@ function RestTimerBanner({ timer, restDuration, onSkip, onChangeDuration }) {
           {restDuration}s default
           {' · '}
           <span onClick={() => setShowPicker(p => !p)}
-            style={{ cursor: 'pointer', color: 'var(--accent-light)' }}>
-            change ⚙
+            style={{ cursor: 'pointer', color: 'var(--accent-light)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            change <IconGear />
           </span>
         </div>
         {showPicker && (
@@ -531,8 +556,8 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
                         )}
                         {editing && (
                           <button key={`d${s.id}`} onClick={() => handleDeleteSetRow(ex.id, s.id)}
-                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }}>
-                            ✕
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                            <IconXSmall />
                           </button>
                         )}
                       </>
@@ -657,7 +682,7 @@ function TemplateEditorSheet({ template, onSave, onClose }) {
                   style={{ padding: '6px 4px', textAlign: 'center', borderRadius: 6, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
                 />
                 <button type="button" onClick={() => setRows(rs => rs.filter((_, j) => j !== i))}
-                  style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 16, padding: 0 }}>✕</button>
+                  style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconXSmall size={15} /></button>
               </div>
             ))}
             {showSearch ? (
@@ -752,7 +777,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
           {exercise.exercise_name}
         </div>
         <button onClick={() => onRemove(exercise.id)}
-          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, padding: '2px 4px' }}>✕</button>
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px 4px', display: 'flex', alignItems: 'center' }}><IconXSmall /></button>
       </div>
 
       {lastSession === undefined ? null : lastSession === null ? (
@@ -779,7 +804,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
               <span style={{ fontSize: 15, fontWeight: 700 }}>{s.reps}</span>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.rpe != null ? round1(s.rpe) : '—'}</span>
               <button onClick={() => handleDeleteSet(s.id)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13, padding: 0 }}>✕</button>
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconXSmall size={13} /></button>
             </div>
           ))}
         </div>
@@ -808,9 +833,10 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
           style={{ width: '100%', minWidth: 0, padding: '11px 4px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, textAlign: 'center', fontFamily: 'inherit' }}
         />
         <button onClick={handleLog} disabled={!canLog}
-          style={{ borderRadius: 8, border: 'none', fontSize: 20, fontWeight: 700, cursor: canLog ? 'pointer' : 'default',
-            background: canLog ? '#34d399' : 'var(--surface2)', color: canLog ? '#000' : 'var(--text-muted)', transition: 'all 0.15s' }}>
-          ✓
+          style={{ borderRadius: 8, border: 'none', cursor: canLog ? 'pointer' : 'default',
+            background: canLog ? '#34d399' : 'var(--surface2)', color: canLog ? '#000' : 'var(--text-muted)', transition: 'all 0.15s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <IconCheck size={18} />
         </button>
       </div>
       {!bwMode && (
@@ -1382,9 +1408,9 @@ export default function Workout() {
               <div style={{ fontWeight: 700, fontSize: 15 }}>{tmpl.name}</div>
               <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
                 <button onClick={() => setTemplateEditor(tmpl)}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, padding: '2px 6px' }}>✎</button>
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px 6px', display: 'flex', alignItems: 'center' }}><EditIcon size={14} /></button>
                 <button onClick={() => handleDeleteTemplate(tmpl.id)}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, padding: '2px 6px' }}>✕</button>
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px 6px', display: 'flex', alignItems: 'center' }}><IconXSmall /></button>
               </div>
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>

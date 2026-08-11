@@ -172,9 +172,9 @@ export default function Physique() {
 
   return (
     <div style={{ paddingBottom: 80 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div className="page-title" style={{ margin: 0 }}>Physique</div>
-        <div style={{ display: 'flex', gap: 6 }}>
+      <div style={{ position: 'relative', marginBottom: 16 }}>
+        <div className="centered-page-title">Physique</div>
+        <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 6 }}>
           {['timeline', 'progress'].map(v => (
             <button key={v} onClick={() => setView(v)} style={{
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -637,8 +637,12 @@ function Lightbox({ photo, weekNum, photoType, onClose, onDelete }) {
           )}
           <button onClick={onClose} style={{
             background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
-            borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontSize: 18, lineHeight: 1,
-          }}>✕</button>
+            borderRadius: 8, padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
       </div>
 
