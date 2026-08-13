@@ -6,12 +6,14 @@ import {
 } from '../api';
 import {
   TemplateCard, RecipeCard, TemplateEditorSheet, RecipeEditorSheet,
-  LogMealSheet, LogRecipeSheet, DeleteConfirm, MEALS_CACHE_TTL,
+  LogMealSheet, LogRecipeSheet, MEALS_CACHE_TTL,
 } from '../pages/Meals';
 import { FoodModal } from '../pages/MyFoods';
+import DeleteConfirm from './DeleteConfirm';
 import BottomSheet from './BottomSheet';
 import MealTypeIcon from './MealTypeIcon';
 import SkeletonLoader from './SkeletonLoader';
+import TabBar from './TabBar';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
@@ -23,7 +25,7 @@ const MEAL_TYPES = [
   { value: 'dinner',    label: 'Dinner' },
   { value: 'snacks',    label: 'Snacks' },
 ];
-const MEAL_TYPE_COLORS = { breakfast: '#fbbf24', lunch: '#34d399', dinner: '#6c63ff', snacks: '#fb923c' };
+const MEAL_TYPE_COLORS = { breakfast: 'var(--yellow)', lunch: 'var(--green)', dinner: 'var(--accent)', snacks: 'var(--orange)' };
 
 function todayStr() {
   const d = new Date();
@@ -52,7 +54,8 @@ function MiniMealTypeSelector({ value, onChange }) {
               border: `1px solid ${value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'var(--border)'}`,
               background: value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'transparent',
               color: value === mt.value ? (mt.value === 'breakfast' || mt.value === 'snacks' ? '#000' : '#fff') : 'var(--text-muted)',
-              fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
             }}
           ><MealTypeIcon type={mt.value} /> {mt.label}</button>
         ))}
@@ -65,13 +68,11 @@ function MiniMealTypeSelector({ value, onChange }) {
 function SavedFoodCard({ food, onLog, onEdit, onDelete }) {
   return (
     <div
+      className="hover-border"
       style={{
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 12, padding: '16px 20px', cursor: 'pointer',
-        transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
       onClick={onLog}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -101,10 +102,10 @@ function SavedFoodCard({ food, onLog, onEdit, onDelete }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13 }}>
-        <span style={{ color: '#6c63ff', fontWeight: 600 }}>{round1(food.calories)} kcal</span>
-        <span style={{ color: '#60a5fa' }}>{round1(food.protein)}g P</span>
-        <span style={{ color: '#fbbf24' }}>{round1(food.carbs)}g C</span>
-        <span style={{ color: '#fb923c' }}>{round1(food.fat)}g F</span>
+        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{round1(food.calories)} kcal</span>
+        <span style={{ color: 'var(--blue)' }}>{round1(food.protein)}g P</span>
+        <span style={{ color: 'var(--yellow)' }}>{round1(food.carbs)}g C</span>
+        <span style={{ color: 'var(--orange)' }}>{round1(food.fat)}g F</span>
       </div>
     </div>
   );
@@ -189,14 +190,14 @@ function LogFoodSheet({ food, onClose, onLogged }) {
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Totals</div>
         <div style={{ background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 10, padding: '10px 16px', display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13 }}>
-          <span style={{ color: '#6c63ff', fontWeight: 700 }}>{round1(macros.calories)} kcal</span>
-          <span style={{ color: '#60a5fa' }}>{round1(macros.protein)}g P</span>
-          <span style={{ color: '#fbbf24' }}>{round1(macros.carbs)}g C</span>
-          <span style={{ color: '#fb923c' }}>{round1(macros.fat)}g F</span>
+          <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{round1(macros.calories)} kcal</span>
+          <span style={{ color: 'var(--blue)' }}>{round1(macros.protein)}g P</span>
+          <span style={{ color: 'var(--yellow)' }}>{round1(macros.carbs)}g C</span>
+          <span style={{ color: 'var(--orange)' }}>{round1(macros.fat)}g F</span>
         </div>
       </div>
 
-      {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+      {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
       <button
         onClick={handleLog}
@@ -321,25 +322,13 @@ export default function LibraryPicker({ onClose, onLogged }) {
       expandable
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10, flexWrap: 'nowrap' }}>
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', minWidth: 0, overflowX: 'auto' }}>
-          {TABS.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              style={{
-                padding: '8px 14px', background: 'transparent', border: 'none',
-                borderBottom: `2px solid ${tab === t.key ? 'var(--accent)' : 'transparent'}`,
-                color: tab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                marginBottom: -1, transition: 'all 0.15s', flexShrink: 0, whiteSpace: 'nowrap',
-              }}
-            >{t.label}</button>
-          ))}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <TabBar tabs={TABS} active={tab} onChange={setTab} style={{ marginBottom: 0, borderBottom: 'none' }} />
         </div>
         <button
           className="btn-primary"
           type="button"
-          style={{ flexShrink: 0 }}
+          style={{ flexShrink: 0, alignSelf: 'flex-end', marginBottom: 1 }}
           onClick={() => setModal(
             tab === 'templates' ? { type: 'createTemplate' } :
             tab === 'recipes'   ? { type: 'createRecipe' } :

@@ -7,6 +7,8 @@ import Collapse from '../components/Collapse';
 import LibraryPicker from '../components/LibraryPicker';
 import BottomSheet from '../components/BottomSheet';
 import MealTypeIcon from '../components/MealTypeIcon';
+import Toast, { useToast } from '../components/Toast';
+import DeleteConfirm from '../components/DeleteConfirm';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 import { scaleMacros, buildPortionOptions } from '../utils/portions';
 
@@ -72,10 +74,10 @@ const MEAL_SECTIONS = [
 ];
 
 const MEAL_TYPE_COLORS = {
-  breakfast: '#fbbf24',
-  lunch: '#34d399',
-  dinner: '#6c63ff',
-  snacks: '#fb923c',
+  breakfast: 'var(--yellow)',
+  lunch: 'var(--green)',
+  dinner: 'var(--accent)',
+  snacks: 'var(--orange)',
 };
 
 function MealTypeSelector({ value, onChange }) {
@@ -94,7 +96,8 @@ function MealTypeSelector({ value, onChange }) {
               border: `1px solid ${value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'var(--border)'}`,
               background: value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'transparent',
               color: value === mt.value ? (mt.value === 'breakfast' || mt.value === 'snacks' ? '#000' : '#fff') : 'var(--text-muted)',
-              fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
             }}
           ><MealTypeIcon type={mt.value} /> {mt.label}</button>
         ))}
@@ -146,24 +149,24 @@ function FoodSearch({ value, onChange, onSelect, onClear }) {
         )}
       </div>
       {open && (
-        <div style={{
+        <div className="dropdown-in" style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
           background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8,
-          marginTop: 4, maxHeight: 200, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+          marginTop: 4, maxHeight: 200, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          transformOrigin: 'top',
         }}>
           {results.map(f => (
             <button
               key={f.id}
               type="button"
               onClick={() => { onSelect(f); setOpen(false); }}
+              className="hover-bg-accent"
               style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 width: '100%', padding: '9px 14px', background: 'none', border: 'none',
                 color: 'var(--text)', textAlign: 'left', cursor: 'pointer', fontSize: 14,
                 borderBottom: '1px solid var(--border)',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.12)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'none'}
             >
               <span style={{ fontWeight: 500 }}>{f.name}</span>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
@@ -304,35 +307,6 @@ function TemplateEntryRow({ entry, expanded, onToggle, onDelete }) {
   );
 }
 
-// ── Delete confirmation ────────────────────────────────────────────────────────
-function DeleteConfirm({ entry, onConfirm, onCancel }) {
-  return (
-    <BottomSheet onClose={onCancel} title="Delete entry?">
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
-            <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-          </svg>
-        </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-          Remove <strong style={{ color: 'var(--text)' }}>{entry.food_name}</strong> from your log?
-        </p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <button onClick={onCancel} style={{
-            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-            padding: '10px 20px', borderRadius: 8, fontSize: 14,
-          }}>Keep it</button>
-          <button onClick={onConfirm} style={{
-            background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
-            borderRadius: 8, fontSize: 14, fontWeight: 600,
-          }}>Delete</button>
-        </div>
-      </div>
-    </BottomSheet>
-  );
-}
-
 // ── Main FoodLog page ──────────────────────────────────────────────────────────
 export default function FoodLog() {
   const [date, setDate] = useState(todayStr());
@@ -351,6 +325,7 @@ export default function FoodLog() {
   const [showLibrary, setShowLibrary] = useState(false);
   const [showDayEntries, setShowDayEntries] = useState(false);
   const [expandedEntryId, setExpandedEntryId] = useState(null);
+  const [toast, showToast] = useToast();
   const stripRef = useRef(null);
 
   useEffect(() => {
@@ -486,6 +461,7 @@ export default function FoodLog() {
     const entry = await addEntry(payload);
     setEntries(prev => [...prev, entry]);
     invalidateFoodlogAndDashboard(date);
+    showToast('Added to log');
 
     if (saveAsTemplate && !selectedFood) {
       await createSavedFood({
@@ -510,6 +486,7 @@ export default function FoodLog() {
     setEntries(prev => [...prev, ...saved]);
     invalidateFoodlogAndDashboard(date);
     setShowScanner(false);
+    showToast(`Added ${saved.length} item${saved.length !== 1 ? 's' : ''} to log`);
   }
 
   async function handleBarcodeSave(entry) {
@@ -517,6 +494,7 @@ export default function FoodLog() {
     setEntries(prev => [...prev, saved]);
     invalidateFoodlogAndDashboard(date);
     setShowBarcode(false);
+    showToast('Added to log');
   }
 
   function handleLibraryLogged(entry) {
@@ -525,6 +503,7 @@ export default function FoodLog() {
     if (date === today) setEntries(prev => [...prev, entry]);
     invalidateFoodlogAndDashboard(today);
     setShowLibrary(false);
+    showToast('Added to log');
   }
 
   async function handleDeleteConfirmed() {
@@ -561,27 +540,23 @@ export default function FoodLog() {
         <div className="scan-btns" style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => setShowScanner(true)}
+            className="hover-border"
             style={{
               display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface)',
               border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 16px',
               borderRadius: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-              transition: 'border-color 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Photo
           </button>
           <button
             onClick={() => setShowBarcode(true)}
+            className="hover-border"
             style={{
               display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface)',
               border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 16px',
               borderRadius: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-              transition: 'border-color 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v3M21 16v3"/></svg> Barcode
           </button>
@@ -595,14 +570,12 @@ export default function FoodLog() {
           <button
             type="button"
             onClick={() => setShowLibrary(true)}
+            className="hover-border"
             style={{
               display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface2)',
               border: '1px solid var(--border)', color: 'var(--accent-light)', padding: '7px 14px',
               borderRadius: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              transition: 'border-color 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -746,23 +719,22 @@ export default function FoodLog() {
               <div
                 key={e.id}
                 onClick={() => setEditEntry(e)}
+                className="hover-border entry-card-in"
                 style={{
                   flexShrink: 0, width: 140, cursor: 'pointer',
                   background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10,
-                  padding: '12px 14px', transition: 'border-color 0.15s',
+                  padding: '12px 14px',
                 }}
-                onMouseEnter={ev => ev.currentTarget.style.borderColor = 'var(--accent)'}
-                onMouseLeave={ev => ev.currentTarget.style.borderColor = 'var(--border)'}
               >
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600,
+                  alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600,
                   overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
                   WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', minHeight: 34, marginBottom: 8,
                 }}>
                   <MealTypeIcon type={e.meal_type || 'snacks'} size={12} />
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{entryTimelineName(e)}</span>
                 </div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: '#6c63ff' }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--accent)' }}>
                   {round1(e.calories)}<span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 2 }}>kcal</span>
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>
@@ -777,10 +749,10 @@ export default function FoodLog() {
               <span style={{ fontWeight: 600, fontSize: 14 }}>Daily Total</span>
               <div className="daily-totals">
                 {[
-                  { label: 'Calories', val: round1(totalCals), unit: 'kcal', color: '#6c63ff' },
-                  { label: 'Protein', val: round1(totalProtein), unit: 'g', color: '#60a5fa' },
-                  { label: 'Carbs', val: round1(totalCarbs), unit: 'g', color: '#fbbf24' },
-                  { label: 'Fat', val: round1(totalFat), unit: 'g', color: '#fb923c' },
+                  { label: 'Calories', val: round1(totalCals), unit: 'kcal', color: 'var(--accent)' },
+                  { label: 'Protein', val: round1(totalProtein), unit: 'g', color: 'var(--blue)' },
+                  { label: 'Carbs', val: round1(totalCarbs), unit: 'g', color: 'var(--yellow)' },
+                  { label: 'Fat', val: round1(totalFat), unit: 'g', color: 'var(--orange)' },
                 ].map(m => (
                   <div key={m.label} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.val}<span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 1 }}>{m.unit}</span></div>
@@ -810,19 +782,19 @@ export default function FoodLog() {
                   <span className="entry-name">{e.food_name}</span>
                   <div className="entry-macros">
                     <div className="entry-macro">
-                      <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
+                      <div className="val" style={{ color: 'var(--accent)' }}>{round1(e.calories)}</div>
                       <div className="lbl">kcal</div>
                     </div>
                     <div className="entry-macro">
-                      <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
+                      <div className="val" style={{ color: 'var(--blue)' }}>{round1(e.protein)}g</div>
                       <div className="lbl">protein</div>
                     </div>
                     <div className="entry-macro">
-                      <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
+                      <div className="val" style={{ color: 'var(--yellow)' }}>{round1(e.carbs)}g</div>
                       <div className="lbl">carbs</div>
                     </div>
                     <div className="entry-macro">
-                      <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
+                      <div className="val" style={{ color: 'var(--orange)' }}>{round1(e.fat)}g</div>
                       <div className="lbl">fat</div>
                     </div>
                   </div>
@@ -845,10 +817,18 @@ export default function FoodLog() {
       )}
 
       {editEntry && <EditModal entry={editEntry} onSave={handleEditSaved} onClose={() => setEditEntry(null)} />}
-      {deleteTarget && <DeleteConfirm entry={deleteTarget} onConfirm={handleDeleteConfirmed} onCancel={() => setDeleteTarget(null)} />}
+      {deleteTarget && (
+        <DeleteConfirm
+          title="Delete entry?"
+          text={<>Remove <strong style={{ color: 'var(--text)' }}>{deleteTarget.food_name}</strong> from your log?</>}
+          onConfirm={handleDeleteConfirmed}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
       {showScanner && <PhotoScanner date={date} onSave={handleScanSave} onClose={() => setShowScanner(false)} />}
       {showBarcode && <BarcodeScanner date={date} onSave={handleBarcodeSave} onClose={() => setShowBarcode(false)} />}
       {showLibrary && <LibraryPicker onClose={() => setShowLibrary(false)} onLogged={handleLibraryLogged} />}
+      <Toast toast={toast} />
     </div>
   );
 }

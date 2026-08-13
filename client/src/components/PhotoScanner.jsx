@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { scanFood } from '../api';
 import BottomSheet from './BottomSheet';
 
-const CONFIDENCE_COLOR = { high: '#34d399', medium: '#fbbf24', low: '#f87171' };
+const CONFIDENCE_COLOR = { high: 'var(--green)', medium: 'var(--yellow)', low: 'var(--red)' };
 const CONFIDENCE_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' };
 
 function round1(value) {
@@ -159,14 +159,13 @@ export default function PhotoScanner({ date, onSave, onClose }) {
 
               <button
                 onClick={() => cameraRef.current?.click()}
+                className="hover-border"
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   gap: 10, padding: '28px 24px', background: 'var(--surface2)',
                   border: '2px dashed var(--border)', borderRadius: 12, cursor: 'pointer',
-                  color: 'var(--text)', transition: 'border-color 0.15s', width: '100%',
+                  color: 'var(--text)', width: '100%',
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
                 <IconCamera size={32} />
                 <div>
@@ -177,14 +176,12 @@ export default function PhotoScanner({ date, onSave, onClose }) {
 
               <button
                 onClick={() => galleryRef.current?.click()}
+                className="hover-border"
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px',
                   background: 'var(--surface2)', border: '1px solid var(--border)',
-                  borderRadius: 12, cursor: 'pointer', color: 'var(--text)',
-                  transition: 'border-color 0.15s', width: '100%',
+                  borderRadius: 12, cursor: 'pointer', color: 'var(--text)', width: '100%',
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
                 <IconImage size={24} />
                 <div style={{ textAlign: 'left' }}>
@@ -222,7 +219,7 @@ export default function PhotoScanner({ date, onSave, onClose }) {
                 background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)',
                 borderRadius: 10, padding: '14px 18px', marginBottom: 20, textAlign: 'left',
               }}>
-                <div style={{ color: '#f87171', fontWeight: 600, marginBottom: 4, fontSize: 14 }}>Error</div>
+                <div style={{ color: 'var(--red)', fontWeight: 600, marginBottom: 4, fontSize: 14 }}>Error</div>
                 <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{error}</div>
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
@@ -283,10 +280,10 @@ export default function PhotoScanner({ date, onSave, onClose }) {
 
                     {/* Macro inputs */}
                     <div className="modal-macros">
-                      <MacroInput label="Calories" value={item.calories} onChange={v => updateItem(item.id, 'calories', v)} color="#6c63ff" />
-                      <MacroInput label="Protein g" value={item.protein} onChange={v => updateItem(item.id, 'protein', v)} color="#60a5fa" />
-                      <MacroInput label="Carbs g" value={item.carbs} onChange={v => updateItem(item.id, 'carbs', v)} color="#fbbf24" />
-                      <MacroInput label="Fat g" value={item.fat} onChange={v => updateItem(item.id, 'fat', v)} color="#fb923c" />
+                      <MacroInput label="Calories" value={item.calories} onChange={v => updateItem(item.id, 'calories', v)} color="var(--accent)" />
+                      <MacroInput label="Protein g" value={item.protein} onChange={v => updateItem(item.id, 'protein', v)} color="var(--blue)" />
+                      <MacroInput label="Carbs g" value={item.carbs} onChange={v => updateItem(item.id, 'carbs', v)} color="var(--yellow)" />
+                      <MacroInput label="Fat g" value={item.fat} onChange={v => updateItem(item.id, 'fat', v)} color="var(--orange)" />
                     </div>
                   </div>
                 ))}
@@ -310,10 +307,10 @@ export default function PhotoScanner({ date, onSave, onClose }) {
                     return (
                       <>
                         <span>{inc.length} item{inc.length !== 1 ? 's' : ''} selected</span>
-                        <span style={{ color: '#6c63ff', fontWeight: 600 }}>{round1(totals.cal)} kcal</span>
-                        <span style={{ color: '#60a5fa' }}>{round1(totals.p)}g protein</span>
-                        <span style={{ color: '#fbbf24' }}>{round1(totals.c)}g carbs</span>
-                        <span style={{ color: '#fb923c' }}>{round1(totals.f)}g fat</span>
+                        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{round1(totals.cal)} kcal</span>
+                        <span style={{ color: 'var(--blue)' }}>{round1(totals.p)}g protein</span>
+                        <span style={{ color: 'var(--yellow)' }}>{round1(totals.c)}g carbs</span>
+                        <span style={{ color: 'var(--orange)' }}>{round1(totals.f)}g fat</span>
                       </>
                     );
                   })()}

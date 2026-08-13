@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { getGoals, updateGoals, updateProfile, migrateLegacyData } from '../api';
 import { useAuth } from '../context/AuthContext';
+import Toast, { useToast } from '../components/Toast';
 
 export default function Settings() {
   const { user, logout } = useAuth();
   const [form, setForm] = useState({ calories: '', protein: '', carbs: '', fat: '', weight_unit: 'lbs' });
-  const [saved, setSaved] = useState(false);
+  const [toast, showToast] = useToast();
   const [loading, setLoading] = useState(true);
 
   const [profileForm, setProfileForm] = useState({ display_name: '', current_password: '', new_password: '' });
@@ -40,8 +41,7 @@ export default function Settings() {
       fat: Number(form.fat),
       weight_unit: form.weight_unit,
     });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    showToast('Settings saved');
   }
 
   async function handleProfileSubmit(e) {
@@ -139,7 +139,7 @@ export default function Settings() {
               {profileSaving ? 'Saving…' : 'Save Profile'}
             </button>
             {profileMsg && (
-              <span style={{ fontSize: 13, color: profileMsg.type === 'ok' ? 'var(--accent)' : '#f87171' }}>
+              <span style={{ fontSize: 13, color: profileMsg.type === 'ok' ? 'var(--accent)' : 'var(--red)' }}>
                 {profileMsg.text}
               </span>
             )}
@@ -156,10 +156,10 @@ export default function Settings() {
 
             <div className="settings-grid">
               {[
-                { key: 'calories', label: 'Calories (kcal)', color: '#6c63ff', min: 500, max: 10000 },
-                { key: 'protein', label: 'Protein (g)', color: '#60a5fa', min: 0, max: 500 },
-                { key: 'carbs', label: 'Carbohydrates (g)', color: '#fbbf24', min: 0, max: 1000 },
-                { key: 'fat', label: 'Fat (g)', color: '#fb923c', min: 0, max: 500 },
+                { key: 'calories', label: 'Calories (kcal)', color: 'var(--accent)', min: 500, max: 10000 },
+                { key: 'protein', label: 'Protein (g)', color: 'var(--blue)', min: 0, max: 500 },
+                { key: 'carbs', label: 'Carbohydrates (g)', color: 'var(--yellow)', min: 0, max: 1000 },
+                { key: 'fat', label: 'Fat (g)', color: 'var(--orange)', min: 0, max: 500 },
               ].map(({ key, label, color, min, max }) => (
                 <div key={key} className="settings-field">
                   <label style={{ color }}>{label}</label>
@@ -180,14 +180,6 @@ export default function Settings() {
 
           <div style={{ display: 'flex', alignItems: 'center', marginTop: 24 }}>
             <button className="btn-save" type="submit">Save Settings</button>
-            {saved && (
-              <span className="toast">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20,6 9,17 4,12"/>
-                </svg>
-                Saved
-              </span>
-            )}
           </div>
         </form>
 
@@ -218,7 +210,7 @@ export default function Settings() {
             {migrating ? 'Importing…' : 'Import my existing data'}
           </button>
           {migrateMsg && (
-            <p style={{ marginTop: 12, fontSize: 13, color: migrateMsg.type === 'ok' ? 'var(--accent)' : '#f87171' }}>
+            <p style={{ marginTop: 12, fontSize: 13, color: migrateMsg.type === 'ok' ? 'var(--accent)' : 'var(--red)' }}>
               {migrateMsg.text}
             </p>
           )}
@@ -233,12 +225,13 @@ export default function Settings() {
             className="btn-save"
             type="button"
             onClick={logout}
-            style={{ background: '#ef4444', marginTop: 8 }}
+            style={{ background: 'var(--red)', marginTop: 8 }}
           >
             Sign out
           </button>
         </div>
       </div>
+      <Toast toast={toast} />
     </div>
   );
 }

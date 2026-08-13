@@ -45,10 +45,11 @@ function PillBtn({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
       padding: '6px 14px', borderRadius: 99, border: '1px solid', fontSize: 12,
-      fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
-      background: active ? '#6c63ff' : 'transparent',
-      borderColor: active ? '#6c63ff' : '#2e3250',
-      color: active ? '#fff' : '#7c82a0',
+      fontWeight: 600, cursor: 'pointer',
+      transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+      background: active ? 'var(--accent)' : 'transparent',
+      borderColor: active ? 'var(--accent)' : 'var(--border)',
+      color: active ? '#fff' : 'var(--text-muted)',
     }}>{label}</button>
   );
 }
@@ -57,7 +58,7 @@ function EmptyChart({ message }) {
   return (
     <div style={{
       height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#22263a', borderRadius: 10, color: '#7c82a0', fontSize: 14, textAlign: 'center',
+      background: 'var(--surface2)', borderRadius: 10, color: 'var(--text-muted)', fontSize: 14, textAlign: 'center',
       padding: '0 24px',
     }}>{message}</div>
   );
@@ -141,9 +142,9 @@ export default function Stats() {
   const calTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length || payload[0].value == null) return null;
     return (
-      <div style={{ background: '#1a1d27', border: '1px solid #2e3250', borderRadius: 8, padding: '8px 12px', fontSize: 13 }}>
-        <div style={{ color: '#7c82a0', marginBottom: 3 }}>{label}</div>
-        <div style={{ color: '#6c63ff', fontWeight: 600 }}>{Math.round(payload[0].value).toLocaleString()} kcal</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', fontSize: 13 }}>
+        <div style={{ color: 'var(--text-muted)', marginBottom: 3 }}>{label}</div>
+        <div style={{ color: 'var(--accent)', fontWeight: 600 }}>{Math.round(payload[0].value).toLocaleString()} kcal</div>
       </div>
     );
   };
@@ -151,9 +152,9 @@ export default function Stats() {
   const weightTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length || payload[0].value == null) return null;
     return (
-      <div style={{ background: '#1a1d27', border: '1px solid #2e3250', borderRadius: 8, padding: '8px 12px', fontSize: 13 }}>
-        <div style={{ color: '#7c82a0', marginBottom: 3 }}>{label}</div>
-        <div style={{ color: '#60a5fa', fontWeight: 600 }}>{payload[0].value} {unit}</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', fontSize: 13 }}>
+        <div style={{ color: 'var(--text-muted)', marginBottom: 3 }}>{label}</div>
+        <div style={{ color: 'var(--blue)', fontWeight: 600 }}>{payload[0].value} {unit}</div>
       </div>
     );
   };
@@ -170,14 +171,14 @@ export default function Stats() {
 
       {/* ── Calories ── */}
       <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#7c82a0', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 10 }}>Calories</div>
+        <div className="eyebrow" style={{ marginBottom: 10 }}>Calories</div>
         {daysLogged > 0 ? (
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 26, fontWeight: 700, color: '#6c63ff' }}>{calAvg.toLocaleString()}</span>
-            <span style={{ fontSize: 13, color: '#7c82a0' }}>avg kcal/day · {daysLogged}/{period} days logged</span>
+            <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--accent)' }}>{calAvg.toLocaleString()}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>avg kcal/day · {daysLogged}/{period} days logged</span>
           </div>
         ) : (
-          <p style={{ color: '#7c82a0', fontSize: 14, marginBottom: 12 }}>No food logged in this period.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 12 }}>No food logged in this period.</p>
         )}
 
         {daysLogged < 2 ? (
@@ -186,18 +187,19 @@ export default function Stats() {
           <>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={calorieData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e3250" vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false} interval={period === 7 ? 0 : 4} />
-                <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={period === 7 ? 0 : 4} />
+                <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}
                   tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} />
                 <Tooltip content={calTooltip} />
-                <ReferenceLine y={goals.calories} stroke="#34d399" strokeDasharray="4 3" strokeWidth={1.5} />
-                <Line type="monotone" dataKey="calories" stroke="#6c63ff" strokeWidth={2}
-                  dot={{ fill: '#6c63ff', r: 3, strokeWidth: 0 }} activeDot={{ r: 5 }} connectNulls={false} />
+                <ReferenceLine y={goals.calories} stroke="var(--green)" strokeDasharray="4 3" strokeWidth={1.5} />
+                <Line type="monotone" dataKey="calories" stroke="var(--accent)" strokeWidth={2}
+                  dot={{ fill: 'var(--accent)', r: 3, strokeWidth: 0 }} activeDot={{ r: 5 }} connectNulls={false}
+                  isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div style={{ marginTop: 6, fontSize: 11, color: '#7c82a0', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ display: 'inline-block', width: 20, borderTop: '2px dashed #34d399' }} />
+            <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ display: 'inline-block', width: 20, borderTop: 'var(--green) 2px dashed' }} />
               Goal: {goals.calories.toLocaleString()} kcal
             </div>
           </>
@@ -206,27 +208,27 @@ export default function Stats() {
 
       {/* ── Macros ── */}
       <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#7c82a0', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14 }}>
+        <div className="eyebrow" style={{ marginBottom: 14 }}>
           Avg Daily Macros · {period} days
         </div>
         {daysLogged === 0 ? (
-          <p style={{ color: '#7c82a0', fontSize: 14 }}>No data for this period.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No data for this period.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              { label: 'Protein', val: macroAvg.protein, goal: goals.protein, color: '#60a5fa' },
-              { label: 'Carbs',   val: macroAvg.carbs,   goal: goals.carbs,   color: '#fbbf24' },
-              { label: 'Fat',     val: macroAvg.fat,     goal: goals.fat,     color: '#fb923c' },
+              { label: 'Protein', val: macroAvg.protein, goal: goals.protein, color: 'var(--blue)' },
+              { label: 'Carbs',   val: macroAvg.carbs,   goal: goals.carbs,   color: 'var(--yellow)' },
+              { label: 'Fat',     val: macroAvg.fat,     goal: goals.fat,     color: 'var(--orange)' },
             ].map(({ label, val, goal, color }) => (
               <div key={label}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 500 }}>{label}</span>
-                  <span style={{ fontSize: 13, color: '#7c82a0' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                     <strong style={{ color }}>{val}g</strong> / {goal}g
                   </span>
                 </div>
                 <div className="progress-wrap">
-                  <div className="progress-bar" style={{ width: `${Math.min((val / goal) * 100, 100)}%`, background: color }} />
+                  <div className="progress-bar" style={{ '--pct': goal > 0 ? Math.min(val / goal, 1) : 0, background: color }} />
                 </div>
               </div>
             ))}
@@ -237,7 +239,7 @@ export default function Stats() {
       {/* ── Weight ── */}
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#7c82a0', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Weight</div>
+          <div className="eyebrow">Weight</div>
           <div style={{ display: 'flex', gap: 6 }}>
             <PillBtn label="30 Days" active={weightPeriod === 30} onClick={() => setWeightPeriod(30)} />
             <PillBtn label="All Time" active={weightPeriod === 0} onClick={() => setWeightPeriod(0)} />
@@ -247,16 +249,16 @@ export default function Stats() {
         {weightSummary.current != null && (
           <div style={{ display: 'flex', gap: 24, marginBottom: 14, flexWrap: 'wrap' }}>
             <div>
-              <div style={{ fontSize: 11, color: '#7c82a0', letterSpacing: '0.5px', marginBottom: 2 }}>CURRENT</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.5px', marginBottom: 2 }}>CURRENT</div>
               <div style={{ fontSize: 24, fontWeight: 700 }}>
-                {weightSummary.current} <span style={{ fontSize: 14, fontWeight: 400, color: '#7c82a0' }}>{unit}</span>
+                {weightSummary.current} <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span>
               </div>
             </div>
             {weightSummary.change != null && (
               <div>
-                <div style={{ fontSize: 11, color: '#7c82a0', letterSpacing: '0.5px', marginBottom: 2 }}>CHANGE</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.5px', marginBottom: 2 }}>CHANGE</div>
                 <div style={{ fontSize: 24, fontWeight: 700,
-                  color: weightSummary.change < 0 ? '#34d399' : weightSummary.change > 0 ? '#f87171' : '#7c82a0' }}>
+                  color: weightSummary.change < 0 ? 'var(--green)' : weightSummary.change > 0 ? 'var(--red)' : 'var(--text-muted)' }}>
                   {weightSummary.change > 0 ? '+' : ''}{weightSummary.change} <span style={{ fontSize: 14, fontWeight: 400 }}>{unit}</span>
                 </div>
               </div>
@@ -271,14 +273,15 @@ export default function Stats() {
         ) : (
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={weightData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2e3250" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}
                 interval="preserveStartEnd" />
-              <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}
+              <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}
                 domain={['auto', 'auto']} />
               <Tooltip content={weightTooltip} />
-              <Line type="monotone" dataKey="weight" stroke="#60a5fa" strokeWidth={2}
-                dot={{ fill: '#60a5fa', r: 3, strokeWidth: 0 }} activeDot={{ r: 5 }} connectNulls />
+              <Line type="monotone" dataKey="weight" stroke="var(--blue)" strokeWidth={2}
+                dot={{ fill: 'var(--blue)', r: 3, strokeWidth: 0 }} activeDot={{ r: 5 }} connectNulls
+                isAnimationActive={false} />
             </LineChart>
           </ResponsiveContainer>
         )}

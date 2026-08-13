@@ -7,6 +7,9 @@ import {
 } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
 import BottomSheet from '../components/BottomSheet';
+import TabBar from '../components/TabBar';
+import Toast, { useToast } from '../components/Toast';
+import DeleteConfirm from '../components/DeleteConfirm';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
 export const MEALS_CACHE_TTL = 300000; // 5 minutes
@@ -29,10 +32,10 @@ const MEAL_TYPES = [
 ];
 
 const MEAL_TYPE_COLORS = {
-  breakfast: '#fbbf24',
-  lunch: '#34d399',
-  dinner: '#6c63ff',
-  snacks: '#fb923c',
+  breakfast: 'var(--yellow)',
+  lunch: 'var(--green)',
+  dinner: 'var(--accent)',
+  snacks: 'var(--orange)',
 };
 
 function newIngredient() {
@@ -100,7 +103,8 @@ function MealTypeSelector({ value, onChange }) {
               border: `1px solid ${value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'var(--border)'}`,
               background: value === mt.value ? MEAL_TYPE_COLORS[mt.value] : 'transparent',
               color: value === mt.value ? (mt.value === 'breakfast' || mt.value === 'snacks' ? '#000' : '#fff') : 'var(--text-muted)',
-              fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
             }}
           >{mt.label}</button>
         ))}
@@ -116,10 +120,10 @@ function MacroSummaryBar({ cal, p, c, f }) {
       borderRadius: 10, padding: '10px 16px', display: 'flex', gap: 14, flexWrap: 'wrap',
       fontSize: 13, marginBottom: 16,
     }}>
-      <span style={{ color: '#6c63ff', fontWeight: 700 }}>{round1(cal)} kcal</span>
-      <span style={{ color: '#60a5fa' }}>{round1(p)}g P</span>
-      <span style={{ color: '#fbbf24' }}>{round1(c)}g C</span>
-      <span style={{ color: '#fb923c' }}>{round1(f)}g F</span>
+      <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{round1(cal)} kcal</span>
+      <span style={{ color: 'var(--blue)' }}>{round1(p)}g P</span>
+      <span style={{ color: 'var(--yellow)' }}>{round1(c)}g C</span>
+      <span style={{ color: 'var(--orange)' }}>{round1(f)}g F</span>
     </div>
   );
 }
@@ -142,7 +146,7 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
   }
 
   return (
-    <div style={{
+    <div className="ingredient-row-in" style={{
       background: 'var(--surface2)', border: '1px solid var(--border)',
       borderRadius: 10, padding: '12px 14px', marginBottom: 10,
     }}>
@@ -163,7 +167,7 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
           onClick={onDelete}
           style={{
             width: 34, height: 34, background: 'rgba(248,113,113,0.1)',
-            border: 'none', borderRadius: 8, color: '#f87171',
+            border: 'none', borderRadius: 8, color: 'var(--red)',
             fontSize: 18, lineHeight: 1, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}
@@ -213,10 +217,10 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
         {isReadonlyMacros ? (
           <div style={{ flex: 1, display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 20 }}>
             {[
-              { label: 'kcal', val: ing.calories, color: '#6c63ff' },
-              { label: 'P', val: ing.protein, color: '#60a5fa' },
-              { label: 'C', val: ing.carbs, color: '#fbbf24' },
-              { label: 'F', val: ing.fat, color: '#fb923c' },
+              { label: 'kcal', val: ing.calories, color: 'var(--accent)' },
+              { label: 'P', val: ing.protein, color: 'var(--blue)' },
+              { label: 'C', val: ing.carbs, color: 'var(--yellow)' },
+              { label: 'F', val: ing.fat, color: 'var(--orange)' },
             ].map(m => (
               <div key={m.label} style={{ textAlign: 'center', minWidth: 38 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: m.color, lineHeight: 1 }}>
@@ -229,10 +233,10 @@ function IngredientEditorRow({ ing, onChange, onDelete, memoryHint, isReadonlyMa
         ) : (
           <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {[
-              { key: 'calories', label: 'kcal', color: '#6c63ff' },
-              { key: 'protein',  label: 'P (g)', color: '#60a5fa' },
-              { key: 'carbs',    label: 'C (g)', color: '#fbbf24' },
-              { key: 'fat',      label: 'F (g)', color: '#fb923c' },
+              { key: 'calories', label: 'kcal', color: 'var(--accent)' },
+              { key: 'protein',  label: 'P (g)', color: 'var(--blue)' },
+              { key: 'carbs',    label: 'C (g)', color: 'var(--yellow)' },
+              { key: 'fat',      label: 'F (g)', color: 'var(--orange)' },
             ].map(m => (
               <div key={m.key}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{m.label}</div>
@@ -310,39 +314,18 @@ function IngredientEditor({ ingredients, onChange, mode = 'edit' }) {
       <button
         type="button"
         onClick={addIngredient}
+        className="hover-dashed"
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           width: '100%', padding: '11px', background: 'transparent',
           border: '1px dashed var(--border)', borderRadius: 10,
           color: 'var(--accent-light)', fontSize: 14, fontWeight: 500,
-          cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+          cursor: 'pointer', fontFamily: 'inherit',
         }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'rgba(108,99,255,0.06)'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent'; }}
       >
         + Add Ingredient
       </button>
     </div>
-  );
-}
-
-export function DeleteConfirm({ title, text, onConfirm, onCancel }) {
-  return (
-    <BottomSheet onClose={onCancel} title={title}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
-            <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-          </svg>
-        </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>{text}</p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <button onClick={onCancel} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
-          <button onClick={onConfirm} style={{ background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}>Delete</button>
-        </div>
-      </div>
-    </BottomSheet>
   );
 }
 
@@ -416,7 +399,7 @@ export function TemplateEditorSheet({ template, onSave, onClose }) {
           </div>
         )}
 
-        {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+        {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
         <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
           <button type="button" onClick={onClose} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
@@ -485,7 +468,7 @@ export function LogMealSheet({ template, onClose, onLogged }) {
         </div>
       )}
 
-      {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+      {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
       <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
         This will log as a single entry in your food log
@@ -600,7 +583,7 @@ export function RecipeEditorSheet({ recipe, onSave, onClose }) {
           </div>
         )}
 
-        {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+        {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
         <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
           <button type="button" onClick={onClose} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '11px 18px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}>Cancel</button>
@@ -654,10 +637,10 @@ export function LogRecipeSheet({ recipe, onClose, onLogged }) {
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Per serving</div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {[
-            { label: 'kcal', val: round1(recipe.cal_per_serving), color: '#6c63ff' },
-            { label: 'protein', val: `${round1(recipe.protein_per_serving)}g`, color: '#60a5fa' },
-            { label: 'carbs', val: `${round1(recipe.carbs_per_serving)}g`, color: '#fbbf24' },
-            { label: 'fat', val: `${round1(recipe.fat_per_serving)}g`, color: '#fb923c' },
+            { label: 'kcal', val: round1(recipe.cal_per_serving), color: 'var(--accent)' },
+            { label: 'protein', val: `${round1(recipe.protein_per_serving)}g`, color: 'var(--blue)' },
+            { label: 'carbs', val: `${round1(recipe.carbs_per_serving)}g`, color: 'var(--yellow)' },
+            { label: 'fat', val: `${round1(recipe.fat_per_serving)}g`, color: 'var(--orange)' },
           ].map(m => (
             <div key={m.label} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.val}</div>
@@ -688,7 +671,7 @@ export function LogRecipeSheet({ recipe, onClose, onLogged }) {
         </div>
       )}
 
-      {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+      {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
       <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
         This will log as a single entry in your food log
@@ -715,13 +698,11 @@ export function TemplateCard({ tmpl, onLog, onEdit, onDelete }) {
   const color = MEAL_TYPE_COLORS[tmpl.meal_type] || 'var(--accent)';
   return (
     <div
+      className="hover-border"
       style={{
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 12, padding: '16px 20px', cursor: 'pointer',
-        transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
       onClick={onLog}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -760,13 +741,11 @@ export function TemplateCard({ tmpl, onLog, onEdit, onDelete }) {
 export function RecipeCard({ recipe, onLog, onEdit, onDelete }) {
   return (
     <div
+      className="hover-border"
       style={{
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 12, padding: '16px 20px', cursor: 'pointer',
-        transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
       onClick={onLog}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -791,10 +770,10 @@ export function RecipeCard({ recipe, onLog, onEdit, onDelete }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13 }}>
-        <span style={{ color: '#6c63ff', fontWeight: 600 }}>{round1(recipe.cal_per_serving)} kcal / srv</span>
-        <span style={{ color: '#60a5fa' }}>{round1(recipe.protein_per_serving)}g P</span>
-        <span style={{ color: '#fbbf24' }}>{round1(recipe.carbs_per_serving)}g C</span>
-        <span style={{ color: '#fb923c' }}>{round1(recipe.fat_per_serving)}g F</span>
+        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{round1(recipe.cal_per_serving)} kcal / srv</span>
+        <span style={{ color: 'var(--blue)' }}>{round1(recipe.protein_per_serving)}g P</span>
+        <span style={{ color: 'var(--yellow)' }}>{round1(recipe.carbs_per_serving)}g C</span>
+        <span style={{ color: 'var(--orange)' }}>{round1(recipe.fat_per_serving)}g F</span>
         <span style={{ color: 'var(--text-muted)' }}>· {round1(recipe.total_servings)} srv total</span>
       </div>
     </div>
@@ -810,7 +789,7 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
-  const [toast, setToast] = useState('');
+  const [toast, showToast] = useToast();
 
   useEffect(() => {
     const cachedT = getCached('meals-templates', MEALS_CACHE_TTL);
@@ -832,11 +811,6 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
       if (!cachedR) setCached('meals-recipes', r);
     });
   }, []);
-
-  function showToast(msg) {
-    setToast(msg);
-    setTimeout(() => setToast(''), 2500);
-  }
 
   // ── Template handlers ──────────────────────────────────────────────────────
   async function openLogMeal(tmpl) {
@@ -920,24 +894,14 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
 
       {/* Tab bar — standalone mode only; Library provides its own tabs */}
       {!embedded && (
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
-          {[
+        <TabBar
+          tabs={[
             { key: 'templates', label: 'Meal Templates' },
             { key: 'recipes',   label: 'Recipes' },
-          ].map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              style={{
-                padding: '10px 20px', background: 'transparent', border: 'none',
-                borderBottom: `2px solid ${effectiveTab === t.key ? 'var(--accent)' : 'transparent'}`,
-                color: effectiveTab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                marginBottom: -1, transition: 'all 0.15s',
-              }}
-            >{t.label}</button>
-          ))}
-        </div>
+          ]}
+          active={effectiveTab}
+          onChange={setTab}
+        />
       )}
 
       {loading ? (
@@ -982,20 +946,7 @@ export default function Meals({ embedded = false, activeTab: controlledTab = nul
         )
       )}
 
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', bottom: 'calc(var(--bottom-nav-h) + 16px)', left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--green)', color: '#000', fontWeight: 600, fontSize: 14,
-          padding: '10px 20px', borderRadius: 99, zIndex: 2000, whiteSpace: 'nowrap',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: 7,
-        }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20,6 9,17 4,12"/>
-          </svg>
-          {toast}
-        </div>
-      )}
+      <Toast toast={toast} />
 
       {/* ── Modals ── */}
       {(modal?.type === 'createTemplate' || modal?.type === 'editTemplate') && (

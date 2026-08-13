@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import MyFoods from './MyFoods';
 import Meals from './Meals';
+import TabBar from '../components/TabBar';
 
 const TABS = [
   { key: 'foods',     label: 'Saved Foods' },
@@ -15,22 +16,7 @@ export default function Library() {
     <div>
       <div className="page-title">Library</div>
 
-      {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            style={{
-              padding: '10px 18px', background: 'transparent', border: 'none',
-              borderBottom: `2px solid ${tab === t.key ? 'var(--accent)' : 'transparent'}`,
-              color: tab === t.key ? 'var(--accent-light)' : 'var(--text-muted)',
-              fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              marginBottom: -1, transition: 'all 0.15s',
-            }}
-          >{t.label}</button>
-        ))}
-      </div>
+      <TabBar tabs={TABS} active={tab} onChange={setTab} />
 
       {/* Saved Foods tab */}
       {tab === 'foods' && <MyFoods embedded />}

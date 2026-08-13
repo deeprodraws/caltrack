@@ -337,10 +337,10 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
                   Nutrition per 100g
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <NutritionInput label="Calories" value={nutrition.calories} onChange={v => setNutrition(n => ({ ...n, calories: v }))} color="#6c63ff" unit="kcal" />
-                  <NutritionInput label="Protein" value={nutrition.protein} onChange={v => setNutrition(n => ({ ...n, protein: v }))} color="#60a5fa" />
-                  <NutritionInput label="Carbs" value={nutrition.carbs} onChange={v => setNutrition(n => ({ ...n, carbs: v }))} color="#fbbf24" />
-                  <NutritionInput label="Fat" value={nutrition.fat} onChange={v => setNutrition(n => ({ ...n, fat: v }))} color="#fb923c" />
+                  <NutritionInput label="Calories" value={nutrition.calories} onChange={v => setNutrition(n => ({ ...n, calories: v }))} color="var(--accent)" unit="kcal" />
+                  <NutritionInput label="Protein" value={nutrition.protein} onChange={v => setNutrition(n => ({ ...n, protein: v }))} color="var(--blue)" />
+                  <NutritionInput label="Carbs" value={nutrition.carbs} onChange={v => setNutrition(n => ({ ...n, carbs: v }))} color="var(--yellow)" />
+                  <NutritionInput label="Fat" value={nutrition.fat} onChange={v => setNutrition(n => ({ ...n, fat: v }))} color="var(--orange)" />
                 </div>
               </div>
 
@@ -402,12 +402,12 @@ export default function BarcodeScanner({ date, onSave, onClose }) {
           {/* Error */}
           {phase === 'error' && (
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: '#f87171' }}><IconWarning size={32} /></div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--red)' }}><IconWarning size={32} /></div>
               <div style={{
                 background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)',
                 borderRadius: 10, padding: '14px 18px', marginBottom: 20, textAlign: 'left',
               }}>
-                <div style={{ color: '#f87171', fontWeight: 600, marginBottom: 4, fontSize: 14 }}>Error</div>
+                <div style={{ color: 'var(--red)', fontWeight: 600, marginBottom: 4, fontSize: 14 }}>Error</div>
                 <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{error}</div>
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>

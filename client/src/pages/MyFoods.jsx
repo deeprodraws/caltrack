@@ -3,6 +3,7 @@ import { getSavedFoods, createSavedFood, updateSavedFood, deleteSavedFood } from
 import BarcodeScanner from '../components/BarcodeScanner';
 import BottomSheet from '../components/BottomSheet';
 import SkeletonLoader from '../components/SkeletonLoader';
+import DeleteConfirm from '../components/DeleteConfirm';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
 const SAVED_FOODS_CACHE_TTL = 300000; // 5 minutes
@@ -44,7 +45,7 @@ function PortionsEditor({ portions, onChange }) {
           />
           <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>g</span>
           <button type="button" onClick={() => removeRow(i)}
-            style={{ width: 30, height: 30, background: 'rgba(248,113,113,0.1)', border: 'none', borderRadius: 8, color: '#f87171', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>×</button>
+            style={{ width: 30, height: 30, background: 'rgba(248,113,113,0.1)', border: 'none', borderRadius: 8, color: 'var(--red)', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>×</button>
         </div>
       ))}
       <button type="button" onClick={() => onChange([...portions, newPortion()])}
@@ -160,35 +161,6 @@ export function FoodModal({ food, onSave, onClose }) {
   );
 }
 
-function DeleteConfirm({ food, onConfirm, onCancel }) {
-  return (
-    <BottomSheet onClose={onCancel} title="Delete food template?">
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/>
-            <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-          </svg>
-        </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-          Remove <strong style={{ color: 'var(--text)' }}>{food.name}</strong> from your saved foods?<br />
-          <span style={{ fontSize: 12 }}>This won't affect existing log entries.</span>
-        </p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <button onClick={onCancel} style={{
-            background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)',
-            padding: '10px 20px', borderRadius: 8, fontSize: 14,
-          }}>Cancel</button>
-          <button onClick={onConfirm} style={{
-            background: '#f87171', color: '#fff', border: 'none', padding: '10px 20px',
-            borderRadius: 8, fontSize: 14, fontWeight: 600,
-          }}>Delete</button>
-        </div>
-      </div>
-    </BottomSheet>
-  );
-}
-
 export default function MyFoods({ embedded = false }) {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -253,14 +225,12 @@ export default function MyFoods({ embedded = false }) {
           <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>+ Add Food</button>
           <button
             onClick={() => setShowBarcode(true)}
+            className="hover-opacity"
             style={{
               display: 'flex', alignItems: 'center', gap: 7, background: 'var(--accent)',
               color: '#fff', border: 'none', padding: '9px 16px',
               borderRadius: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              transition: 'opacity 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v3M21 16v3"/></svg> Scan
           </button>
@@ -299,19 +269,19 @@ export default function MyFoods({ embedded = false }) {
               </div>
               <div className="entry-macros">
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#6c63ff' }}>{round1(f.calories)}</div>
+                  <div className="val" style={{ color: 'var(--accent)' }}>{round1(f.calories)}</div>
                   <div className="lbl">kcal</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#60a5fa' }}>{round1(f.protein)}g</div>
+                  <div className="val" style={{ color: 'var(--blue)' }}>{round1(f.protein)}g</div>
                   <div className="lbl">protein</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fbbf24' }}>{round1(f.carbs)}g</div>
+                  <div className="val" style={{ color: 'var(--yellow)' }}>{round1(f.carbs)}g</div>
                   <div className="lbl">carbs</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fb923c' }}>{round1(f.fat)}g</div>
+                  <div className="val" style={{ color: 'var(--orange)' }}>{round1(f.fat)}g</div>
                   <div className="lbl">fat</div>
                 </div>
               </div>
@@ -339,7 +309,12 @@ export default function MyFoods({ embedded = false }) {
         />
       )}
       {deleteTarget && (
-        <DeleteConfirm food={deleteTarget} onConfirm={handleDeleteConfirmed} onCancel={() => setDeleteTarget(null)} />
+        <DeleteConfirm
+          title="Delete food template?"
+          text={<>Remove <strong style={{ color: 'var(--text)' }}>{deleteTarget.name}</strong> from your saved foods?<br /><span style={{ fontSize: 12 }}>This won't affect existing log entries.</span></>}
+          onConfirm={handleDeleteConfirmed}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
       {showBarcode && (
         <BarcodeScanner date="2000-01-01" onSave={handleBarcodeSave} onClose={() => setShowBarcode(false)} />

@@ -4,12 +4,13 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import Collapse from '../components/Collapse';
 import BottomSheet from '../components/BottomSheet';
 import MealTypeIcon from '../components/MealTypeIcon';
+import Lightbox from '../components/Lightbox';
 import {
   IconTrophy as TablerTrophy, IconFlame as TablerFlame, IconMeat as TablerMeat,
   IconCircleCheck as TablerCircleCheck, IconMoon as TablerMoon, IconWalk as TablerWalk,
   IconDroplet as TablerDroplet, IconBarbell as TablerBarbell, IconStack as TablerStack,
   IconCalendarTime as TablerCalendarTime, IconWeight as TablerWeight, IconCamera as TablerCamera,
-  IconSearch as TablerSearch, IconX as TablerX, IconPencil as TablerPencil,
+  IconSearch as TablerSearch, IconPencil as TablerPencil,
 } from '@tabler/icons-react';
 import { getCached, setCached } from '../utils/cache';
 
@@ -18,10 +19,10 @@ const ON_THIS_DAY_TTL = 86400000; // 24 hours
 const SEARCH_TTL = 120000; // 2 minutes
 
 const CHIP = {
-  gold:   { bg: 'rgba(251,191,36,0.18)',  color: '#fbbf24' },
-  green:  { bg: 'rgba(52,211,153,0.18)',  color: '#34d399' },
-  purple: { bg: 'rgba(108,99,255,0.18)',  color: '#9b94ff' },
-  teal:   { bg: 'rgba(45,212,191,0.18)',  color: '#2dd4bf' },
+  gold:   { bg: 'rgba(251,191,36,0.18)',  color: 'var(--yellow)' },
+  green:  { bg: 'rgba(52,211,153,0.18)',  color: 'var(--green)' },
+  purple: { bg: 'rgba(108,99,255,0.18)',  color: 'var(--accent-light)' },
+  teal:   { bg: 'rgba(45,212,191,0.18)',  color: 'var(--teal)' },
 };
 
 const MEAL_LABEL = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snacks: 'Snacks' };
@@ -133,7 +134,7 @@ function highlight(text, query) {
   if (parts.length === 1) return text;
   const testRe = new RegExp(`^${escaped}$`, 'i');
   return parts.map((part, i) => testRe.test(part)
-    ? <mark key={i} style={{ background: '#fbbf24', color: '#1a1d27', borderRadius: 2, padding: '0 1px' }}>{part}</mark>
+    ? <mark key={i} style={{ background: 'var(--yellow)', color: 'var(--surface)', borderRadius: 2, padding: '0 1px' }}>{part}</mark>
     : <span key={i}>{part}</span>);
 }
 
@@ -166,7 +167,6 @@ function IconCalendarClock({ size = 13 }) { return <TablerCalendarTime size={siz
 function IconScale({ size = 12 }) { return <TablerWeight size={size} />; }
 function IconCamera({ size = 12 }) { return <TablerCamera size={size} />; }
 function IconSearch({ size = 15 }) { return <TablerSearch size={size} />; }
-function IconX({ size = 16 }) { return <TablerX size={size} />; }
 function IconEdit({ size = 12 }) { return <TablerPencil size={size} />; }
 
 function buildChips(day, streak) {
@@ -201,10 +201,10 @@ function Chip({ icon, label, c }) {
 }
 
 function ProgressBar({ pct, overRed }) {
-  let color = '#34d399';
-  if (overRed && pct > 110) color = '#f87171';
-  else if (pct < 50) color = '#f87171';
-  else if (pct < 90) color = '#fbbf24';
+  let color = 'var(--green)';
+  if (overRed && pct > 110) color = 'var(--red)';
+  else if (pct < 50) color = 'var(--red)';
+  else if (pct < 90) color = 'var(--yellow)';
   return (
     <div style={{ height: 4, borderRadius: 2, background: 'var(--surface2)', overflow: 'hidden', marginTop: 4 }}>
       <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, background: color, borderRadius: 2 }} />
@@ -214,10 +214,7 @@ function ProgressBar({ pct, overRed }) {
 
 function SectionLabel({ children }) {
   return (
-    <div style={{
-      fontSize: 10, fontWeight: 700, letterSpacing: '0.7px', textTransform: 'uppercase',
-      color: 'var(--text-muted)', marginBottom: 8,
-    }}>
+    <div className="eyebrow" style={{ marginBottom: 8 }}>
       {children}
     </div>
   );
@@ -266,85 +263,6 @@ function PhotoStrip({ physique, onPhotoClick }) {
   );
 }
 
-function LightboxOverlay({ photos, startIndex, onClose }) {
-  const [idx, setIdx] = useState(startIndex);
-  const n = photos.length;
-
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape')     onClose();
-      if (e.key === 'ArrowLeft')  setIdx(i => (i - 1 + n) % n);
-      if (e.key === 'ArrowRight') setIdx(i => (i + 1) % n);
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [n, onClose]);
-
-  const navBtn = (dir) => ({
-    position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-    [dir === -1 ? 'left' : 'right']: dir === -1 ? 16 : 72,
-    background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
-    width: 44, height: 44, borderRadius: '50%', fontSize: 22, cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-  });
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.96)',
-        zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-    >
-      <img
-        src={photos[idx].cloudinary_url}
-        alt={photos[idx].photo_type}
-        onClick={e => e.stopPropagation()}
-        style={{ maxWidth: '100%', maxHeight: '100dvh', objectFit: 'contain' }}
-      />
-      <button
-        onClick={onClose}
-        style={{
-          position: 'absolute', top: 16, right: 16,
-          background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
-          width: 44, height: 44, borderRadius: '50%', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
-      ><IconX size={20} /></button>
-      {n > 1 && (
-        <>
-          <button
-            onClick={e => { e.stopPropagation(); setIdx(i => (i - 1 + n) % n); }}
-            style={navBtn(-1)}
-          >‹</button>
-          <button
-            onClick={e => { e.stopPropagation(); setIdx(i => (i + 1) % n); }}
-            style={navBtn(1)}
-          >›</button>
-        </>
-      )}
-      {n > 1 && (
-        <div style={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8 }}>
-          {photos.map((_, i) => (
-            <div key={i} style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: i === idx ? '#fff' : 'rgba(255,255,255,0.3)',
-              transition: 'background 0.2s',
-            }} />
-          ))}
-        </div>
-      )}
-      <div style={{
-        position: 'absolute', bottom: n > 1 ? 52 : 24, left: '50%',
-        transform: 'translateX(-50%)',
-        color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600,
-        textTransform: 'capitalize', letterSpacing: '0.5px',
-      }}>
-        {photos[idx].photo_type}
-      </div>
-    </div>
-  );
-}
 
 // ── Reflection editor (inline, no sheet) ─────────────────────────────────────
 
@@ -604,7 +522,13 @@ function DayCard({ day, todayStr, streak, highlightQuery, goals, expanded, onTog
               {day.weight.weight} {day.weight.unit}
             </span>
           )}
-          <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{expanded ? '↑' : '↓'}</span>
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)"
+            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s var(--ease-in-out)', flexShrink: 0 }}
+          >
+            <polyline points="6,9 12,15 18,9" />
+          </svg>
         </div>
       </div>
 
@@ -794,7 +718,8 @@ function FilterSheet({ activeTypes, onApply, onClose }) {
               onClick={() => toggleType(key)}
               style={{
                 padding: '8px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600,
-                border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
+                border: '1px solid', cursor: 'pointer',
+                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
                 background:   active ? 'var(--accent)'   : 'var(--surface2)',
                 borderColor:  active ? 'var(--accent)'   : 'var(--border)',
                 color:        active ? '#fff'            : 'var(--text-muted)',
@@ -1041,7 +966,7 @@ export default function Timeline() {
               borderRadius: 10, width: 40, height: 40,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0, cursor: 'pointer',
-              transition: 'all 0.15s',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
             }}
             aria-label="Filter"
           >
@@ -1150,10 +1075,11 @@ export default function Timeline() {
       )}
 
       {lightbox && (
-        <LightboxOverlay
+        <Lightbox
           photos={lightbox.photos}
           startIndex={lightbox.index}
           onClose={closeLightbox}
+          getTitle={(photo) => photo.photo_type}
         />
       )}
     </div>

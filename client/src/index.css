@@ -14,9 +14,18 @@
   --red: #f87171;
   --blue: #60a5fa;
   --orange: #fb923c;
+  --purple: #a78bfa;
+  --teal: #2dd4bf;
   --radius: 12px;
   --radius-sm: 8px;
   --bottom-nav-h: 80px; /* floating pill/plus-button height + bottom margin */
+
+  /* Motion tokens — --ease-out matches the curve already used (as a literal)
+     by .page-transition and .modal-box; --ease-in-out/--ease-drawer are new,
+     used for on-screen movement and drag surfaces respectively. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 body {
@@ -83,7 +92,7 @@ input, select {
   color: var(--text-muted);
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.15s;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   border-left: 3px solid transparent;
 }
 
@@ -203,8 +212,11 @@ input, select {
 
 .progress-bar {
   height: 100%;
+  width: 100%;
   border-radius: 99px;
-  transition: width 0.4s ease;
+  transform: scaleX(var(--pct, 0));
+  transform-origin: left center;
+  transition: transform 0.5s var(--ease-out);
 }
 
 /* ── Macro grid ───────────────────────────────────────────────────────────────  */
@@ -343,7 +355,7 @@ input, select {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.15s;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ease-out);
 }
 
 .btn-delete:hover { background: rgba(248,113,113,0.15); color: var(--red); }
@@ -358,7 +370,7 @@ input, select {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.15s;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ease-out);
   border: none;
   cursor: pointer;
 }
@@ -374,11 +386,13 @@ input, select {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.15s;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ease-out);
   border: none;
   cursor: pointer;
 }
 .btn-check:hover { background: rgba(52,211,153,0.15); color: var(--green); }
+
+.btn-delete:active, .btn-icon:active, .btn-check:active { transform: scale(0.9); }
 
 /* ── Add food form ────────────────────────────────────────────────────────────  */
 .add-form {
@@ -429,8 +443,10 @@ input, select {
   align-self: flex-end;
 }
 
+.btn-primary { transition: opacity 0.15s ease, transform 0.12s var(--ease-out); }
 .btn-primary:hover { opacity: 0.88; }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary:active:not(:disabled) { transform: scale(0.96); }
 
 /* ── Settings ─────────────────────────────────────────────────────────────────  */
 .settings-section { margin-bottom: 28px; }
@@ -465,28 +481,47 @@ input, select {
   font-weight: 600;
   padding: 10px 24px;
   border-radius: var(--radius-sm);
-  transition: opacity 0.15s;
+  transition: opacity 0.15s ease, transform 0.12s var(--ease-out);
   margin-top: 8px;
 }
 
 .btn-save:hover { opacity: 0.88; }
+.btn-save:active:not(:disabled) { transform: scale(0.97); }
 
-.toast {
+/* ── Shared toast (Toast.jsx) ─────────────────────────────────────────────── */
+/* Fixed above the mobile floating nav; on desktop there's no bottom nav so it
+   just sits near the bottom of the viewport. Enters and exits the same way
+   (translateY + opacity), unlike the old per-page toast implementations it
+   replaces. */
+.toast-shell {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--bottom-nav-h) + 16px);
+  z-index: 2000;
+  transform: translate(-50%, 8px);
+  opacity: 0;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   background: var(--green);
   color: #000;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 7px 14px;
+  padding: 10px 20px;
   border-radius: 99px;
-  margin-left: 12px;
-  animation: fadeOut 2s forwards;
-  animation-delay: 1.2s;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  pointer-events: none;
+  transition: transform 0.25s var(--ease-out), opacity 0.25s ease;
+}
+.toast-shell.in {
+  transform: translate(-50%, 0);
+  opacity: 1;
 }
 
-@keyframes fadeOut { to { opacity: 0; } }
+@media (min-width: 701px) {
+  .toast-shell { bottom: 24px; }
+}
 
 /* ── Date nav ─────────────────────────────────────────────────────────────────  */
 .date-nav {
@@ -983,6 +1018,12 @@ input, select {
   padding: 8px 12px;
   background: rgba(248, 113, 113, 0.1);
   border-radius: var(--radius-sm);
+  animation: authErrorIn 0.2s var(--ease-out);
+}
+
+@keyframes authErrorIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .auth-btn {
@@ -1016,5 +1057,160 @@ input, select {
   background: var(--skeleton-color, var(--surface2));
   border-radius: 8px;
   animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Hover utilities ──────────────────────────────────────────────────────── */
+/* Replace the inline onMouseEnter/onMouseLeave JS handlers scattered across
+   pages — same visual result, no re-render on every mouse move, and gated so
+   touch taps don't leave a "stuck" hover state. */
+@media (hover: hover) and (pointer: fine) {
+  .hover-border:hover { border-color: var(--accent); }
+  .hover-bg:hover { background: var(--surface2); }
+  .hover-opacity:hover { opacity: 0.88; }
+  .hover-color:hover { border-color: var(--hover-color, var(--accent)); }
+  .hover-dashed:hover { border-color: var(--accent); background: rgba(108,99,255,0.06); }
+}
+.hover-border, .hover-color { transition: border-color 0.15s ease; }
+.hover-bg { transition: background-color 0.15s ease; }
+.hover-opacity { transition: opacity 0.15s ease; }
+.hover-dashed { transition: border-color 0.15s ease, background-color 0.15s ease; }
+@media (hover: hover) and (pointer: fine) {
+  .hover-bg-accent:hover { background: rgba(108,99,255,0.12); }
+  .hover-bg-surface:hover { background: var(--surface); }
+}
+.hover-bg-accent, .hover-bg-surface { transition: background-color 0.15s ease; }
+
+/* ── Dropdown entrance (autocomplete, menus) ─────────────────────────────── */
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.dropdown-in { animation: dropdownIn 0.15s var(--ease-out) both; }
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-in { animation: none; }
+}
+
+/* ── Fast fade (tens-of-times-per-day tier: near-imperceptible only) ────────
+   Used for the rest-timer banner and newly-logged workout set rows — both
+   fire often enough within a single session that anything beyond a quick
+   opacity fade would start to feel like it's in the way. */
+@keyframes fadeInFast { from { opacity: 0; } to { opacity: 1; } }
+.fade-in-fast { animation: fadeInFast 0.15s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-fast { animation: none; }
+}
+
+/* ── Entry card entrance (FoodLog strip) ─────────────────────────────────── */
+@keyframes entryCardIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.entry-card-in { animation: entryCardIn 0.25s var(--ease-out) both; }
+@media (prefers-reduced-motion: reduce) {
+  .entry-card-in { animation: none; }
+}
+
+/* ── Ingredient row entrance (Meals.jsx) ──────────────────────────────────── */
+/* Only plays for a genuinely new row — React keys existing rows by a stable
+   _id, so editing an existing row's fields never remounts (and never
+   replays) this animation. */
+@keyframes ingredientRowIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ingredient-row-in {
+  animation: ingredientRowIn 0.22s var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ingredient-row-in { animation: none; }
+}
+
+/* ── Eyebrow label ────────────────────────────────────────────────────────── */
+/* Canonical "small uppercase section label" — was drifting between 10/11/12px
+   as a one-off inline style per page. */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Lightbox (Lightbox.jsx) ──────────────────────────────────────────────── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.96);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.lightbox-overlay.in { opacity: 1; }
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 0.22s var(--ease-out), opacity 0.22s var(--ease-out);
+}
+.lightbox-overlay.in .lightbox-img {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* ── PR celebration (Workout.jsx) ─────────────────────────────────────────── */
+/* The one deliberately-bouncy moment in the app — reserved for an actual
+   personal record, which is rare and earned. Everywhere else in CalTrack
+   uses ease-out; this is the exception. */
+@keyframes prCelebrateIn {
+  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.pr-celebrate {
+  animation: prCelebrateIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.pr-celebrate-row {
+  opacity: 0;
+  animation: prRowIn 0.35s var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes prRowIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+/* Kill translate/scale-based motion; keep opacity fades (and any transform
+   that's actually user-drag-driven, e.g. BottomSheet's dismiss transform,
+   which is functional rather than decorative and stays untouched). */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  .page-transition.slide-left,
+  .page-transition.slide-right,
+  .float-plus-menu,
+  .float-pill-indicator,
+  .modal-box,
+  .auth-error {
+    animation: none !important;
+  }
+  .toast-shell,
+  .lightbox-overlay,
+  .lightbox-img {
+    transition: opacity 0.2s ease !important;
+    transform: none !important;
+  }
+  .pr-celebrate {
+    animation: none !important;
+  }
+  .pr-celebrate-row {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 

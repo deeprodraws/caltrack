@@ -125,7 +125,7 @@ function RestTimerBanner({ timer, restDuration, onSkip, onChangeDuration }) {
   const circumference = 2 * Math.PI * 24;
 
   return (
-    <div style={{
+    <div className="fade-in-fast" style={{
       position: 'fixed',
       bottom: 'calc(var(--bottom-nav-h, 64px) + 8px)',
       left: 12, right: 12, zIndex: 900,
@@ -135,9 +135,9 @@ function RestTimerBanner({ timer, restDuration, onSkip, onChangeDuration }) {
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
     }}>
       <svg width="56" height="56" style={{ flexShrink: 0 }}>
-        <circle cx="28" cy="28" r="24" fill="none" stroke="#22263a" strokeWidth="4"/>
+        <circle cx="28" cy="28" r="24" fill="none" stroke="var(--surface2)" strokeWidth="4"/>
         <circle cx="28" cy="28" r="24" fill="none"
-          stroke={timer.secsLeft <= 10 ? '#f87171' : '#6c63ff'}
+          stroke={timer.secsLeft <= 10 ? 'var(--red)' : 'var(--accent)'}
           strokeWidth="4" strokeLinecap="round"
           strokeDasharray={`${pct * circumference} ${circumference}`}
           transform="rotate(-90 28 28)"
@@ -224,10 +224,9 @@ function ExerciseSearchSheet({ onAdd, onClose }) {
       <div style={{ marginBottom: 8 }}>
         {results.map(ex => (
           <div key={ex.id} onClick={() => onAdd(ex.name)}
+            className="hover-bg"
             style={{ padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 600, fontSize: 14 }}>{ex.name}</div>
               {(ex.muscle_group || ex.equipment) && (
@@ -303,7 +302,7 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
   const best1RM = history.reduce((max, h) =>
     h.estimated_1rm != null && h.estimated_1rm > max ? h.estimated_1rm : max, 0);
 
-  const ttStyle = { background: '#1a1d2e', border: '1px solid #2e3250', borderRadius: 8, fontSize: 12 };
+  const ttStyle = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 };
 
   return (
     <BottomSheet onClose={onClose} title={exerciseName}>
@@ -328,11 +327,11 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
               </div>
               <ResponsiveContainer width="100%" height={170}>
                 <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
-                  <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
-                  <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
-                  <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }} itemStyle={{ color: '#6c63ff' }}/>
-                  <Line type="monotone" dataKey="rm1" stroke="#6c63ff" strokeWidth={2} dot={{ fill: '#6c63ff', r: 3 }} name="Est. 1RM"/>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--surface2)"/>
+                  <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false}/>
+                  <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}/>
+                  <Tooltip contentStyle={ttStyle} labelStyle={{ color: 'var(--text)' }} itemStyle={{ color: 'var(--accent)' }}/>
+                  <Line type="monotone" dataKey="rm1" stroke="var(--accent)" strokeWidth={2} dot={{ fill: 'var(--accent)', r: 3 }} name="Est. 1RM"/>
                 </LineChart>
               </ResponsiveContainer>
 
@@ -341,11 +340,11 @@ function ExerciseProgressSheet({ exerciseName, weightUnit, onClose }) {
               </div>
               <ResponsiveContainer width="100%" height={170}>
                 <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
-                  <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
-                  <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
-                  <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }} itemStyle={{ color: '#60a5fa' }}/>
-                  <Line type="monotone" dataKey="best" stroke="#60a5fa" strokeWidth={2} dot={{ fill: '#60a5fa', r: 3 }} name="Best weight"/>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--surface2)"/>
+                  <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false}/>
+                  <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}/>
+                  <Tooltip contentStyle={ttStyle} labelStyle={{ color: 'var(--text)' }} itemStyle={{ color: 'var(--blue)' }}/>
+                  <Line type="monotone" dataKey="best" stroke="var(--blue)" strokeWidth={2} dot={{ fill: 'var(--blue)', r: 3 }} name="Best weight"/>
                 </LineChart>
               </ResponsiveContainer>
             </>
@@ -473,7 +472,7 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
       title={
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: 7, margin: 0 }}>
-            {mode === 'finish' && <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>}
+            {mode === 'finish' && <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--yellow)" stroke="var(--yellow)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>}
             {mode === 'finish' ? 'Workout Complete' : session.name}
           </h3>
           {mode === 'view' && (
@@ -501,13 +500,13 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
           </div>
 
           {mode === 'finish' && !loadingPrs && Object.keys(prs).length > 0 && (
-            <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+            <div className="pr-celebrate" style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
                 Personal Records
               </div>
-              {Object.entries(prs).map(([name, set]) => (
-                <div key={name} style={{ fontSize: 13, color: '#fbbf24', fontWeight: 600, marginBottom: 2 }}>
+              {Object.entries(prs).map(([name, set], i) => (
+                <div key={name} className="pr-celebrate-row" style={{ '--d': `${120 + i * 60}ms`, fontSize: 13, color: 'var(--yellow)', fontWeight: 600, marginBottom: 2 }}>
                   {name} — {round1(set.weight)} × {set.reps}
                 </div>
               ))}
@@ -578,11 +577,11 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
                   color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}
               />
               {saveError && (
-                <div style={{ color: '#f87171', fontSize: 13, marginBottom: 8, textAlign: 'center' }}>{saveError}</div>
+                <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 8, textAlign: 'center' }}>{saveError}</div>
               )}
               <button onClick={async () => { setSaving(true); setSaveError(null); try { await onSave(notes); } catch (err) { setSaveError(err.message || 'Save failed — please try again.'); setSaving(false); } }}
                 disabled={saving}
-                style={{ width: '100%', background: '#34d399', color: '#000', border: 'none',
+                style={{ width: '100%', background: 'var(--green)', color: '#000', border: 'none',
                   padding: '13px', borderRadius: 8, fontFamily: 'inherit', fontSize: 15,
                   fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
                 {saving ? 'Saving…' : 'Save & Finish'}
@@ -603,13 +602,13 @@ function WorkoutSummarySheet({ session, mode, onSave, onDelete, onClose, onExerc
                   </button>
                   <button onClick={async () => { setDeleting(true); await onDelete(); }}
                     disabled={deleting}
-                    style={{ flex: 1, padding: '10px', borderRadius: 8, background: '#f87171', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ flex: 1, padding: '10px', borderRadius: 8, background: 'var(--red)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
                     {deleting ? 'Deleting…' : 'Confirm Delete'}
                   </button>
                 </div>
               ) : (
                 <button onClick={() => setConfirmDelete(true)}
-                  style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 8, background: 'transparent', border: '1px solid #f87171', color: '#f87171', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 8, background: 'transparent', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
                   Delete Workout
                 </button>
               )}
@@ -682,7 +681,7 @@ function TemplateEditorSheet({ template, onSave, onClose }) {
                   style={{ padding: '6px 4px', textAlign: 'center', borderRadius: 6, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
                 />
                 <button type="button" onClick={() => setRows(rs => rs.filter((_, j) => j !== i))}
-                  style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconXSmall size={15} /></button>
+                  style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconXSmall size={15} /></button>
               </div>
             ))}
             {showSearch ? (
@@ -695,9 +694,8 @@ function TemplateEditorSheet({ template, onSave, onClose }) {
                   {exResults.map(ex => (
                     <div key={ex.id}
                       onClick={() => { setRows(rs => [...rs, { _k: nextKey.current++, exercise_name: ex.name, target_sets: 3, target_reps: 8 }]); setShowSearch(false); setExQuery(''); }}
-                      style={{ padding: '8px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      className="hover-bg-surface"
+                      style={{ padding: '8px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
                       {ex.name}
                     </div>
                   ))}
@@ -798,7 +796,7 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
             <span>#</span><span>Weight</span><span>Reps</span><span>RPE</span><span></span>
           </div>
           {exercise.sets.map(s => (
-            <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '2rem minmax(0,1fr) minmax(0,1fr) 2.5rem 1.5rem', gap: '3px 8px', alignItems: 'center', padding: '5px 0' }}>
+            <div key={s.id} className="fade-in-fast" style={{ display: 'grid', gridTemplateColumns: '2rem minmax(0,1fr) minmax(0,1fr) 2.5rem 1.5rem', gap: '3px 8px', alignItems: 'center', padding: '5px 0' }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.set_number}</span>
               <span style={{ fontSize: 15, fontWeight: 700 }}>{s.weight === 0 ? 'BW' : round1(s.weight)}</span>
               <span style={{ fontSize: 15, fontWeight: 700 }}>{s.reps}</span>
@@ -834,7 +832,8 @@ function ExerciseCard({ exercise, lastSession, onSetsChanged, onRemove, onViewPr
         />
         <button onClick={handleLog} disabled={!canLog}
           style={{ borderRadius: 8, border: 'none', cursor: canLog ? 'pointer' : 'default',
-            background: canLog ? '#34d399' : 'var(--surface2)', color: canLog ? '#000' : 'var(--text-muted)', transition: 'all 0.15s',
+            background: canLog ? 'var(--green)' : 'var(--surface2)', color: canLog ? '#000' : 'var(--text-muted)',
+            transition: 'background-color 0.15s ease, color 0.15s ease',
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <IconCheck size={18} />
         </button>
@@ -946,7 +945,7 @@ function VolumeCharts({ exerciseName, weightUnit, prWeight }) {
 
   const bestVolume = Math.max(...chartData.map(d => d.volume));
   const bestSet = chartData.reduce((b, d) => !b || d.max_weight > b.max_weight ? d : b, null);
-  const ttStyle = { background: '#1a1d2e', border: '1px solid #2e3250', borderRadius: 8, fontSize: 12 };
+  const ttStyle = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 };
 
   return (
     <div style={{ marginTop: 16 }}>
@@ -955,12 +954,12 @@ function VolumeCharts({ exerciseName, weightUnit, prWeight }) {
       </div>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
-          <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
-          <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
-          <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }}
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--surface2)"/>
+          <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false}/>
+          <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}/>
+          <Tooltip contentStyle={ttStyle} labelStyle={{ color: 'var(--text)' }}
             formatter={(v) => [`${v} ${weightUnit}`, 'Volume']}/>
-          <Bar dataKey="volume" fill="#6c63ff" radius={[4, 4, 0, 0]}/>
+          <Bar dataKey="volume" fill="var(--accent)" radius={[4, 4, 0, 0]}/>
         </BarChart>
       </ResponsiveContainer>
 
@@ -969,16 +968,16 @@ function VolumeCharts({ exerciseName, weightUnit, prWeight }) {
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
-          <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
-          <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
-          <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }}
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--surface2)"/>
+          <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false}/>
+          <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}/>
+          <Tooltip contentStyle={ttStyle} labelStyle={{ color: 'var(--text)' }}
             formatter={(v) => [`${v} ${weightUnit}`, 'Max weight']}/>
           {prWeight > 0 && (
-            <ReferenceLine y={prWeight} stroke="#fbbf24" strokeDasharray="4 4"
-              label={{ value: 'PR', fill: '#fbbf24', fontSize: 10, position: 'right' }}/>
+            <ReferenceLine y={prWeight} stroke="var(--yellow)" strokeDasharray="4 4"
+              label={{ value: 'PR', fill: 'var(--yellow)', fontSize: 10, position: 'right' }}/>
           )}
-          <Line type="monotone" dataKey="max_weight" stroke="#60a5fa" strokeWidth={2} dot={{ fill: '#60a5fa', r: 3 }}/>
+          <Line type="monotone" dataKey="max_weight" stroke="var(--blue)" strokeWidth={2} dot={{ fill: 'var(--blue)', r: 3 }}/>
         </LineChart>
       </ResponsiveContainer>
 
@@ -987,12 +986,12 @@ function VolumeCharts({ exerciseName, weightUnit, prWeight }) {
       </div>
       <ResponsiveContainer width="100%" height={160}>
         <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#22263a"/>
-          <XAxis dataKey="date" tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false}/>
-          <YAxis tick={{ fill: '#7c82a0', fontSize: 10 }} tickLine={false} axisLine={false}/>
-          <Tooltip contentStyle={ttStyle} labelStyle={{ color: '#ccd6f6' }}
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--surface2)"/>
+          <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false}/>
+          <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false}/>
+          <Tooltip contentStyle={ttStyle} labelStyle={{ color: 'var(--text)' }}
             formatter={(v, n, p) => [`${v} reps across ${p.payload.total_sets} sets`, 'Reps']}/>
-          <Bar dataKey="total_reps" fill="#34d399" radius={[4, 4, 0, 0]}/>
+          <Bar dataKey="total_reps" fill="var(--green)" radius={[4, 4, 0, 0]}/>
         </BarChart>
       </ResponsiveContainer>
 
@@ -1401,9 +1400,8 @@ export default function Workout() {
         {templates.map(tmpl => (
           <div key={tmpl.id}
             onClick={() => startFromTemplate(tmpl)}
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 10, cursor: 'pointer', transition: 'border-color 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+            className="hover-border"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 10, cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontWeight: 700, fontSize: 15 }}>{tmpl.name}</div>
               <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
@@ -1422,9 +1420,8 @@ export default function Workout() {
 
         {!showStartEmpty ? (
           <button onClick={() => setShowStartEmpty(true)}
-            style={{ width: '100%', padding: '12px', borderRadius: 10, background: 'transparent', border: '2px dashed var(--border)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'border-color 0.15s', fontFamily: 'inherit' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+            className="hover-border"
+            style={{ width: '100%', padding: '12px', borderRadius: 10, background: 'transparent', border: '2px dashed var(--border)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             + Start Empty Workout
           </button>
         ) : (
@@ -1452,9 +1449,8 @@ export default function Workout() {
                 const found = all.find(f => f.id === s.id);
                 if (found) setSummaryTarget({ session: found, mode: 'view' });
               }}
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 10, cursor: 'pointer', transition: 'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+              className="hover-border"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 10, cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{s.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{shortDate(s.date)}</div>

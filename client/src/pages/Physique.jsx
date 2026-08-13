@@ -8,6 +8,8 @@ import {
 } from '../api';
 import SkeletonLoader from '../components/SkeletonLoader';
 import BottomSheet from '../components/BottomSheet';
+import Lightbox from '../components/Lightbox';
+import DeleteConfirm from '../components/DeleteConfirm';
 import { getCached, setCached, invalidateCache } from '../utils/cache';
 
 const PHYSIQUE_CACHE_TTL = 300000; // 5 minutes
@@ -77,6 +79,7 @@ export default function Physique() {
   const [editSheet, setEditSheet]   = useState(null);
   const [uploading, setUploading]   = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteWeek, setConfirmDeleteWeek] = useState(null);
 
   const isSunday       = new Date().getDay() === 0;
   const thisWeekStart  = getWeekStart(todayStr());
@@ -145,8 +148,13 @@ export default function Physique() {
     setEditSheet(null);
   }
 
-  async function handleDeleteWeek(weekId) {
-    if (!confirm('Delete this week and all its photos?')) return;
+  function requestDeleteWeek(weekId) {
+    setConfirmDeleteWeek(weekId);
+  }
+
+  async function handleDeleteWeekConfirmed() {
+    const weekId = confirmDeleteWeek;
+    setConfirmDeleteWeek(null);
     setDeletingId(weekId);
     await deletePhysiqueWeek(weekId);
     invalidateCache('physique-weeks');
@@ -200,7 +208,7 @@ export default function Physique() {
         ? <SkeletonLoader count={3} height={220} />
         : view === 'timeline'
           ? (
-            <div>
+            <div key="timeline" className="page-transition">
               <WeekCard
                 week={thisWeek}
                 num={weekNum(thisWeek.id)}
@@ -208,7 +216,7 @@ export default function Physique() {
                 onPhoto={type => setCaptureSheet({ week: thisWeek, photoType: type })}
                 onView={(type) => openLightbox(thisWeek, type)}
                 onEdit={() => setEditSheet(thisWeek)}
-                onDelete={thisWeek.id ? () => handleDeleteWeek(thisWeek.id) : null}
+                onDelete={thisWeek.id ? () => requestDeleteWeek(thisWeek.id) : null}
                 deleting={deletingId === thisWeek.id}
               />
               {pastWeeks.map(w => (
@@ -220,7 +228,7 @@ export default function Physique() {
                   onPhoto={type => setCaptureSheet({ week: w, photoType: type })}
                   onView={(type) => openLightbox(w, type)}
                   onEdit={() => setEditSheet(w)}
-                  onDelete={() => handleDeleteWeek(w.id)}
+                  onDelete={() => requestDeleteWeek(w.id)}
                   deleting={deletingId === w.id}
                 />
               ))}
@@ -231,7 +239,7 @@ export default function Physique() {
               )}
             </div>
           )
-          : <ProgressView weeks={weeks} chartData={chartData} />
+          : <div key="progress" className="page-transition"><ProgressView weeks={weeks} chartData={chartData} /></div>
       }
 
       {captureSheet && (
@@ -254,11 +262,20 @@ export default function Physique() {
 
       {lightbox && (
         <Lightbox
-          photo={lightbox.photo}
-          weekNum={lightbox.weekNum}
-          photoType={lightbox.photoType}
+          photos={[lightbox.photo]}
+          startIndex={0}
+          getTitle={() => `Week ${lightbox.weekNum} — ${lightbox.photoType}`}
           onClose={() => setLightbox(null)}
           onDelete={() => handleDeletePhoto(lightbox.photo)}
+        />
+      )}
+
+      {confirmDeleteWeek && (
+        <DeleteConfirm
+          title="Delete week?"
+          text="This week and all its photos will be removed. This can't be undone."
+          onConfirm={handleDeleteWeekConfirmed}
+          onCancel={() => setConfirmDeleteWeek(null)}
         />
       )}
     </div>
@@ -297,7 +314,7 @@ function WeekCard({ week, num, isThisWeek, onPhoto, onView, onEdit, onDelete, de
             </svg>
           </button>
           {onDelete && (
-            <button onClick={onDelete} disabled={deleting} style={iconBtnStyle('#ff4d4f')} title="Delete week">
+            <button onClick={onDelete} disabled={deleting} style={iconBtnStyle('var(--red)')} title="Delete week">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                 <path d="M10 11v6"/><path d="M14 11v6"/>
@@ -316,10 +333,12 @@ function WeekCard({ week, num, isThisWeek, onPhoto, onView, onEdit, onDelete, de
               overflow: 'hidden', background: 'var(--surface2)' }}>
               {photo ? (
                 <img
+                  key={photo.id}
                   src={photo.cloudinary_url}
                   alt={type}
                   loading="lazy"
                   onClick={() => onView(type)}
+                  className="entry-card-in"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer', display: 'block' }}
                 />
               ) : (
@@ -409,7 +428,7 @@ function ProgressView({ weeks, chartData }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
           <div className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4 }}>TOTAL CHANGE</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: parseFloat(weightDiff) <= 0 ? 'var(--accent)' : '#ff6b35' }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: parseFloat(weightDiff) <= 0 ? 'var(--accent)' : 'var(--orange)' }}>
               {parseFloat(weightDiff) > 0 ? '+' : ''}{weightDiff} lbs
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>body weight</div>
@@ -417,7 +436,7 @@ function ProgressView({ weeks, chartData }) {
           {fatDiff !== null && (
             <div className="card" style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4 }}>TOTAL CHANGE</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: parseFloat(fatDiff) <= 0 ? 'var(--accent)' : '#ff6b35' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: parseFloat(fatDiff) <= 0 ? 'var(--accent)' : 'var(--orange)' }}>
                 {parseFloat(fatDiff) > 0 ? '+' : ''}{fatDiff}%
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>body fat</div>
@@ -458,11 +477,11 @@ function ProgressView({ weeks, chartData }) {
               <Tooltip
                 contentStyle={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8 }}
                 labelStyle={{ color: 'var(--text-muted)', fontSize: 12 }}
-                itemStyle={{ color: '#ff6b35', fontSize: 13 }}
+                itemStyle={{ color: 'var(--orange)', fontSize: 13 }}
                 formatter={v => [`${round1(v)}%`, 'Body Fat']}
               />
-              <Line type="monotone" dataKey="body_fat" stroke="#ff6b35" strokeWidth={2.5}
-                dot={{ r: 4, fill: '#ff6b35' }} activeDot={{ r: 6 }} connectNulls />
+              <Line type="monotone" dataKey="body_fat" stroke="var(--orange)" strokeWidth={2.5}
+                dot={{ r: 4, fill: 'var(--orange)' }} activeDot={{ r: 6 }} connectNulls />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -590,69 +609,3 @@ function inputStyle() {
   };
 }
 
-// ─── Lightbox ───────────────────────────────────────────────────────────────
-
-function Lightbox({ photo, weekNum, photoType, onClose, onDelete }) {
-  const [confirming, setConfirming] = useState(false);
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)',
-        zIndex: 1000, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-      }}
-    >
-      {/* Top bar */}
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '16px 20px', color: '#fff',
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>Week {weekNum} — <span style={{ textTransform: 'capitalize' }}>{photoType}</span></div>
-        </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          {!confirming ? (
-            <button onClick={() => setConfirming(true)} style={{
-              background: 'rgba(255,77,79,0.2)', border: '1px solid rgba(255,77,79,0.5)',
-              color: '#ff4d4f', borderRadius: 8, padding: '6px 12px',
-              cursor: 'pointer', fontWeight: 600, fontSize: 13,
-            }}>Delete</button>
-          ) : (
-            <>
-              <button onClick={onDelete} style={{
-                background: '#ff4d4f', border: 'none', color: '#fff',
-                borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-              }}>Confirm</button>
-              <button onClick={() => setConfirming(false)} style={{
-                background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
-                borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-              }}>Cancel</button>
-            </>
-          )}
-          <button onClick={onClose} style={{
-            background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
-            borderRadius: 8, padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Image */}
-      <img
-        src={photo.cloudinary_url}
-        alt={photoType}
-        onClick={e => e.stopPropagation()}
-        style={{ maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }}
-      />
-    </div>
-  );
-}

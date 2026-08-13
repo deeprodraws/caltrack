@@ -66,12 +66,12 @@ function CalorieRing({ eaten, goal }) {
   const r = 68;
   const circumference = 2 * Math.PI * r;
   const dash = pct * circumference;
-  const color = pct > 1 ? '#f87171' : pct > 0.85 ? '#fbbf24' : '#6c63ff';
+  const color = pct > 1 ? 'var(--red)' : pct > 0.85 ? 'var(--yellow)' : 'var(--accent)';
 
   return (
     <div className="calorie-ring-wrap" style={{ width: 160, height: 160 }}>
       <svg width="160" height="160" viewBox="0 0 160 160">
-        <circle cx="80" cy="80" r={r} fill="none" stroke="#22263a" strokeWidth="14" />
+        <circle cx="80" cy="80" r={r} fill="none" stroke="var(--surface2)" strokeWidth="14" />
         <circle
           cx="80" cy="80" r={r}
           fill="none" stroke={color} strokeWidth="14" strokeLinecap="round"
@@ -98,7 +98,7 @@ function MacroBar({ label, current, goal, color }) {
         <span className="macro-goal">/ {round1(goal)}g</span>
       </div>
       <div className="progress-wrap">
-        <div className="progress-bar" style={{ width: `${pct}%`, background: color }} />
+        <div className="progress-bar" style={{ '--pct': pct / 100, background: color }} />
       </div>
     </div>
   );
@@ -166,7 +166,7 @@ function WeightDeleteConfirm({ log, unit, onConfirm, onCancel }) {
             padding: '10px 20px', borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
           }}>Keep it</button>
           <button onClick={onConfirm} style={{
-            background: '#f87171', color: '#fff', border: 'none',
+            background: 'var(--red)', color: '#fff', border: 'none',
             padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
           }}>Delete</button>
         </div>
@@ -191,11 +191,11 @@ function WaterSheet({ metrics, onSave, onClose }) {
   return (
     <BottomSheet
       onClose={onClose}
-      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg> Water Intake</h3>}
+      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg> Water Intake</h3>}
     >
       {/* Glass count + mini tracker */}
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <div style={{ fontSize: 52, fontWeight: 800, color: '#60a5fa', lineHeight: 1 }}>{glasses}</div>
+        <div style={{ fontSize: 52, fontWeight: 800, color: 'var(--blue)', lineHeight: 1 }}>{glasses}</div>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
           {glasses === 1 ? 'glass' : 'glasses'} · {ml} ml
         </div>
@@ -203,7 +203,7 @@ function WaterSheet({ metrics, onSave, onClose }) {
           {Array.from({ length: 8 }, (_, i) => (
             <div key={i} style={{
               width: 22, height: 9, borderRadius: 5,
-              background: i < glasses ? '#60a5fa' : 'var(--surface2)',
+              background: i < glasses ? 'var(--blue)' : 'var(--surface2)',
               border: '1px solid var(--border)',
               transition: 'background 0.2s',
             }} />
@@ -273,7 +273,7 @@ function StepsSheet({ metrics, onSave, onClose }) {
   return (
     <BottomSheet
       onClose={onClose}
-      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg> Steps</h3>}
+      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg> Steps</h3>}
     >
       <div className="settings-field" style={{ marginBottom: 16 }}>
         <label>Step count</label>
@@ -295,11 +295,11 @@ function StepsSheet({ metrics, onSave, onClose }) {
             <span>Goal: 10,000</span>
           </div>
           <div className="progress-wrap">
-            <div className="progress-bar" style={{ width: `${Math.min(parsed / 10000 * 100, 100)}%`, background: '#34d399' }} />
+            <div className="progress-bar" style={{ '--pct': Math.min(parsed / 10000, 1), background: 'var(--green)' }} />
           </div>
           {parsed >= 10000 && (
-            <div style={{ fontSize: 12, color: '#34d399', fontWeight: 600, marginTop: 6, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#34d399" stroke="#34d399" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+            <div style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600, marginTop: 6, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--green)" stroke="var(--green)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
               Goal reached!
             </div>
           )}
@@ -333,7 +333,7 @@ function SleepSheet({ metrics, onSave, onClose }) {
   return (
     <BottomSheet
       onClose={onClose}
-      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Sleep</h3>}
+      title={<h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Sleep</h3>}
     >
       <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
         Quick Select
@@ -345,7 +345,8 @@ function SleepSheet({ metrics, onSave, onClose }) {
             onClick={() => setHours(h)}
             style={{
               padding: '8px 16px', borderRadius: 8, fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', transition: 'all 0.15s',
+              cursor: 'pointer',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
               background: hours === h ? 'var(--accent)' : 'var(--surface2)',
               border: `1px solid ${hours === h ? 'var(--accent)' : 'var(--border)'}`,
               color: hours === h ? '#fff' : 'var(--text)',
@@ -533,11 +534,11 @@ export default function Dashboard() {
           <h2>Today's Calories</h2>
           <div className="calorie-stats">
             <div className="cal-stat">
-              <div className="val" style={{ color: '#6c63ff' }}>{round1(cals)}</div>
+              <div className="val" style={{ color: 'var(--accent)' }}>{round1(cals)}</div>
               <div className="lbl">Eaten</div>
             </div>
             <div className="cal-stat">
-              <div className="val" style={{ color: '#34d399' }}>{round1(remaining)}</div>
+              <div className="val" style={{ color: 'var(--green)' }}>{round1(remaining)}</div>
               <div className="lbl">Remaining</div>
             </div>
             <div className="cal-stat">
@@ -549,10 +550,10 @@ export default function Dashboard() {
       </div>
 
       <div className="macro-grid" style={{ marginBottom: 24 }}>
-        <MacroBar label="Protein"  current={protein} goal={goals.protein} color="#60a5fa" />
-        <MacroBar label="Carbs"    current={carbs}   goal={goals.carbs}   color="#fbbf24" />
-        <MacroBar label="Fat"      current={fat}      goal={goals.fat}     color="#fb923c" />
-        <MacroBar label="Calories" current={cals}     goal={goals.calories} color="#6c63ff" />
+        <MacroBar label="Protein"  current={protein} goal={goals.protein} color="var(--blue)" />
+        <MacroBar label="Carbs"    current={carbs}   goal={goals.carbs}   color="var(--yellow)" />
+        <MacroBar label="Fat"      current={fat}      goal={goals.fat}     color="var(--orange)" />
+        <MacroBar label="Calories" current={cals}     goal={goals.calories} color="var(--accent)" />
       </div>
 
       {/* ── Section 4: Quick-Log Cards ────────────────────────────────────── */}
@@ -560,10 +561,9 @@ export default function Dashboard() {
 
         {/* Water */}
         <div
-          style={metricCardBase}
+          className="hover-color"
+          style={{ ...metricCardBase, '--hover-color': 'var(--blue)' }}
           onClick={() => setMetricModal('water')}
-          onMouseEnter={e => e.currentTarget.style.borderColor = '#60a5fa'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
         >
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -573,9 +573,9 @@ export default function Dashboard() {
             pointerEvents: 'none',
           }} />
           <div style={{ position: 'relative' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 9 5 13 5 16a7 7 0 0 0 14 0c0-3-1.5-7-7-14z"/></svg>
           </div>
-          <div style={{ position: 'relative', fontSize: 22, fontWeight: 800, color: '#60a5fa', lineHeight: 1 }}>
+          <div style={{ position: 'relative', fontSize: 22, fontWeight: 800, color: 'var(--blue)', lineHeight: 1 }}>
             {waterGlasses}
           </div>
           <div style={{ position: 'relative', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>
@@ -585,10 +585,9 @@ export default function Dashboard() {
 
         {/* Steps */}
         <div
-          style={metricCardBase}
+          className="hover-color"
+          style={{ ...metricCardBase, '--hover-color': 'var(--green)' }}
           onClick={() => setMetricModal('steps')}
-          onMouseEnter={e => e.currentTarget.style.borderColor = '#34d399'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
         >
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -598,9 +597,9 @@ export default function Dashboard() {
             pointerEvents: 'none',
           }} />
           <div style={{ position: 'relative' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-6 4 12 3-6h4"/></svg>
           </div>
-          <div style={{ position: 'relative', fontSize: 14, fontWeight: 800, color: '#34d399', lineHeight: 1 }}>
+          <div style={{ position: 'relative', fontSize: 14, fontWeight: 800, color: 'var(--green)', lineHeight: 1 }}>
             {(metrics.steps || 0).toLocaleString()}
           </div>
           <div style={{ position: 'relative', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>
@@ -610,15 +609,14 @@ export default function Dashboard() {
 
         {/* Sleep */}
         <div
-          style={metricCardBase}
+          className="hover-color"
+          style={{ ...metricCardBase, '--hover-color': 'var(--purple)' }}
           onClick={() => setMetricModal('sleep')}
-          onMouseEnter={e => e.currentTarget.style.borderColor = '#a78bfa'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
         >
           <div style={{ position: 'relative' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </div>
-          <div style={{ position: 'relative', fontSize: (metrics.sleep_hours || 0) > 0 ? 18 : 24, fontWeight: 800, color: '#a78bfa', lineHeight: 1 }}>
+          <div style={{ position: 'relative', fontSize: (metrics.sleep_hours || 0) > 0 ? 18 : 24, fontWeight: 800, color: 'var(--purple)', lineHeight: 1 }}>
             {(metrics.sleep_hours || 0) > 0 ? `${round1(metrics.sleep_hours)}h` : '—'}
           </div>
           <div style={{ position: 'relative', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>
@@ -724,19 +722,19 @@ export default function Dashboard() {
               </span>
               <div className="entry-macros">
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#6c63ff' }}>{round1(e.calories)}</div>
+                  <div className="val" style={{ color: 'var(--accent)' }}>{round1(e.calories)}</div>
                   <div className="lbl">kcal</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#60a5fa' }}>{round1(e.protein)}g</div>
+                  <div className="val" style={{ color: 'var(--blue)' }}>{round1(e.protein)}g</div>
                   <div className="lbl">protein</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fbbf24' }}>{round1(e.carbs)}g</div>
+                  <div className="val" style={{ color: 'var(--yellow)' }}>{round1(e.carbs)}g</div>
                   <div className="lbl">carbs</div>
                 </div>
                 <div className="entry-macro">
-                  <div className="val" style={{ color: '#fb923c' }}>{round1(e.fat)}g</div>
+                  <div className="val" style={{ color: 'var(--orange)' }}>{round1(e.fat)}g</div>
                   <div className="lbl">fat</div>
                 </div>
               </div>
