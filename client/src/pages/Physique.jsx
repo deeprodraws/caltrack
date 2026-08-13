@@ -172,9 +172,9 @@ export default function Physique() {
 
   return (
     <div style={{ paddingBottom: 80 }}>
-      <div style={{ position: 'relative', marginBottom: 16 }}>
+      <div style={{ marginBottom: 16 }}>
         <div className="centered-page-title">Physique</div>
-        <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 10 }}>
           {['timeline', 'progress'].map(v => (
             <button key={v} onClick={() => setView(v)} style={{
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',

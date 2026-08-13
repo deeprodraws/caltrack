@@ -4,6 +4,13 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import Collapse from '../components/Collapse';
 import BottomSheet from '../components/BottomSheet';
 import MealTypeIcon from '../components/MealTypeIcon';
+import {
+  IconTrophy as TablerTrophy, IconFlame as TablerFlame, IconMeat as TablerMeat,
+  IconCircleCheck as TablerCircleCheck, IconMoon as TablerMoon, IconWalk as TablerWalk,
+  IconDroplet as TablerDroplet, IconBarbell as TablerBarbell, IconStack as TablerStack,
+  IconCalendarTime as TablerCalendarTime, IconWeight as TablerWeight, IconCamera as TablerCamera,
+  IconSearch as TablerSearch, IconX as TablerX, IconPencil as TablerPencil,
+} from '@tabler/icons-react';
 import { getCached, setCached } from '../utils/cache';
 
 const TIMELINE_CACHE_TTL = 120000; // 2 minutes
@@ -146,119 +153,21 @@ function entryDisplayName(e) {
 
 // ── Small line icons (stand-ins for the achievement-chip / stat-row emoji) ────
 
-function IconTrophy({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-      <path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
-    </svg>
-  );
-}
-function IconFlame({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-    </svg>
-  );
-}
-function IconMeat({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M16 16c4-4 4-8 2-10-2-2-6-2-10 2-1.5 1.5-2.5 3-3 4.5C3.5 15 2 17 2 19c0 1.5 1.5 3 3 3 2 0 4-1.5 6.5-4 1.5-.5 3-1.5 4.5-3z"/>
-      <path d="M15 9l-6 6"/>
-    </svg>
-  );
-}
-function IconCheckCircle({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <circle cx="12" cy="12" r="9"/><polyline points="8,12 11,15 16,9"/>
-    </svg>
-  );
-}
-function IconMoon({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-    </svg>
-  );
-}
-function IconShoe({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <ellipse cx="8" cy="7" rx="2.5" ry="3.5" transform="rotate(-15 8 7)"/>
-      <ellipse cx="16" cy="16" rx="2.5" ry="3.5" transform="rotate(15 16 16)"/>
-    </svg>
-  );
-}
-function IconDroplet({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M12 2.5s7 7.02 7 11.5a7 7 0 1 1-14 0c0-4.48 7-11.5 7-11.5z"/>
-    </svg>
-  );
-}
-function IconDumbbell({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <rect x="2" y="10" width="2.5" height="4" rx="0.5"/><rect x="19.5" y="10" width="2.5" height="4" rx="0.5"/>
-      <rect x="4.5" y="7.5" width="3" height="9" rx="0.5"/><rect x="16.5" y="7.5" width="3" height="9" rx="0.5"/>
-      <line x1="7.5" y1="12" x2="16.5" y2="12"/>
-    </svg>
-  );
-}
-function IconStack({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <ellipse cx="12" cy="7" rx="8" ry="3"/><path d="M4 7v10c0 1.66 3.58 3 8 3s8-1.34 8-3V7"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>
-    </svg>
-  );
-}
-function IconCalendarClock({ size = 13 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/><path d="M12 14v3l2 1"/>
-    </svg>
-  );
-}
-function IconScale({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8a4 4 0 0 0-4 4"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/>
-    </svg>
-  );
-}
-function IconCamera({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-    </svg>
-  );
-}
-function IconSearch({ size = 15 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-  );
-}
-function IconX({ size = 16 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-    </svg>
-  );
-}
-function IconEdit({ size = 12 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-    </svg>
-  );
-}
+function IconTrophy({ size = 12 }) { return <TablerTrophy size={size} />; }
+function IconFlame({ size = 12 }) { return <TablerFlame size={size} />; }
+function IconMeat({ size = 12 }) { return <TablerMeat size={size} />; }
+function IconCheckCircle({ size = 12 }) { return <TablerCircleCheck size={size} />; }
+function IconMoon({ size = 12 }) { return <TablerMoon size={size} />; }
+function IconShoe({ size = 12 }) { return <TablerWalk size={size} />; }
+function IconDroplet({ size = 12 }) { return <TablerDroplet size={size} />; }
+function IconDumbbell({ size = 12 }) { return <TablerBarbell size={size} />; }
+function IconStack({ size = 12 }) { return <TablerStack size={size} />; }
+function IconCalendarClock({ size = 13 }) { return <TablerCalendarTime size={size} />; }
+function IconScale({ size = 12 }) { return <TablerWeight size={size} />; }
+function IconCamera({ size = 12 }) { return <TablerCamera size={size} />; }
+function IconSearch({ size = 15 }) { return <TablerSearch size={size} />; }
+function IconX({ size = 16 }) { return <TablerX size={size} />; }
+function IconEdit({ size = 12 }) { return <TablerPencil size={size} />; }
 
 function buildChips(day, streak) {
   const chips = [];
@@ -391,7 +300,7 @@ function LightboxOverlay({ photos, startIndex, onClose }) {
         src={photos[idx].cloudinary_url}
         alt={photos[idx].photo_type}
         onClick={e => e.stopPropagation()}
-        style={{ maxWidth: '100%', maxHeight: '100vh', objectFit: 'contain' }}
+        style={{ maxWidth: '100%', maxHeight: '100dvh', objectFit: 'contain' }}
       />
       <button
         onClick={onClose}
@@ -1114,27 +1023,31 @@ export default function Timeline() {
   return (
     <div>
       {/* ── Page header ── */}
-      <div style={{ position: 'relative', marginBottom: 16 }}>
-        <h1 className="centered-page-title">Life Timeline</h1>
-        <p className="centered-page-subtitle">
-          Your fitness journey, day by day
-        </p>
-        <button
-          onClick={() => setFilterOpen(true)}
-          style={{
-            position: 'absolute', top: 0, right: 0,
-            background: isFiltered ? 'var(--accent)' : 'var(--surface2)',
-            border: `1px solid ${isFiltered ? 'var(--accent)' : 'var(--border)'}`,
-            color: isFiltered ? '#fff' : 'var(--text-muted)',
-            borderRadius: 10, width: 40, height: 40,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, cursor: 'pointer',
-            transition: 'all 0.15s',
-          }}
-          aria-label="Filter"
-        >
-          <FilterIcon />
-        </button>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+        <div />
+        <div>
+          <h1 className="centered-page-title">Life Timeline</h1>
+          <p className="centered-page-subtitle">
+            Your fitness journey, day by day
+          </p>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => setFilterOpen(true)}
+            style={{
+              background: isFiltered ? 'var(--accent)' : 'var(--surface2)',
+              border: `1px solid ${isFiltered ? 'var(--accent)' : 'var(--border)'}`,
+              color: isFiltered ? '#fff' : 'var(--text-muted)',
+              borderRadius: 10, width: 40, height: 40,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            aria-label="Filter"
+          >
+            <FilterIcon />
+          </button>
+        </div>
       </div>
 
       {/* ── Streak counter ── */}
